@@ -1675,7 +1675,7 @@ public class SRWServlet extends AxisServlet {
 //                while ((i = buf.read(str)) > -1) {
 //                    strBuf.append(new String(str, 0, i));
 //                }
-//                return buf.toString();
+//                return strBuf.toString();
 ////                in = new BufferedReader(
 ////                        new InputStreamReader(inputStream, "UTF-8"));
 ////                String str = new String("");
