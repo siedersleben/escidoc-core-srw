@@ -352,7 +352,10 @@ public class SRWServlet extends AxisServlet {
 //                    }
 //                    msgContext.setTargetService(serviceName);
 //                    /////////////////////////////////////////////////////////
-//                    processWsdlRequest(msgContext, response);
+//                    ///MIH: add request to parameters////////////////////////
+////                    processWsdlRequest(msgContext, response);
+//                    processWsdlRequest(msgContext, response, request);
+//                    /////////////////////////////////////////////////////////
 //                } else if (listRequested) {
 //                    // Do list, if it is enabled
 //                    processListRequest(response);
@@ -503,8 +506,10 @@ public class SRWServlet extends AxisServlet {
 //     * @throws AxisFault when anything other than a Server.NoService fault is reported
 //     * during WSDL generation
 //     */
+//    //MIH: add request to method-parameters//////////////////////////////
 //    protected void processWsdlRequest(MessageContext msgContext,
-//                                      HttpServletResponse response) throws AxisFault, IOException {
+//                                      HttpServletResponse response,
+//                                      HttpServletRequest request) throws AxisFault, IOException {
 //        AxisEngine engine = getEngine();
 //        PrintWriter writer;
 //        try {
@@ -512,7 +517,7 @@ public class SRWServlet extends AxisServlet {
 //            try {
 //                response.setContentType("text/xml");
 //                writer = response.getWriter();
-//                writer.print(getWsdl(msgContext.getTargetService()));
+//                writer.print(getWsdl(msgContext.getTargetService(), request));
 //                writer.close();
 //            } catch (Exception e) {
 //                throw new IOException(e.getMessage());
@@ -1661,7 +1666,7 @@ public class SRWServlet extends AxisServlet {
 //    }
 //
 //    //MIH: get WSDL hardcoded (problems with java2wsdl) //////////////////////////////////
-//    private String getWsdl(String service) throws Exception {
+//    private String getWsdl(String service, HttpServletRequest request) throws Exception {
 //        InputStream inputStream = null;
 //        inputStream =
 //            getClass().getClassLoader().getResourceAsStream("srw.wsdl");
@@ -1675,15 +1680,10 @@ public class SRWServlet extends AxisServlet {
 //                while ((i = buf.read(str)) > -1) {
 //                    strBuf.append(new String(str, 0, i));
 //                }
-//                return strBuf.toString();
-////                in = new BufferedReader(
-////                        new InputStreamReader(inputStream, "UTF-8"));
-////                String str = new String("");
-////                StringBuffer buf = new StringBuffer("");
-////                while ((str = in.readLine()) != null) {
-////                    buf.append(str);
-////                }
-////                return buf.toString();
+//                String wsdl = strBuf.toString();
+//                String host = request.getServerName();
+//                
+//                return wsdl;
 //            } finally {
 //                try {
 //                    in.close();
