@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+
+<project name="eSciDocCoreSrw" basedir="." default="war">
+
+	<property name="webapp.name" value="srw" />
+	<property name="build.dir" value="build" />
+	<property name="dist.dir" value="dist" />
+	<property name="src.dir" value="src" />
+	<property name="lib.dir" value="lib" />
+	<property name="conf.dir" value="conf" />
+	<property name="escidoc.conf.dir" value="${conf.dir}/escidoc" />
+    <property name="escidoc.srw.jarfile.name" value="eSciDocCoreSrw.jar" />
+
+    <target name="clean" description="Clean all build products.">
+		<delete includeEmptyDirs="true">
+			<fileset dir="${build.dir}">
+				<include name="**/*"/>
+			</fileset>
+		</delete>
+		<delete includeEmptyDirs="true">
+			<fileset dir="${dist.dir}">
+				<include name="**/*"/>
+			</fileset>
+		</delete>
+    </target>
+
+    <target name="compile" depends="clean">
+    	
+    	<!--MIH: also include packages de.escidoc.* in compilation -->
+        <!--javac srcdir="src" destdir="build" deprecation="true" debug="on"
+           includes="gov/**/*.java ORG/oclc/os/SRW/*.java"-->
+		<javac srcdir="${src.dir}" destdir="${build.dir}" deprecation="true" debug="on"
+           includes="org/osuosl/**/*.java de/escidoc/**/*.java">
+              <classpath>
+                  <fileset dir="${lib.dir}">
+                      <include name="**/*.jar"/>
+                  </fileset>
+              </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+    	<!--MIH: also include packages de.escidoc.* in compilation -->
+        <!--jar jarfile="dist/SRW.jar" basedir="build" includes="gov/**/*.class ORG/oclc/os/SRW/*.class"/-->
+        <jar jarfile="${dist.dir}/${escidoc.srw.jarfile.name}" basedir="${build.dir}" includes="org/osuosl/**/*.class de/escidoc/**/*.class"/>
+    	
+    </target>
+
+    <target name="checkout">
+        <cvs cvsRoot=":pserver:anonymous@pubserv.oclc.org:/home/CVS/srw/cvsroot"
+            command="checkout" dest="${src.dir}" package="all"/>
+    </target>
+        
+    <target name="war" depends="jar">
+        <fail unless="webapp.name" message="You need to specify a webapp.name"/>
+        <delete file="${dist.dir}/${webapp.name}.war"/>
+        <jar jarfile="${dist.dir}/${webapp.name}.war">
+            <zipfileset dir="${dist.dir}" includes="${escidoc.srw.jarfile.name}" prefix="WEB-INF/lib"/>
+
+        	<!--MIH: add web.xml from conf/escidoc-directory -->
+        	<!--zipfileset dir="conf" includes="*.wsdd web.xml" prefix="WEB-INF"/-->
+        	<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
+        	<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
+
+        	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
+            <!--zipfileset dir="conf" includes="SRWServer.props" prefix="WEB-INF/classes"/-->
+            <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
+
+        	<zipfileset dir="${conf.dir}" includes="*.xsl"/>
+        </jar>
+        <antcall target="addJarsFromLib"/>
+    </target>
+
+    <target name="addJarsFromLib">
+        <jar jarfile="${dist.dir}/${webapp.name}.war" update="true" duplicate="preserve">
+            <zipfileset dir="${lib.dir}/escidoc" includes="*.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${lib.dir}/escidoc/stax" includes="*.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${lib.dir}/lucene" includes="*.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${lib.dir}/srw" includes="*.jar" prefix="WEB-INF/lib"/>
+        </jar>
+    </target>
+
+    <target name="deploy" depends="war">
+        <fail unless="serverPath" message="You need to specify a serverPath in the build.properties file"/>
+        <copy todir="${serverPath}/webapps">
+            <fileset dir="${dist.dir}" includes="*.war"/>
+        </copy>
+    </target>
+
+    <target name="javadoc" description="Javadoc for my API.">
+        <mkdir dir="apidoc"/>
+        <javadoc packagenames="org.osuosl.* de.escidoc.core.*" destdir="apidoc">
+            <sourcepath>
+                <pathelement location="${src.dir}"/>
+            </sourcepath>
+        </javadoc>
+    </target>
+
+</project>

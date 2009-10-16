@@ -1,0 +1,42 @@
+-checkout or update SRW-Repository
+-copy new cql-java.jar from /lib/srw to SRW-Repository/lib
+-copy wsdls + xsds from SRW-Repository/src to wsdl-creation
+-delete wsdl-creation/gov
+-execute build.xml in folder wsdl-creation, target wsdl2java
+-go through created classes. classes that are singular + plural: edit plural-class
+  modify XmlType of singular class: name as class (with Type).
+-copy created classes that now are located in wsdl-creation/... to SRW-Repository
+(except gov.loc.www.zing.srw.srw_bindings....Impl)
+(copy content of folder ...srw_sample_service also to ...srw.service
+-crosscheck classes in package srwsafe... with corresponding classes in SRW-Repository
+ modified codesegments are marked with MIH
+-build SRW-Repository (target do-dist-with-manifest)
+-copy SRW.jar to /lib/srw
+-execute build.xml in folder wsdl-creation, target java2wsdl
+-merge the generated wsdl-files (in root-directory): srw.wsdl and explain.wsdl:
+    -copy parts of explain.wsdl into srw.wsdl:
+        -copy ExplainRequestType (several segments)
+        -copy ExplainResponseType
+        -copy messages and portType
+        -copy binding, rename binding to explain..
+        -add(overwrite other service): (adapt binding-names)
+        <wsdl:service name="SRWSampleService">
+            <wsdl:port binding="impl:SRWSoapBinding" name="SRW">
+                <wsdlsoap:address location="http://localhost:8080/srw/search?wsdl"/>
+            </wsdl:port>
+            <wsdl:port binding="impl:ExplainSOAPSoapBinding" name="ExplainSOAP">
+                <wsdlsoap:address location="http://localhost:8080/srw/search?wsdl"/>
+            </wsdl:port>
+        </wsdl:service>
+-search for <sequence/> change that to <sequence><any/></sequence>
+-copy wsdls to SRW-Repository root-dir
+-copy the following code into SRW-Repository/build.xml, target -post-dist:
+        <jar jarfile="dist/SRW.jar" update="true" duplicate="preserve">
+            <zipfileset dir="" includes="*.wsdl" prefix=""/>
+        </jar>
+-build SRW-Repository (target do-dist-with-manifest)
+-check for additional libs in SRW-Repository
+-copy SRW-Repository/web/WEB-INF/deploy.wsdd,undeploy.wsdd + server-config.wsdd to /conf
+-resolve errors in java-files
+-execute build
+-copy /dist/srw.war to eSciDocCore/escidoc-core.ear

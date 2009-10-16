@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<project name="Srw-WSDL" basedir=".">
+
+    <path id="others.classpath">
+        <pathelement location="../lib/java2wsdl/jaxrpc.jar" />
+        <pathelement location="../lib/java2wsdl/wsdl4j-1.5.1.jar" />
+        <pathelement location="../lib/java2wsdl/saaj.jar" />
+        <pathelement location="../lib/java2wsdl/axis-1.4.jar" />
+        <pathelement location="../lib/java2wsdl/axis-ant.jar" />
+        <pathelement location="../lib/java2wsdl/ant-contrib-1.0b1.jar" />
+        <pathelement location="../lib/java2wsdl/commons-logging.jar" />
+        <pathelement location="../lib/java2wsdl/commons-discovery-0.2.jar" />
+        <pathelement location="../lib/java2wsdl/log4j-1.2.12.jar" />
+        <pathelement location="../lib/java2wsdl/ant.jar" />
+        <pathelement location="../lib/srw/SRW.jar" />
+    </path>
+    	
+    <target name="java2wsdl">
+        <java fork="yes" classpathref="others.classpath"
+            classname="org.apache.axis.wsdl.Java2WSDL">
+            <arg line="-o ../explain.wsdl -l http://localhost:8080/srw/search gov.loc.www.zing.srw.interfaces.ExplainPort"/>
+        </java>
+        <java fork="yes" classpathref="others.classpath"
+            classname="org.apache.axis.wsdl.Java2WSDL">
+            <arg line="-o ../srw.wsdl -l http://localhost:8080/srw/search gov.loc.www.zing.srw.interfaces.SRWPort"/>
+        </java>
+    </target>
+    <target name="wsdl2java">
+        <java fork="yes" classpathref="others.classpath"
+            classname="org.apache.axis.wsdl.WSDL2Java">
+            <arg line="-w -s -S true ./srw-sample-service.wsdl"/>
+        </java>
+    </target>
+</project>

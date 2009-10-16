@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/escidoc/stax/jsr173_1.0_api.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/stax/stax2.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/stax/wstx-asl-3.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/common.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/commons-lang-2.0.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/escidoc-analyzers.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-2.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/lucene-ja.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/lucene-snowball-2.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/sen.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/Dbutils.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/javax.servlet.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-core-2.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-2.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/srw/axis.jar"/>
+	<classpathentry kind="lib" path="lib/srw/commons-discovery.jar"/>
+	<classpathentry kind="lib" path="lib/srw/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/srw/cql-java.jar"/>
+	<classpathentry kind="lib" path="lib/srw/jaxrpc.jar"/>
+	<classpathentry kind="lib" path="lib/srw/log4j.jar"/>
+	<classpathentry kind="lib" path="lib/srw/org-netbeans-modules-java-j2seproject-copylibstask.jar"/>
+	<classpathentry kind="lib" path="lib/srw/ostermillerutils.jar"/>
+	<classpathentry kind="lib" path="lib/srw/saaj.jar"/>
+	<classpathentry kind="lib" path="lib/srw/servlet-api.jar"/>
+	<classpathentry kind="lib" path="lib/srw/SRW.jar"/>
+	<classpathentry kind="lib" path="lib/srw/wsdl4j.jar"/>
+	<classpathentry kind="lib" path="lib/srw/xalan.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
