@@ -376,10 +376,10 @@
    </wsdl:binding>
   <wsdl:service name="SRWSampleService">
     <wsdl:port binding="impl:SRWSoapBinding" name="SRW">
-      <wsdlsoap:address location="http://localhost:8080/srw/search?wsdl"/>
+      <wsdlsoap:address location="http://localhost:8080/srw/services/SRW?wsdl"/>
     </wsdl:port>
      <wsdl:port binding="impl:ExplainSOAPSoapBinding" name="ExplainSOAP">
-        <wsdlsoap:address location="http://localhost:8080/srw/search?wsdl"/>
+        <wsdlsoap:address location="http://localhost:8080/srw/services/ExplainSOAP?wsdl"/>
      </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
