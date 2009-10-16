@@ -1682,6 +1682,9 @@ public class SRWServlet extends AxisServlet {
 //                }
 //                String wsdl = strBuf.toString();
 //                String host = request.getServerName();
+//                String port = Integer.toString(request.getServerPort());
+//                wsdl = wsdl.replaceAll("(?s)###HOST###", host);
+//                wsdl = wsdl.replaceAll("(?s)###PORT###", port);
 //                
 //                return wsdl;
 //            } finally {
