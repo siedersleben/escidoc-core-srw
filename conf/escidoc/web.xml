@@ -51,6 +51,11 @@
 
   <servlet-mapping>
     <servlet-name>SRWServlet</servlet-name>
+    <url-pattern>/services/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>SRWServlet</servlet-name>
     <url-pattern>/search/*</url-pattern>
   </servlet-mapping>
 
@@ -66,7 +71,7 @@
 
   <servlet-mapping>
     <servlet-name>AxisServlet</servlet-name>
-    <url-pattern>/services/*</url-pattern>
+    <url-pattern>/services</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>
