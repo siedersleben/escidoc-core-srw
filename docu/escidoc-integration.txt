@@ -1,5 +1,6 @@
--checkout or update SRW-Repository
+-checkout or update SRW-Repository (beim update auf änderungen der wsdl-generierten klassen achten)
 -copy new cql-java.jar from /lib/srw to SRW-Repository/lib
+<#######Dont DO###################################################>
 -copy wsdls + xsds from SRW-Repository/src to wsdl-creation
 -delete wsdl-creation/gov
 -execute build.xml in folder wsdl-creation, target wsdl2java
@@ -15,8 +16,9 @@
 -execute build.xml in folder wsdl-creation, target java2wsdl
 -merge the generated wsdl-files (in root-directory): srw.wsdl and explain.wsdl:
     -copy parts of explain.wsdl into srw.wsdl:
-        -copy ExplainRequestType (several segments)
+        -copy ExplainRequestType (not in namespace http://www.loc.gov/zing/srw/!!!!)
         -copy ExplainResponseType
+            -modify element echoedExplainRequest, set type=tns2:ExplainRequestType
         -copy messages and portType
         -copy binding, rename binding to explain..
         -add(overwrite other service): (adapt binding-names)
@@ -29,7 +31,9 @@
             </wsdl:port>
         </wsdl:service>
 -search for <sequence/> change that to <sequence><any/></sequence>
--copy wsdls to SRW-Repository root-dir
+<#######END Dont DO###################################################>
+-check srw_merged.wsdl against classes + methods
+-copy srw_merged.wsdl as srw.wsdl to SRW-Repository root-dir
 -copy the following code into SRW-Repository/build.xml, target -post-dist:
         <jar jarfile="dist/SRW.jar" update="true" duplicate="preserve">
             <zipfileset dir="" includes="*.wsdl" prefix=""/>
