@@ -8,6 +8,7 @@
 	<property name="src.dir" value="src" />
 	<property name="lib.dir" value="lib" />
 	<property name="conf.dir" value="conf" />
+    <property name="stylesheets.dir" value="${conf.dir}/stylesheets" />
 	<property name="escidoc.conf.dir" value="${conf.dir}/escidoc" />
     <property name="escidoc.srw.jarfile.name" value="eSciDocCoreSrw.jar" />
 
@@ -66,7 +67,7 @@
             <!--zipfileset dir="conf" includes="SRWServer.props" prefix="WEB-INF/classes"/-->
             <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
 
-        	<zipfileset dir="${conf.dir}" includes="*.xsl"/>
+        	<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
         </jar>
         <antcall target="addJarsFromLib"/>
     </target>
