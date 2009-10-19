@@ -1,6 +1,6 @@
 # parameters for the SRW Servlet
 #SRW.Home=d:/Apache Tomcat 4.1/webapps/SRW/
-default.database=escidoc_all
+#default.database=escidoc_all
 resultSetIdleTime=0
 makeIndex.html=false
 #index.html=D:/Program Files/Apache Software Foundation/Tomcat 5.5/webapps\SRW/index.html
