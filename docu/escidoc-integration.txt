@@ -41,6 +41,7 @@
 -build SRW-Repository (target do-dist-with-manifest)
 -check for additional libs in SRW-Repository
 -copy SRW-Repository/web/WEB-INF/deploy.wsdd,undeploy.wsdd + server-config.wsdd to /conf
+-copy stylesheets from SRW-Repository/web to conf/stylesheets
 -resolve errors in java-files
 -execute build
 -copy /dist/srw.war to eSciDocCore/escidoc-core.ear
