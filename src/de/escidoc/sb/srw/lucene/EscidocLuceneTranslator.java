@@ -323,8 +323,15 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         // Increase maxClauseCount of BooleanQuery for Wildcard-Searches
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
 
-        // Get Lucene Sort-Object
-        Sort sort = getLuceneSortObject(request.getSortKeys());
+        Sort sort = null;
+        if (request.getSortKeys() != null 
+                && !request.getSortKeys().equals("")) {
+            // Get Lucene Sort-Object (CQL 1.0)
+            sort = getLuceneSortObject(request.getSortKeys());
+        } else {
+            // Get Lucene Sort-Object (CQL 2.0)
+            sort = makeSort(queryRoot, null, comparator);
+        }
 
         String[] identifiers = null;
         IndexSearcher searcher = null;
@@ -719,7 +726,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     }
 
     /**
-     * Extracts sortKeys and fills them into a Lucene Sort-Object.
+     * Extracts sortKeys from request-parameter 
+     * and fills them into a Lucene Sort-Object.
      * 
      * @param sortKeysString
      *            String with sort keys
@@ -780,6 +788,20 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             sort = new Sort(sortFieldArr);
         }
+        return sort;
+    }
+
+    /**
+     * Extracts sortKeys from cql-query 
+     * and fills them into a Lucene Sort-Object.
+     * 
+     * @param cqlNode cqlNode
+     * @return Sort Lucene Sort-Object
+     * 
+     * @sb
+     */
+    private Sort getLuceneSortObject(final CQLNode cqlNode) {
+        Sort sort = null;
         return sort;
     }
 

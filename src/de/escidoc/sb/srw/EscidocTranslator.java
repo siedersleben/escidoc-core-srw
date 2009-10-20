@@ -49,6 +49,9 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.RangeQuery;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortComparatorSource;
+import org.apache.lucene.search.SortField;
 import org.osuosl.srw.SRWDiagnostic;
 import org.osuosl.srw.lucene.LuceneTranslator;
 import org.z3950.zing.cql.CQLAndNode;
@@ -56,8 +59,10 @@ import org.z3950.zing.cql.CQLBooleanNode;
 import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLNotNode;
 import org.z3950.zing.cql.CQLOrNode;
+import org.z3950.zing.cql.CQLSortNode;
 import org.z3950.zing.cql.CQLTermNode;
 import org.z3950.zing.cql.Modifier;
+import org.z3950.zing.cql.ModifierSet;
 
 import ORG.oclc.os.SRW.QueryResult;
 
@@ -477,6 +482,9 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 				}
 
 			}
+        } else if (node instanceof CQLSortNode) {
+            CQLSortNode csn = (CQLSortNode) node;
+            makeQuery(csn.subtree, leftQuery);
 		} else {
 			throw new SRWDiagnostic(DIAGNOSTIC_CODE_FOURTYSEVEN,
 					"UnknownCQLNode: " + node + ")");
@@ -486,6 +494,116 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 		}
 		return query;
 	}
+
+    /**
+     * Create Lucene Sort-Object out of CQLNode.
+     * 
+     * @param node
+     *            CQLNode
+     * @param sort
+     *            Sort
+     * @return Sort sort
+     * @throws SRWDiagnostic
+     *             e
+     * 
+     * @sb
+     */
+    public Sort makeSort(
+            final CQLNode node, 
+            final Sort sort, 
+            final SortComparatorSource comparator)
+            throws SRWDiagnostic {
+        Sort returnSort = null;
+
+        if (node instanceof CQLBooleanNode) {
+            CQLBooleanNode cbn = (CQLBooleanNode) node;
+            Sort left = makeSort(cbn.left, sort, comparator);
+            Sort right = makeSort(cbn.right, sort, comparator);
+            returnSort = mergeSortObjects(left, right);
+        } else if (node instanceof CQLTermNode) {
+            returnSort = sort;
+        } else if (node instanceof CQLSortNode) {
+            CQLSortNode sortNode = (CQLSortNode)node;
+            Vector<ModifierSet> sortFields = sortNode.getSortIndexes();
+            if (sortFields != null) {
+                Vector<SortField> sortFieldVec = new Vector<SortField>();
+                for (ModifierSet sortField : sortFields) {
+                    if (sortField.getBase() != null 
+                            && sortField.getBase().equals(
+                                    Constants.RELEVANCE_SORT_FIELD_NAME)) {
+                        if (sortField.getModifiers().contains("sort.descending")) {
+                            sortFieldVec.add(new SortField(null, 0, true));
+                        } else {
+                            sortFieldVec.add(new SortField(null, 0));
+                        }
+                    } else if (sortField.getBase() != null 
+                            && !sortField.getBase().equals("")) {
+                        if (sortField.getModifiers().contains("sort.descending")) {
+                            if (comparator != null) {
+                                sortFieldVec.add(
+                                        new SortField(
+                                                sortField.getBase(),
+                                                comparator, true));
+                            } else {
+                                sortFieldVec.add(
+                                        new SortField(sortField.getBase(), true));
+                            }
+                        } else {
+                            if (comparator != null) {
+                                sortFieldVec.add(
+                                        new SortField(
+                                                sortField.getBase(), comparator));
+                            } else {
+                                sortFieldVec.add(
+                                        new SortField(sortField.getBase()));
+                            }
+                        }
+                    }
+                }
+                if (sortFieldVec != null && sortFieldVec.size() > 0) {
+                    returnSort = new Sort((SortField[])sortFieldVec.toArray());
+                }
+            }
+            returnSort = mergeSortObjects(sort, returnSort);
+        } else {
+            throw new SRWDiagnostic(DIAGNOSTIC_CODE_FOURTYSEVEN,
+                    "UnknownCQLNode: " + node + ")");
+        }
+        if (returnSort != null) {
+            log.info("Sort : " + returnSort.toString());
+        }
+        return returnSort;
+    }
+    
+    /**
+     * merges two Lucene Sort-Objects into one.
+     * 
+     * @param sort1
+     *            sort1
+     * @param sort2
+     *            sort2
+     * @return Sort merged sort
+     * 
+     * @sb
+     */
+    private Sort mergeSortObjects (final Sort sort1, final Sort sort2) {
+        Vector<SortField> sortFields = new Vector<SortField>();
+        if (sort1 != null && sort1.getSort() != null) {
+            for (SortField sortField : sort1.getSort()) {
+                sortFields.add(sortField);
+            }
+        }
+        if (sort2 != null && sort2.getSort() != null) {
+            for (SortField sortField : sort2.getSort()) {
+                sortFields.add(sortField);
+            }
+        }
+        if (sortFields.size() > 0) {
+            return new Sort((SortField[])sortFields.toArray());
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Get Collection of query-terms.
@@ -670,6 +788,9 @@ public abstract class EscidocTranslator extends LuceneTranslator {
                 }
 
             }
+        } else if (node instanceof CQLSortNode) {
+            CQLSortNode csn = (CQLSortNode) node;
+            getQueryTerms(csn.subtree, leftQuery);
         } else {
             throw new SRWDiagnostic(DIAGNOSTIC_CODE_FOURTYSEVEN,
                     "UnknownCQLNode: " + node + ")");
