@@ -484,7 +484,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 			}
         } else if (node instanceof CQLSortNode) {
             CQLSortNode csn = (CQLSortNode) node;
-            makeQuery(csn.subtree, leftQuery);
+            return makeQuery(csn.subtree, leftQuery);
 		} else {
 			throw new SRWDiagnostic(DIAGNOSTIC_CODE_FOURTYSEVEN,
 					"UnknownCQLNode: " + node + ")");
@@ -528,17 +528,26 @@ public abstract class EscidocTranslator extends LuceneTranslator {
             if (sortFields != null) {
                 Vector<SortField> sortFieldVec = new Vector<SortField>();
                 for (ModifierSet sortField : sortFields) {
+                    boolean sortDesc = false;
+                    if (sortField.getModifiers() != null) {
+                        for (Modifier mod : sortField.getModifiers()) {
+                            if (mod.getType() != null 
+                                    && mod.getType().equals("sort.descending")) {
+                                sortDesc = true;
+                            }
+                        }
+                    }
                     if (sortField.getBase() != null 
                             && sortField.getBase().equals(
                                     Constants.RELEVANCE_SORT_FIELD_NAME)) {
-                        if (sortField.getModifiers().contains("sort.descending")) {
+                        if (sortDesc) {
                             sortFieldVec.add(new SortField(null, 0, true));
                         } else {
                             sortFieldVec.add(new SortField(null, 0));
                         }
                     } else if (sortField.getBase() != null 
                             && !sortField.getBase().equals("")) {
-                        if (sortField.getModifiers().contains("sort.descending")) {
+                        if (sortDesc) {
                             if (comparator != null) {
                                 sortFieldVec.add(
                                         new SortField(
@@ -561,10 +570,12 @@ public abstract class EscidocTranslator extends LuceneTranslator {
                     }
                 }
                 if (sortFieldVec != null && sortFieldVec.size() > 0) {
-                    returnSort = new Sort((SortField[])sortFieldVec.toArray());
+                    returnSort = new Sort(sortFieldVec.toArray(new SortField[0]));
                 }
             }
-            returnSort = mergeSortObjects(sort, returnSort);
+            if (sort != null) {
+                returnSort = mergeSortObjects(sort, returnSort);
+            }
         } else {
             throw new SRWDiagnostic(DIAGNOSTIC_CODE_FOURTYSEVEN,
                     "UnknownCQLNode: " + node + ")");
@@ -599,7 +610,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
             }
         }
         if (sortFields.size() > 0) {
-            return new Sort((SortField[])sortFields.toArray());
+            return new Sort(sortFields.toArray(new SortField[0]));
         } else {
             return null;
         }
@@ -790,7 +801,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
             }
         } else if (node instanceof CQLSortNode) {
             CQLSortNode csn = (CQLSortNode) node;
-            getQueryTerms(csn.subtree, leftQuery);
+            return getQueryTerms(csn.subtree, leftQuery);
         } else {
             throw new SRWDiagnostic(DIAGNOSTIC_CODE_FOURTYSEVEN,
                     "UnknownCQLNode: " + node + ")");
