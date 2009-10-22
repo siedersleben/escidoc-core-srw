@@ -532,7 +532,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
                     if (sortField.getModifiers() != null) {
                         for (Modifier mod : sortField.getModifiers()) {
                             if (mod.getType() != null 
-                                    && mod.getType().equals("sort.descending")) {
+                                    && mod.getType()
+                                    .toLowerCase().equals("sort.descending")) {
                                 sortDesc = true;
                             }
                         }
