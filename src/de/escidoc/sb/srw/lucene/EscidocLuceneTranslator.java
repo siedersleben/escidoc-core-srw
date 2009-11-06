@@ -473,7 +473,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
 
         try {
             // convert the CQL search to lucene search
-            Query query = makeQuery(queryRoot);
+            Query unanalyzedQuery = makeQuery(queryRoot);
+
+            // rewrite query to analyzed query
+            QueryParser parser =
+                new EscidocQueryParser(getDefaultIndexField(), analyzer);
+            Query query = parser.parse(unanalyzedQuery.toString());
             log.info("lucene search=" + query);
 
             /**
