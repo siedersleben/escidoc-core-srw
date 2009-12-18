@@ -39,6 +39,7 @@
             <zipfileset dir="" includes="*.wsdl" prefix=""/>
         </jar>
 -build SRW-Repository (target do-dist-with-manifest)
+-copy SRW-Repository/dist/SRW.jar to /lib/srw
 -check for additional libs in SRW-Repository
 -copy SRW-Repository/web/WEB-INF/deploy.wsdd,undeploy.wsdd + server-config.wsdd to /conf
 -copy stylesheets from SRW-Repository/web to conf/stylesheets
