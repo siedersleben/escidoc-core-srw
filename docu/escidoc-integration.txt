@@ -1,5 +1,7 @@
 -checkout or update SRW-Repository (beim update auf änderungen der wsdl-generierten klassen achten)
 -copy new cql-java.jar from eSciDocCoreSrw/lib/srw to SRW-Repository/lib
+-copy common.jar from eSciDocCoreSrw/lib/escidoc to SRW-Repository/lib/escidoc
+-If you modify classes in SRW-Repository, copy them to eSciDocCoreSrw/src/srwsafe
 <#######Dont DO###################################################>
 -copy wsdls + xsds from SRW-Repository/src to wsdl-creation
 -delete wsdl-creation/gov
@@ -38,6 +40,7 @@
         <jar jarfile="dist/SRW.jar" update="true" duplicate="preserve">
             <zipfileset dir="" includes="*.wsdl" prefix=""/>
         </jar>
+-modify SRW-Repository/nbproject/project.properties, add lib/escidoc/common.jar to classpath
 -build SRW-Repository (target do-dist-with-manifest)
 -copy SRW-Repository/dist/SRW.jar to eSciDocCoreSrw/lib/srw
 -check for additional libs in SRW-Repository
