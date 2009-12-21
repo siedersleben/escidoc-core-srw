@@ -44,6 +44,8 @@ import org.apache.axis.MessageContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import de.escidoc.core.common.util.configuration.EscidocConfiguration;
+
 /**
  *
  * @author  levan
@@ -83,7 +85,7 @@ public class SRWServletInfo {
 //                description=properties.getProperty("db."+dbName+".description");
 //                if(description==null  && remote==null) { // see if it is in the database props
 //                    dbHome=properties.getProperty("db."+dbName+".home");
-//                    fileName=properties.getProperty(
+//                    fileName=properties.getProperty("propsfilePath") + properties.getProperty(
 //                        "db."+dbName+".configuration");
 //                    if(fileName!=null)
 //                        try {
@@ -274,12 +276,12 @@ public class SRWServletInfo {
 //
 //    public void init(final ServletConfig config) {
 //        try {
-//            propsfileName=config.getInitParameter("PropertiesFile");
-//            if(propsfileName==null) {
-//                log.info("PropertiesFile not specified as an <init-param> in the web.xml");
-//                log.info("Using the default value of SRWServer.props instead");
-//                propsfileName="SRWServer.props";
+//            String propsfilePath = EscidocConfiguration.getInstance().get(
+//                    EscidocConfiguration.SEARCH_PROPERTIES_DIRECTORY, "");
+//            if (!propsfilePath.equals("")) {
+//                propsfilePath += "/";
 //            }
+//            propsfileName = propsfilePath + "SRWServer.props";
 //            log.info("Reading properties file: "+propsfileName);
 //            srwHome=config.getServletContext().getRealPath("/");
 //            if(srwHome.endsWith("/"))
@@ -304,6 +306,7 @@ public class SRWServletInfo {
 //            try {
 //                is=Utilities.openInputStream(propsfileName, srwHome, null);
 //                properties.load(is);
+//                properties.setProperty("propsfilePath", propsfilePath);
 //                is.close();
 //            }
 //            catch(java.io.FileNotFoundException e) {

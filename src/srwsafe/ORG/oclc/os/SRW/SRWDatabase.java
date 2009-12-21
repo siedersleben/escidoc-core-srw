@@ -300,7 +300,8 @@ public abstract class SRWDatabase {
 //            throw new InstantiationException(e.getMessage());
 //        }
 //
-//        dbPropertiesFileName=properties.getProperty(dbn+".configuration");
+//        dbPropertiesFileName=properties.getProperty("propsfilePath") 
+//                                + properties.getProperty(dbn+".configuration");
 //        if(db.hasaConfigurationFile() || dbPropertiesFileName!=null) {
 //            if(dbPropertiesFileName==null) {
 //                throw new InstantiationException("No "+dbn+
