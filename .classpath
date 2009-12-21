@@ -8,14 +8,10 @@
 	<classpathentry kind="lib" path="lib/escidoc/common.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-lang-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/escidoc-analyzers.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-ja.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/lucene-snowball-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/sen.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/Dbutils.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/javax.servlet.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/lucene-core-2.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/srw/axis.jar"/>
 	<classpathentry kind="lib" path="lib/srw/commons-discovery.jar"/>
 	<classpathentry kind="lib" path="lib/srw/commons-logging.jar"/>
@@ -29,5 +25,9 @@
 	<classpathentry kind="lib" path="lib/srw/SRW.jar"/>
 	<classpathentry kind="lib" path="lib/srw/wsdl4j.jar"/>
 	<classpathentry kind="lib" path="lib/srw/xalan.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-2.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/lucene-snowball-2.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-core-2.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-2.4.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
