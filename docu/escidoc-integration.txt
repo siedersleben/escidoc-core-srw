@@ -1,5 +1,5 @@
 -checkout or update SRW-Repository (beim update auf änderungen der wsdl-generierten klassen achten)
--copy new cql-java.jar from /lib/srw to SRW-Repository/lib
+-copy new cql-java.jar from eSciDocCoreSrw/lib/srw to SRW-Repository/lib
 <#######Dont DO###################################################>
 -copy wsdls + xsds from SRW-Repository/src to wsdl-creation
 -delete wsdl-creation/gov
@@ -32,17 +32,17 @@
         </wsdl:service>
 -search for <sequence/> change that to <sequence><any/></sequence>
 <#######END Dont DO###################################################>
--check srw_merged.wsdl against classes + methods
--copy srw_merged.wsdl as srw.wsdl to SRW-Repository root-dir
+-check eSciDocCoreSrw/srw_merged.wsdl against classes + methods
+-copy eSciDocCoreSrw/srw_merged.wsdl as srw.wsdl to SRW-Repository root-dir
 -copy the following code into SRW-Repository/build.xml, target -post-dist:
         <jar jarfile="dist/SRW.jar" update="true" duplicate="preserve">
             <zipfileset dir="" includes="*.wsdl" prefix=""/>
         </jar>
 -build SRW-Repository (target do-dist-with-manifest)
--copy SRW-Repository/dist/SRW.jar to /lib/srw
+-copy SRW-Repository/dist/SRW.jar to eSciDocCoreSrw/lib/srw
 -check for additional libs in SRW-Repository
--copy SRW-Repository/web/WEB-INF/deploy.wsdd,undeploy.wsdd + server-config.wsdd to /conf
--copy stylesheets from SRW-Repository/web to conf/stylesheets
+-copy SRW-Repository/web/WEB-INF/deploy.wsdd,undeploy.wsdd + server-config.wsdd to eSciDocCoreSrw/conf
+-copy stylesheets from SRW-Repository/web to eSciDocCoreSrw/conf/stylesheets
 -resolve errors in java-files
--execute build
+-execute eSciDocCoreSrw/build
 -copy /dist/srw.war to eSciDocCore/escidoc-core.ear
