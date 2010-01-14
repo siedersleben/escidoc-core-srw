@@ -28,109 +28,111 @@
  */
 package de.escidoc.sb.srw.lucene.sorting;
 
+import java.io.IOException;
 import java.text.Collator;
-import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexReader.FieldOption;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.ScoreDocComparator;
-import org.apache.lucene.search.SortComparatorSource;
-import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.FieldCache;
+import org.apache.lucene.search.FieldComparator;
+import org.apache.lucene.search.FieldComparatorSource;
 
 /**
- * Custom sorter that sorts digits and text.
+ * Custom sorter that sorts text.
  * 
- * @author $Author$
- * @version $Revision$
+ * @author mih
  * 
  */
-	public class EscidocSearchResultComparator implements SortComparatorSource, ScoreDocComparator
+	public class EscidocSearchResultComparator extends FieldComparatorSource
 	{
-		private IndexReader reader;
-		private String fieldName;
-		private boolean reverse;
-		private Collator collator;
-		private Pattern pattern = Pattern.compile(
-				"([\u00e4\u00f6\u00fc\u00c4\u00d6\u00dc])");
-		private Matcher matcher1 = pattern.matcher("");
-		private Matcher matcher2 = pattern.matcher("");
+	    @Override
+	    public FieldComparator newComparator(final String fieldname, final int numHits, final int sortPos,
+	            final boolean reversed) throws IOException {
+	        return new EscidocFieldComparator(numHits, fieldname);
+	    }
 
-		
-		public EscidocSearchResultComparator ()
-		{
-			this( false );
-		}
-		
-		public EscidocSearchResultComparator (boolean reverse)
-		{
-			this.reverse = reverse;
-		}
-		
-		public EscidocSearchResultComparator (IndexReader reader, String fieldName)
-		{
-			this( reader, fieldName, false );
-		}
-		
-		public EscidocSearchResultComparator (IndexReader reader, String fieldName, boolean reverse)
-		{
-			this.reader = reader;
-			this.fieldName = fieldName;
-			this.reverse = reverse;
+	    public class EscidocFieldComparator extends FieldComparator {
 
-			//check if field exists
-			Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
-			if (!fieldNames.contains(fieldName)) {
-				throw new RuntimeException(
-						"sortKey " + fieldName + " does not exist in the database");
-			}
-			
-			this.collator = Collator.getInstance();
-			collator.setStrength(Collator.SECONDARY);
-		}
-		
-				
-		public ScoreDocComparator newComparator (IndexReader reader, String fieldName)
-		{
-			EscidocSearchResultComparator dc = new EscidocSearchResultComparator( reader, fieldName, reverse );
-			
-			return dc;
-		}
-		
-		public int compare(ScoreDoc i, ScoreDoc j) {
-			int result = 0;
-			try {
-				String fieldvalue1 = reader.document(i.doc).get(fieldName);
-				String fieldvalue2 = reader.document(j.doc).get(fieldName);
-				if (fieldvalue1 == null && fieldvalue2 == null) {
-					return 0;
-				} else if (fieldvalue1 == null && fieldvalue2 != null) {
-					return -1;
-				} else if (fieldvalue1 != null && fieldvalue2 == null) {
-					return 1;
-				}
-				matcher1.reset(fieldvalue1);
-				matcher2.reset(fieldvalue2);
-				fieldvalue1 = matcher1.replaceAll("$1e");
-				fieldvalue2 = matcher2.replaceAll("$1e");
-				result = collator.compare(fieldvalue1, fieldvalue2);
-			} catch (Exception e) {
-			}
-			return result;
-		}
+	        private final String[] fieldValues;
+	        private String[] currentReaderFieldValues;
+	        private int bottom;
+	        private final String fieldName;
 
-		public int sortType() {
-			return SortField.CUSTOM;
-		}
+	        private Collator collator;
+	        private Pattern pattern = Pattern.compile(
+	                "([\u00e4\u00f6\u00fc\u00c4\u00d6\u00dc])");
+	        private Matcher matcher1 = pattern.matcher("");
+	        private Matcher matcher2 = pattern.matcher("");
 
-		public Comparable sortValue(ScoreDoc i) {
-			try {
-				return reader.document(i.doc).get(fieldName);
-			} catch (Exception e) {
-				return "";
-			}
-		}
+	        EscidocFieldComparator(final int numHits, final String fieldName) {
+	            fieldValues = new String[numHits];
+	            this.fieldName = fieldName;
+	            this.collator = Collator.getInstance();
+	            collator.setStrength(Collator.SECONDARY);
+
+	        }
+
+	        @Override
+	        public int compare(final int slot1, final int slot2) {
+	            String fieldValue1 = fieldValues[slot1];
+	            String fieldValue2 = fieldValues[slot2];
+	            return compare(fieldValue1, fieldValue2);
+	        }
+
+	        @Override
+	        public int compareBottom(final int doc) {
+	            final String fieldValue1 = fieldValues[bottom];
+	            final String fieldValue2 = currentReaderFieldValues[doc];
+	            return compare(fieldValue1, fieldValue2);
+	        }
+
+	        @Override
+	        public void copy(final int slot, final int doc) {
+	            fieldValues[slot] = currentReaderFieldValues[doc];
+	        }
+
+	        /**
+	         * {@inheritDoc}
+	         * <p>
+	         * 
+	         */
+	        @Override
+	        public void setNextReader(final IndexReader reader, final int docBase) throws IOException {
+	            currentReaderFieldValues = FieldCache.DEFAULT.getStrings(reader, fieldName);
+	        }
+
+	        @Override
+	        public void setBottom(final int bottom) {
+	            this.bottom = bottom;
+	        }
+
+	        @Override
+	        public Comparable value(final int slot) {
+	            return fieldValues[slot];
+	        }
+	        
+	        private int compare(String fieldValue1, String fieldValue2) {
+	            int result = 0;
+	            try {
+	                if (fieldValue1 == null && fieldValue2 == null) {
+	                    return 0;
+	                } else if (fieldValue1 == null && fieldValue2 != null) {
+	                    return -1;
+	                } else if (fieldValue1 != null && fieldValue2 == null) {
+	                    return 1;
+	                }
+	                matcher1.reset(fieldValue1);
+	                matcher2.reset(fieldValue2);
+	                fieldValue1 = matcher1.replaceAll("$1e");
+	                fieldValue2 = matcher2.replaceAll("$1e");
+	                result = collator.compare(fieldValue1, fieldValue2);
+	            } catch (Exception e) {
+	            }
+	            return result;
+	            
+	        }
+	    }
+
 	}
 		

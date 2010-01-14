@@ -19,6 +19,7 @@ package org.osuosl.srw.lucene;
 import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.TermType;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,13 +36,14 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.RangeQuery;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.store.FSDirectory;
 import org.osuosl.srw.CQLTranslator;
 import org.osuosl.srw.ResolvingQueryResult;
 import org.osuosl.srw.SRWDiagnostic;
@@ -123,16 +125,18 @@ public class LuceneTranslator implements CQLTranslator {
             log.info("lucene search="+query);
 
             // perform search
-            searcher = new IndexSearcher(indexPath);
-            Hits results = searcher.search(query);
-            int size = results.length();
+            searcher = new IndexSearcher(FSDirectory.open(
+                    new File(indexPath)));
+            TopDocs results = searcher.search(query, 1000000);
+            int size = results.scoreDocs.length;
 
             log.info(size+" handles found");
             identifiers = new String[size];
 
             // now instantiate the results and put them into the response object
             for(int i = 0; i < size; i++ ) {
-                org.apache.lucene.document.Document doc = results.doc(i);
+                org.apache.lucene.document.Document doc = 
+                            searcher.doc(results.scoreDocs[i].doc);
                 if (log.isDebugEnabled()) log.debug("identifierTerm: " + identifierTerm);
                 Field idField = doc.getField(identifierTerm);
                 if (log.isDebugEnabled()) log.debug("idField: " + idField);
@@ -176,16 +180,18 @@ public class LuceneTranslator implements CQLTranslator {
             boolean any = queryRoot.getRelation().toCQL().equalsIgnoreCase("any");
 
             // perform search
-            searcher = new IndexSearcher(indexPath);
-            Hits results = searcher.search(query);
-            int size = results.length();
+            searcher = new IndexSearcher(FSDirectory.open(
+                    new File(indexPath)));
+            TopDocs results = searcher.search(query, 1000000);
+            int size = results.scoreDocs.length;
 
             log.info(size+" handles found");
 
             if (size != 0) {
                 // iterater through hits counting terms
                 for(int i = 0; i < size; i++ ) {
-                    org.apache.lucene.document.Document doc = results.doc(i);
+                    org.apache.lucene.document.Document doc = 
+                                searcher.doc(results.scoreDocs[i].doc);
                     Field field = doc.getField(searchField);
 
                     if (exact) {
@@ -318,22 +324,17 @@ public class LuceneTranslator implements CQLTranslator {
                 if(relation.equals("=") || relation.equals("scr")) {
                     query = createTermQuery(index,ctn.getTerm(), relation);
                 } else if (relation.equals("<")) {
-                    Term term = new Term(index, ctn.getTerm());
-                    //term is upperbound, exclusive
-                    query = new RangeQuery(null,term,false);
+                    // term is upperbound, exclusive
+                    query = new TermRangeQuery(index, null, ctn.getTerm(), true, false);
                 } else if (relation.equals(">")) {
-                    Term term = new Term(index, ctn.getTerm());
-                    //term is lowerbound, exclusive
-                    query = new RangeQuery(term,null,false);
+                    // term is lowerbound, exclusive
+                    query = new TermRangeQuery(index, ctn.getTerm(), null, false, true);
                 } else if (relation.equals("<=")) {
-                    Term term = new Term(index, ctn.getTerm());
-                    //term is upperbound, inclusive
-                    query = new RangeQuery(null,term,true);
+                    // term is upperbound, inclusive
+                    query = new TermRangeQuery(index, null, ctn.getTerm(), true, true);
                 } else if (relation.equals(">=")) {
-                    Term term = new Term(index, ctn.getTerm());
-                    //term is lowebound, inclusive
-                    query = new RangeQuery(term,null,true);
-
+                    // term is lowerbound, inclusive
+                    query = new TermRangeQuery(index, ctn.getTerm(), null, true, true);
                 } else if (relation.equals("<>")) {
                     /**
                      * <> is an implicit NOT.

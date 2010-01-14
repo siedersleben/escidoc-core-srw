@@ -34,6 +34,7 @@ import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,11 +50,13 @@ import java.util.Vector;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.FieldOption;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.FSDirectory;
 import org.osuosl.srw.ResolvingQueryResult;
 import org.osuosl.srw.SRWDiagnostic;
 import org.z3950.zing.cql.CQLNode;
@@ -265,16 +268,18 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 					.equalsIgnoreCase("exact");
 
 			// perform search
-			searcher = new IndexSearcher(getIndexPath());
-			Hits results = searcher.search(query);
-			int size = results.length();
+			searcher = new IndexSearcher(FSDirectory.open(
+                    new File(getIndexPath())));
+			TopDocs results = searcher.search(query, 1000);
+			int size = results.scoreDocs.length;
 
 			log.info(size + " handles found");
 
 			if (size != 0) {
 				// iterater through hits counting terms
 				for (int i = 0; i < size; i++) {
-					org.apache.lucene.document.Document doc = results.doc(i);
+					org.apache.lucene.document.Document doc = 
+					            searcher.doc(results.scoreDocs[i].doc);
 
 					// MIH: Changed: get all fileds and not only one.
 					// Concat fieldValues into fieldString
@@ -353,7 +358,8 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 		Collection<String> fieldList = new ArrayList<String>();
 		IndexReader reader = null;
 		try {
-			reader = IndexReader.open(getIndexPath());
+			reader = IndexReader.open(FSDirectory.open(
+                    new File(getIndexPath())));
 			fieldList = reader.getFieldNames(FieldOption.INDEXED);
 		} catch (Exception e) {
 			log.error(e);
@@ -384,14 +390,15 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 		Collection<String> fieldList = new ArrayList<String>();
 		IndexReader reader = null;
 		try {
-			reader = IndexReader.open(getIndexPath());
+			reader = IndexReader.open(FSDirectory.open(
+                    new File(getIndexPath())));
 			// Hack, because its not possible to get all stored fields
 			// of an index
 			for (int i = 0; i < 10; i++) {
 				try {
 					Document doc = reader.document(i);
-					List<Field> fields = doc.getFields();
-					for (Field field : fields) {
+					List<Fieldable> fields = doc.getFields();
+					for (Fieldable field : fields) {
 						if (field.isStored()
 								&& !fieldList.contains(field.name())) {
 							fieldList.add(field.name());

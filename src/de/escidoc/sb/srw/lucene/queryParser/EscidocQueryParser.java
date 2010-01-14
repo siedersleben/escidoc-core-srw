@@ -38,9 +38,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.util.Version;
 
 /**
  * Custom queryParser for eSciDoc. Also analyzes wildcard-queries which is not
@@ -67,7 +69,7 @@ public class EscidocQueryParser extends QueryParser {
      *            used to find terms in the query text.
      */
     public EscidocQueryParser(final String field, final Analyzer analyzer) {
-        super(field, analyzer);
+        super(Version.LUCENE_CURRENT, field, analyzer);
         setWildcardAnalyzer(analyzer);
     }
 
@@ -83,7 +85,7 @@ public class EscidocQueryParser extends QueryParser {
      */
     public EscidocQueryParser(final String field, final Analyzer analyzer,
         final Analyzer wildcardAnalyzer) {
-        super(field, analyzer);
+        super(Version.LUCENE_CURRENT, field, analyzer);
         setWildcardAnalyzer(wildcardAnalyzer);
     }
 
@@ -149,28 +151,23 @@ public class EscidocQueryParser extends QueryParser {
         // get Wildcard-Analyzer and tokenize the term
         TokenStream source =
             getWildcardAnalyzer().tokenStream(field, new StringReader(termStr));
-        org.apache.lucene.analysis.Token t;
+        TermAttribute termAtt = source.addAttribute(TermAttribute.class);
 
         int countTokens = 0;
-        while (true) {
-            try {
-                t = source.next();
-            }
-            catch (IOException e) {
-                t = null;
-            }
-            if (t == null) {
-                break;
-            }
-            String termText = new String(t.termBuffer(),0,t.termLength());
-            if (!"".equals(termText)) {
-                try {
-                    tlist.set(countTokens++, termText);
-                }
-                catch (IndexOutOfBoundsException ioobe) {
-                    countTokens = -1;
+        try {
+            while (source.incrementToken()) {
+                String termText = new String(termAtt.termBuffer(),0,termAtt.termLength());
+                if (!"".equals(termText)) {
+                    try {
+                        tlist.set(countTokens++, termText);
+                    }
+                    catch (IndexOutOfBoundsException ioobe) {
+                        countTokens = -1;
+                    }
                 }
             }
+        } catch (IOException e) {
+            throw new ParseException(e.getMessage());
         }
         try {
             source.close();
@@ -255,19 +252,14 @@ public class EscidocQueryParser extends QueryParser {
         // get Wildcard-Analyzer and tokenize the term
         TokenStream source =
             getWildcardAnalyzer().tokenStream(field, new StringReader(termStr));
+        TermAttribute termAtt = source.addAttribute(TermAttribute.class);
         List tlist = new ArrayList();
-        org.apache.lucene.analysis.Token t;
-        while (true) {
-            try {
-                t = source.next();
+        try {
+            while (source.incrementToken()) {
+                tlist.add(new String(termAtt.termBuffer(),0,termAtt.termLength()));
             }
-            catch (IOException e) {
-                t = null;
-            }
-            if (t == null) {
-                break;
-            }
-            tlist.add(new String(t.termBuffer(),0,t.termLength()));
+        } catch (IOException e) {
+            throw new ParseException(e.getMessage());
         }
         try {
             source.close();

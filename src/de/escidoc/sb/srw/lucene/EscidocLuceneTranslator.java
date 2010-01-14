@@ -33,6 +33,7 @@ import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,17 +54,20 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.FieldComparatorSource;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 import org.osuosl.srw.ResolvingQueryResult;
 import org.osuosl.srw.SRWDiagnostic;
 import org.z3950.zing.cql.CQLNode;
@@ -140,19 +144,19 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * Comparator for custom sorting of search-result.
      * Default: EscidocSearchResultComparator
      */
-    private SortComparatorSource comparator = null;
+    private FieldComparatorSource comparator = null;
 
     /**
      * @return String comparator.
      */
-    public SortComparatorSource getComparator() {
+    public FieldComparatorSource getComparator() {
         return comparator;
     }
 
     /**
      * @param inp comparator.
      */
-    public void setComparator(final SortComparatorSource inp) {
+    public void setComparator(final FieldComparatorSource inp) {
     	comparator = inp;
     }
 
@@ -266,18 +270,18 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             if (analyzerStr != null && analyzerStr.trim().length() != 0) {
                 analyzer = (Analyzer) Class.forName(analyzerStr).newInstance();
             } else {
-                analyzer = new StandardAnalyzer();
+                analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
             }
         }
         catch (Exception e) {
             log.error(e);
-            analyzer = new StandardAnalyzer();
+            analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
         }
 
         temp = (String) properties.get(Constants.PROPERTY_COMPARATOR);
         if (temp != null && temp.trim().length() != 0) {
             try {
-                comparator = (SortComparatorSource) Class.forName(temp).newInstance();
+                comparator = (FieldComparatorSource) Class.forName(temp).newInstance();
             }
             catch (Exception e) {
                 log.error(e);
@@ -324,70 +328,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
 
         Sort sort = null;
-        if (request.getSortKeys() != null 
-                && !request.getSortKeys().equals("")) {
-            // Get Lucene Sort-Object (CQL 1.0)
-            sort = getLuceneSortObject(request.getSortKeys());
-        } else {
-            // Get Lucene Sort-Object (CQL 2.0)
-            sort = makeSort(queryRoot, null, comparator);
-        }
 
         String[] identifiers = null;
         IndexSearcher searcher = null;
 
         try {
-            // convert the CQL search to lucene search
-            // while doing that, call method get getAnalyzedCqlTermNode
-            // Additionally replaces fieldname cql.serverChoice
-            // (this is the case if user gives no field name)
-            // with the defaultFieldName from configuration
-            Query unanalyzedQuery = makeQuery(queryRoot);
-
-            // rewrite query to analyzed query
-            QueryParser parser =
-                new EscidocQueryParser(getDefaultIndexField(), analyzer);
-            Query query = parser.parse(unanalyzedQuery.toString());
-            
-            //execute fuzzy-queries with lower maxClauseCount
-            if (query.toString().indexOf("~") > -1) {
-                BooleanQuery.setMaxClauseCount(
-                        Constants.FUZZY_BOOLEAN_MAX_CLAUSE_COUNT);
-            }
-
-            log.info("escidoc lucene search=" + query);
-
-            try {
-                searcher = new IndexSearcher(getIndexPath());
-                //check if custom scoring should be done
-                if (similarity != null) {
-                    searcher.setSimilarity(similarity);
-                }
-            }
-            catch (Exception e) {
-                log.info(e);
-            }
             int size = 0;
-                        
-            Hits results = null;
-            if (searcher != null) {
-                // perform sorted search?
-                if (sort == null) {
-                    results = searcher.search(query);
-                }
-                else {
-                    results = searcher.search(query, sort);
-                }
-                size = results.length();
-
-                // initialize Highlighter
-                if (highlighter != null) {
-                    highlighter.initialize(getIndexPath(), query);
-                }
-            }
-
-            log.info(size + " handles found");
-
             /**
              * get startRecord
              */
@@ -421,12 +367,73 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     "StartRecord > endRecord");
             }
 
+            if (request.getSortKeys() != null 
+                    && !request.getSortKeys().equals("")) {
+                // Get Lucene Sort-Object (CQL 1.0)
+                sort = getLuceneSortObject(request.getSortKeys());
+            } else {
+                // Get Lucene Sort-Object (CQL 2.0)
+                sort = makeSort(queryRoot, null, comparator);
+            }
+
+            // convert the CQL search to lucene search
+            // while doing that, call method get getAnalyzedCqlTermNode
+            // Additionally replaces fieldname cql.serverChoice
+            // (this is the case if user gives no field name)
+            // with the defaultFieldName from configuration
+            Query unanalyzedQuery = makeQuery(queryRoot);
+
+            // rewrite query to analyzed query
+            QueryParser parser =
+                new EscidocQueryParser(getDefaultIndexField(), analyzer);
+            Query query = parser.parse(unanalyzedQuery.toString());
+            
+            //execute fuzzy-queries with lower maxClauseCount
+            if (query.toString().indexOf("~") > -1) {
+                BooleanQuery.setMaxClauseCount(
+                        Constants.FUZZY_BOOLEAN_MAX_CLAUSE_COUNT);
+            }
+
+            log.info("escidoc lucene search=" + query);
+
+            try {
+                searcher = new IndexSearcher(FSDirectory.open(
+                        new File(getIndexPath())));
+                //check if custom scoring should be done
+                if (similarity != null) {
+                    searcher.setSimilarity(similarity);
+                }
+            }
+            catch (Exception e) {
+                log.info(e);
+            }
+                        
+            TopDocs results = null;
+            if (searcher != null) {
+                // perform sorted search?
+                if (sort == null) {
+                    results = searcher.search(query, endRecord);
+                }
+                else {
+                    searcher.setDefaultFieldSortScoring(true, false);
+                    results = searcher.search(query, null, endRecord, sort);
+                }
+                size = results.scoreDocs.length;
+
+                // initialize Highlighter
+                if (highlighter != null) {
+                    highlighter.initialize(getIndexPath(), query);
+                }
+            }
+
+            log.info(size + " handles found");
+
             // now instantiate the results and put them into the response object
             if (log.isDebugEnabled()) {
                 log.debug("iterating resultset from record " + startRecord
                     + " to " + endRecord);
             }
-            identifiers = createIdentifiers(results, startRecord, endRecord);
+            identifiers = createIdentifiers(searcher, results, startRecord, endRecord);
             
         }
         catch (Exception e) {
@@ -491,16 +498,18 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     .getRelation().toCQL().equalsIgnoreCase("exact");
 
             // perform search
-            searcher = new IndexSearcher(getIndexPath());
-            Hits results = searcher.search(query);
-            int size = results.length();
+            searcher = new IndexSearcher(FSDirectory.open(
+                    new File(getIndexPath())));
+            TopDocs results = searcher.search(query, 1000);
+            int size = results.scoreDocs.length;
 
             log.info(size + " handles found");
 
             if (size != 0) {
                 // iterater through hits counting terms
                 for (int i = 0; i < size; i++) {
-                    org.apache.lucene.document.Document doc = results.doc(i);
+                    org.apache.lucene.document.Document doc = 
+                            searcher.doc(results.scoreDocs[i].doc);
 
                     // MIH: Changed: get all fileds and not only one.
                     // Concat fieldValues into fieldString
@@ -583,7 +592,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         Collection<String> fieldList = new ArrayList<String>();
         IndexReader reader = null;
         try {
-            reader = IndexReader.open(getIndexPath());
+            reader = IndexReader.open(FSDirectory.open(
+                    new File(getIndexPath())));
             fieldList = reader.getFieldNames(FieldOption.INDEXED);
         }
         catch (Exception e) {
@@ -617,14 +627,15 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         Collection<String> fieldList = new ArrayList<String>();
         IndexReader reader = null;
         try {
-            reader = IndexReader.open(getIndexPath());
+            reader = IndexReader.open(FSDirectory.open(
+                    new File(getIndexPath())));
             //Hack, because its not possible to get all stored fields
             //of an index
             for (int i = 0; i < 10 ; i++) {
             	try {
                 	Document doc = reader.document(i);
-                	List<Field> fields = doc.getFields();
-                	for (Field field : fields) {
+                	List<Fieldable> fields = doc.getFields();
+                	for (Fieldable field : fields) {
                 		if (field.isStored() && !fieldList.contains(field.name())) {
                 			fieldList.add(field.name());
                 		}
@@ -653,6 +664,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * Creates the identifiers (search-xmls that are returned as response) with
      * extra information (highlight, score....)
      * 
+     * @param searcher
+     *            IndexSearcher
      * @param hits
      *            Lucene Hit-Documents
      * @param startRecord
@@ -665,15 +678,17 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * @sb
      */
     private String[] createIdentifiers(
-                    final Hits hits, 
+                    final IndexSearcher searcher,
+                    final TopDocs hits, 
                     final int startRecord, 
                     final int endRecord)
                                 throws Exception {
-        String[] searchResultXmls = new String[hits.length()];
+        String[] searchResultXmls = new String[hits.scoreDocs.length];
 
         for (int i = startRecord - 1; i < endRecord; i++) {
             //get next hit
-            org.apache.lucene.document.Document doc = hits.doc(i);
+            org.apache.lucene.document.Document doc = 
+                        searcher.doc(hits.scoreDocs[i].doc);
 
             //initialize surrounding xml
             StringBuffer complete = new StringBuffer(
@@ -681,7 +696,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             
             //append score-element
             complete.append(Constants.SCORE_START_ELEMENT);
-            complete.append(hits.score(i));
+            complete.append(hits.scoreDocs[i].score);
             complete.append(Constants.SCORE_END_ELEMENT);
             
             //append highlighting
@@ -769,7 +784,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                             sortFieldArr[i] = SortField.FIELD_SCORE;
                         } else {
                             if (comparator == null) {
-                                sortFieldArr[i] = new SortField(sortPart[0], true);
+                                sortFieldArr[i] = new SortField(sortPart[0], SortField.STRING, true);
                             } else {
                                 sortFieldArr[i] = new SortField(sortPart[0], comparator, true);
                             }
@@ -782,7 +797,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                             sortFieldArr[i] = SortField.FIELD_SCORE;
                         } else {
                             if (comparator == null) {
-                                sortFieldArr[i] = new SortField(sortPart[0]);
+                                sortFieldArr[i] = new SortField(sortPart[0], SortField.STRING);
                             } else {
                                 sortFieldArr[i] = new SortField(sortPart[0], comparator);
                             }

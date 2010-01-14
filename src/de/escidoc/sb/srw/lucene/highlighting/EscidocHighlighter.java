@@ -29,6 +29,7 @@
 
 package de.escidoc.sb.srw.lucene.highlighting;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -48,11 +49,13 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleFragmenter;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 
 import de.escidoc.core.common.util.configuration.EscidocConfiguration;
 import de.escidoc.sb.srw.Constants;
@@ -68,7 +71,7 @@ public class EscidocHighlighter implements SrwHighlighter {
     //********Defaults*********************************************************
     private Highlighter highlighter = null;
 
-    private Analyzer analyzer = new StandardAnalyzer();
+    private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     
     private SrwHighlightXmlizer highlightXmlizer = 
                     new EscidocSimpleHighlightXmlizer();
@@ -125,12 +128,12 @@ public class EscidocHighlighter implements SrwHighlighter {
             if (analyzerStr != null && analyzerStr.trim().length() != 0) {
                 analyzer = (Analyzer) Class.forName(analyzerStr).newInstance();
             } else {
-                analyzer = new StandardAnalyzer();
+                analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
             }
         }
         catch (Exception e) {
             log.error(e);
-            analyzer = new StandardAnalyzer();
+            analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
         }
 
         temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_XMLIZER);
@@ -256,7 +259,7 @@ public class EscidocHighlighter implements SrwHighlighter {
             Directory directory = null;
             IndexReader reader = null;
             try {
-                directory = FSDirectory.getDirectory(indexPath);
+                directory = FSDirectory.open(new File(indexPath));
                 reader = IndexReader.open(directory);
                 replacedQuery = query.rewrite(reader);
                 // Initialize Highlighter with formatter and scorer
@@ -425,6 +428,8 @@ public class EscidocHighlighter implements SrwHighlighter {
      *             if given field is not found in lucene-index
      * @throws IOException
      *             e
+     * @throws InvalidTokenOffsetsException
+     *             e
      * 
      * @return HashMap with highlighted text-fragment and additional Data.
      * 
@@ -433,7 +438,7 @@ public class EscidocHighlighter implements SrwHighlighter {
     private HashMap<String, String> getHighlightData(
         final String fieldName, final String locatorFieldName,
         final Document doc, final Highlighter highlighterIn, final String type)
-        throws IOException, NoSuchFieldException {
+        throws IOException, NoSuchFieldException, InvalidTokenOffsetsException {
         
         //check values
         if (fieldName == null || fieldName.trim().length() == 0

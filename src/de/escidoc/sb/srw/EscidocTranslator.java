@@ -45,13 +45,12 @@ import org.apache.axis.types.NonNegativeInteger;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.FieldComparatorSource;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.RangeQuery;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermRangeQuery;
 import org.osuosl.srw.SRWDiagnostic;
 import org.osuosl.srw.lucene.LuceneTranslator;
 import org.z3950.zing.cql.CQLAndNode;
@@ -395,39 +394,34 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 				if (relation.equals("=") || relation.equals("scr")) {
 					query = createTermQuery(index, ctn.getTerm() + modifierStr,
 							relation);
-				} else if (relation.equals("<")) {
-					Term term = new Term(index, ctn.getTerm() + modifierStr);
-					if (term.text() == null || term.text().equals("")) {
-					    term = term.createTerm("0");
-					}
-					// term is upperbound, exclusive
-					query = new RangeQuery(new Term(term.field(), "0"), term,
-							false);
-				} else if (relation.equals(">")) {
-					Term term = new Term(index, ctn.getTerm() + modifierStr);
-                    if (term.text() == null || term.text().equals("")) {
-                        term = term.createTerm("0");
+                } else if (relation.equals("<")) {
+                    String term = ctn.getTerm();
+                    if (term == null || term.equals("")) {
+                        term = "0";
                     }
-					// term is lowerbound, exclusive
-					query = new RangeQuery(term, new Term(term.field(),
-							"ZZZZZZZZZZZZZZZ"), false);
-				} else if (relation.equals("<=")) {
-					Term term = new Term(index, ctn.getTerm() + modifierStr);
-                    if (term.text() == null || term.text().equals("")) {
-                        term = term.createTerm("0");
+                    // term is upperbound, exclusive
+                    query = new TermRangeQuery(index, "0", ctn.getTerm(), true, false);
+                } else if (relation.equals(">")) {
+                    String term = ctn.getTerm();
+                    if (term == null || term.equals("")) {
+                        term = "0";
                     }
-					// term is upperbound, inclusive
-					query = new RangeQuery(new Term(term.field(), "0"), term,
-							true);
-				} else if (relation.equals(">=")) {
-					Term term = new Term(index, ctn.getTerm() + modifierStr);
-                    if (term.text() == null || term.text().equals("")) {
-                        term = term.createTerm("0");
+                    // term is lowerbound, exclusive
+                    query = new TermRangeQuery(index, ctn.getTerm(), "ZZZZZZZZZZZZZZZ", false, true);
+                } else if (relation.equals("<=")) {
+                    String term = ctn.getTerm();
+                    if (term == null || term.equals("")) {
+                        term = "0";
                     }
-					// term is lowebound, inclusive
-					query = new RangeQuery(term, new Term(term.field(),
-							"ZZZZZZZZZZZZZZZ"), true);
-
+                    // term is upperbound, inclusive
+                    query = new TermRangeQuery(index, "0", ctn.getTerm(), true, true);
+                } else if (relation.equals(">=")) {
+                    String term = ctn.getTerm();
+                    if (term == null || term.equals("")) {
+                        term = "0";
+                    }
+                    // term is lowerbound, inclusive
+                    query = new TermRangeQuery(index, ctn.getTerm(), "ZZZZZZZZZZZZZZZ", true, true);
 				} else if (relation.equals("<>")) {
 					/**
 					 * <> is an implicit NOT.
@@ -511,7 +505,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
     public Sort makeSort(
             final CQLNode node, 
             final Sort sort, 
-            final SortComparatorSource comparator)
+            final FieldComparatorSource comparator)
             throws SRWDiagnostic {
         Sort returnSort = null;
 
@@ -556,7 +550,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
                                                 comparator, true));
                             } else {
                                 sortFieldVec.add(
-                                        new SortField(sortField.getBase(), true));
+                                        new SortField(sortField.getBase(), SortField.STRING, true));
                             }
                         } else {
                             if (comparator != null) {
@@ -565,7 +559,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
                                                 sortField.getBase(), comparator));
                             } else {
                                 sortFieldVec.add(
-                                        new SortField(sortField.getBase()));
+                                        new SortField(sortField.getBase(), SortField.STRING));
                             }
                         }
                     }
@@ -714,38 +708,33 @@ public abstract class EscidocTranslator extends LuceneTranslator {
                     query = createTermQuery(index, ctn.getTerm() + modifierStr,
                             relation);
                 } else if (relation.equals("<")) {
-                    Term term = new Term(index, ctn.getTerm() + modifierStr);
-                    if (term.text() == null || term.text().equals("")) {
-                        term = term.createTerm("0");
+                    String term = ctn.getTerm();
+                    if (term == null || term.equals("")) {
+                        term = "0";
                     }
                     // term is upperbound, exclusive
-                    query = new RangeQuery(new Term(term.field(), "0"), term,
-                            false);
+                    query = new TermRangeQuery(index, "0", ctn.getTerm(), true, false);
                 } else if (relation.equals(">")) {
-                    Term term = new Term(index, ctn.getTerm() + modifierStr);
-                    if (term.text() == null || term.text().equals("")) {
-                        term = term.createTerm("0");
+                    String term = ctn.getTerm();
+                    if (term == null || term.equals("")) {
+                        term = "0";
                     }
                     // term is lowerbound, exclusive
-                    query = new RangeQuery(term, new Term(term.field(),
-                            "ZZZZZZZZZZZZZZZ"), false);
+                    query = new TermRangeQuery(index, ctn.getTerm(), "ZZZZZZZZZZZZZZZ", false, true);
                 } else if (relation.equals("<=")) {
-                    Term term = new Term(index, ctn.getTerm() + modifierStr);
-                    if (term.text() == null || term.text().equals("")) {
-                        term = term.createTerm("0");
+                    String term = ctn.getTerm();
+                    if (term == null || term.equals("")) {
+                        term = "0";
                     }
                     // term is upperbound, inclusive
-                    query = new RangeQuery(new Term(term.field(), "0"), term,
-                            true);
+                    query = new TermRangeQuery(index, "0", ctn.getTerm(), true, true);
                 } else if (relation.equals(">=")) {
-                    Term term = new Term(index, ctn.getTerm() + modifierStr);
-                    if (term.text() == null || term.text().equals("")) {
-                        term = term.createTerm("0");
+                    String term = ctn.getTerm();
+                    if (term == null || term.equals("")) {
+                        term = "0";
                     }
-                    // term is lowebound, inclusive
-                    query = new RangeQuery(term, new Term(term.field(),
-                            "ZZZZZZZZZZZZZZZ"), true);
-
+                    // term is lowerbound, inclusive
+                    query = new TermRangeQuery(index, ctn.getTerm(), "ZZZZZZZZZZZZZZZ", true, true);
                 } else if (relation.equals("<>")) {
                     /**
                      * <> is an implicit NOT.
