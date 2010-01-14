@@ -128,7 +128,7 @@ public class LuceneTranslator implements CQLTranslator {
             searcher = new IndexSearcher(FSDirectory.open(
                     new File(indexPath)));
             TopDocs results = searcher.search(query, 1000000);
-            int size = results.scoreDocs.length;
+            int size = results.totalHits;
 
             log.info(size+" handles found");
             identifiers = new String[size];

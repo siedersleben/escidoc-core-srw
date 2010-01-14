@@ -71,6 +71,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 
 	public static final String PROPERTY_DEFAULT_INDEX_FIELD = "cqlTranslator.defaultIndexField";
 
+    public static final String PROPERTY_DEFAULT_NUMBER_OF_RECORDS = "numberOfRecords";
+
 	public static final int DIAGNOSTIC_CODE_NINETEEN = 19;
 
 	public static final int DIAGNOSTIC_CODE_TWENTY = 19;
@@ -104,6 +106,26 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	public void setDefaultIndexField(final String inp) {
 		defaultIndexField = inp;
 	}
+
+    /**
+     * Default number of records
+     */
+    protected int defaultNumberOfRecords = 20;
+
+    /**
+     * @return String defaultNumberOfRecords.
+     */
+    public int getDefaultNumberOfRecords() {
+        return defaultNumberOfRecords;
+    }
+
+    /**
+     * @param inp
+     *            defaultNumberOfRecords.
+     */
+    public void setDefaultNumberOfRecords(final String inp) {
+        defaultNumberOfRecords = Integer.parseInt(inp);
+    }
 
 	/**
 	 * overwritten method from LuceneTranslator. Just calls new implemented

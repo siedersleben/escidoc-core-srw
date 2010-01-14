@@ -243,6 +243,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             setDefaultIndexField(temp);
         }
 
+        temp = (String) properties.get(PROPERTY_DEFAULT_NUMBER_OF_RECORDS);
+        if (temp != null && temp.trim().length() != 0) {
+            setDefaultNumberOfRecords(temp);
+        }
+
         temp = (String) properties.get(PROPERTY_IDENTIFIER_TERM);
         if (temp != null && temp.trim().length() != 0) {
             setIdentifierTerm(temp);
@@ -333,40 +338,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         IndexSearcher searcher = null;
 
         try {
-            int size = 0;
-            /**
-             * get startRecord
-             */
-            if (size == 0 && request.getStartRecord() != null) {
-                throw new SRWDiagnostic(
-                    SRWDiagnostic.FirstRecordPositionOutOfRange,
-                    "StartRecord > endRecord");
-            }
-            int startRecord = 1;
-            PositiveInteger startRecordInt = request.getStartRecord();
-            if (startRecordInt != null) {
-                startRecord = startRecordInt.intValue();
-            }
-
-            /**
-             * get endRecord
-             */
-            int maxRecords = DIAGNOSTIC_CODE_TWENTY;
-            int endRecord = 0;
-            NonNegativeInteger maxRecordsInt = request.getMaximumRecords();
-            if (maxRecordsInt != null) {
-                maxRecords = maxRecordsInt.intValue();
-            }
-            endRecord = startRecord - 1 + maxRecords;
-            if (endRecord > size) {
-                endRecord = size;
-            }
-            if (endRecord < startRecord && endRecord > 0) {
-                throw new SRWDiagnostic(
-                    SRWDiagnostic.FirstRecordPositionOutOfRange,
-                    "StartRecord > endRecord");
-            }
-
             if (request.getSortKeys() != null 
                     && !request.getSortKeys().equals("")) {
                 // Get Lucene Sort-Object (CQL 1.0)
@@ -409,16 +380,27 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
                         
             TopDocs results = null;
+            int size = 0;
             if (searcher != null) {
+                //calculate maximum hits
+                int maximumHits = 0;
+                if (request.getStartRecord() != null) {
+                    maximumHits += request.getStartRecord().intValue();
+                }
+                if (request.getMaximumRecords() != null) {
+                    maximumHits += request.getMaximumRecords().intValue();
+                } else {
+                    maximumHits += getDefaultNumberOfRecords();
+                }
                 // perform sorted search?
                 if (sort == null) {
-                    results = searcher.search(query, endRecord);
+                    results = searcher.search(query, maximumHits);
                 }
                 else {
                     searcher.setDefaultFieldSortScoring(true, false);
-                    results = searcher.search(query, null, endRecord, sort);
+                    results = searcher.search(query, null, maximumHits, sort);
                 }
-                size = results.scoreDocs.length;
+                size = results.totalHits;
 
                 // initialize Highlighter
                 if (highlighter != null) {
@@ -427,6 +409,39 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
 
             log.info(size + " handles found");
+
+            /**
+             * get startRecord
+             */
+            if (size == 0 && request.getStartRecord() != null) {
+                throw new SRWDiagnostic(
+                    SRWDiagnostic.FirstRecordPositionOutOfRange,
+                    "StartRecord > endRecord");
+            }
+            int startRecord = 1;
+            PositiveInteger startRecordInt = request.getStartRecord();
+            if (startRecordInt != null) {
+                startRecord = startRecordInt.intValue();
+            }
+
+            /**
+             * get endRecord
+             */
+            int maxRecords = DIAGNOSTIC_CODE_TWENTY;
+            int endRecord = 0;
+            NonNegativeInteger maxRecordsInt = request.getMaximumRecords();
+            if (maxRecordsInt != null) {
+                maxRecords = maxRecordsInt.intValue();
+            }
+            endRecord = startRecord - 1 + maxRecords;
+            if (endRecord > size) {
+                endRecord = size;
+            }
+            if (endRecord < startRecord && endRecord > 0) {
+                throw new SRWDiagnostic(
+                    SRWDiagnostic.FirstRecordPositionOutOfRange,
+                    "StartRecord > endRecord");
+            }
 
             // now instantiate the results and put them into the response object
             if (log.isDebugEnabled()) {
@@ -683,7 +698,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     final int startRecord, 
                     final int endRecord)
                                 throws Exception {
-        String[] searchResultXmls = new String[hits.scoreDocs.length];
+        String[] searchResultXmls = new String[hits.totalHits];
 
         for (int i = startRecord - 1; i < endRecord; i++) {
             //get next hit
