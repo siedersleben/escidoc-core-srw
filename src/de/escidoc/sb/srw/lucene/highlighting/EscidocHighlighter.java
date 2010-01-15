@@ -256,44 +256,44 @@ public class EscidocHighlighter implements SrwHighlighter {
 
             // Initialize Highlighter with query, highlight-start + end marker
             // and highlightFragmentSize
-            Directory directory = null;
-            IndexReader reader = null;
-            try {
-                directory = FSDirectory.open(new File(indexPath));
-                reader = IndexReader.open(directory);
-                replacedQuery = query.rewrite(reader);
+//            Directory directory = null;
+//            IndexReader reader = null;
+//            try {
+//                directory = FSDirectory.open(new File(indexPath));
+//                reader = IndexReader.open(directory);
+//                replacedQuery = query.rewrite(reader);
                 // Initialize Highlighter with formatter and scorer
                 highlighter =
                     new Highlighter(new SimpleHTMLFormatter(
                         highlightStartMarker, highlightEndMarker),
-                        new QueryScorer(replacedQuery));
+                        new QueryScorer(query));
                 // Set Text-Fragmenter
                 highlighter.setTextFragmenter(new SimpleFragmenter(
                     highlightFragmentSize));
-            }
-            finally {
-                if (directory != null) {
-                    try {
-                        directory.close();
-                    }
-                    catch (IOException e) {
-                        log.error(
-                            "Exception while closing lucene directory object",
-                            e);
-                    }
-                    directory = null;
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    }
-                    catch (IOException e) {
-                        log.error(
-                            "Exception while closing lucene reader object", e);
-                    }
-                    reader = null;
-                }
-            }
+//            }
+//            finally {
+//                if (directory != null) {
+//                    try {
+//                        directory.close();
+//                    }
+//                    catch (IOException e) {
+//                        log.error(
+//                            "Exception while closing lucene directory object",
+//                            e);
+//                    }
+//                    directory = null;
+//                }
+//                if (reader != null) {
+//                    try {
+//                        reader.close();
+//                    }
+//                    catch (IOException e) {
+//                        log.error(
+//                            "Exception while closing lucene reader object", e);
+//                    }
+//                    reader = null;
+//                }
+//            }
         }
     }
 
