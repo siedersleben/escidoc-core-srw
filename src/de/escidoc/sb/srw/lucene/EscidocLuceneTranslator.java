@@ -355,6 +355,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             Query unanalyzedQuery = makeQuery(queryRoot);
 
             // rewrite query to analyzed query
+            // EscidocQueryParser also analyzes wildcard-queries
+            // If you want scoring with wildcard-queries,
+            // uncomment first lines in EscidocQueryParser.getWildcardQuery
+            // and EscidocQueryParser.getPrefixQuery
+            // NOTE: this will slow down search approx by factor 10!!
             QueryParser parser =
                 new EscidocQueryParser(getDefaultIndexField(), analyzer);
             Query query = parser.parse(unanalyzedQuery.toString());
