@@ -29,5 +29,6 @@
 	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-snowball-3.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-memory-3.0.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
