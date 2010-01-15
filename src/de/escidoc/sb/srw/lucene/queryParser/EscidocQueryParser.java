@@ -41,6 +41,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 
@@ -112,6 +113,8 @@ public class EscidocQueryParser extends QueryParser {
      */
     protected Query getWildcardQuery(final String field, final String termStr)
         throws ParseException {
+//        super.setMultiTermRewriteMethod(
+//                MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
         if (getWildcardAnalyzer() == null) {
             return super.getWildcardQuery(field, termStr);
         }
@@ -246,6 +249,8 @@ public class EscidocQueryParser extends QueryParser {
      */
     protected Query getPrefixQuery(final String field, final String termStr)
         throws ParseException {
+//        super.setMultiTermRewriteMethod(
+//                MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
         if (getWildcardAnalyzer() == null) {
             return super.getPrefixQuery(field, termStr);
         }
