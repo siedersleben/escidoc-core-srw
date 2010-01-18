@@ -180,7 +180,6 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 		 * get query
 		 */
 		// convert the CQL search to lucene search
-		// while doing that, call method get getAnalyzedCqlTermNode
 		// Additionally replaces fieldname cql.serverChoice
 		// (this is the case if user gives no field name)
 		// with the defaultFieldName from configuration

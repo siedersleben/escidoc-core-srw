@@ -422,28 +422,28 @@ public abstract class EscidocTranslator extends LuceneTranslator {
                         term = "0";
                     }
                     // term is upperbound, exclusive
-                    query = new TermRangeQuery(index, "0", ctn.getTerm(), true, false);
+                    query = new TermRangeQuery(index, null, ctn.getTerm(), false, false);
                 } else if (relation.equals(">")) {
                     String term = ctn.getTerm();
                     if (term == null || term.equals("")) {
                         term = "0";
                     }
                     // term is lowerbound, exclusive
-                    query = new TermRangeQuery(index, ctn.getTerm(), "ZZZZZZZZZZZZZZZ", false, true);
+                    query = new TermRangeQuery(index, ctn.getTerm(), null, false, false);
                 } else if (relation.equals("<=")) {
                     String term = ctn.getTerm();
                     if (term == null || term.equals("")) {
                         term = "0";
                     }
                     // term is upperbound, inclusive
-                    query = new TermRangeQuery(index, "0", ctn.getTerm(), true, true);
+                    query = new TermRangeQuery(index, null, ctn.getTerm(), true, true);
                 } else if (relation.equals(">=")) {
                     String term = ctn.getTerm();
                     if (term == null || term.equals("")) {
                         term = "0";
                     }
                     // term is lowerbound, inclusive
-                    query = new TermRangeQuery(index, ctn.getTerm(), "ZZZZZZZZZZZZZZZ", true, true);
+                    query = new TermRangeQuery(index, ctn.getTerm(), null, true, true);
 				} else if (relation.equals("<>")) {
 					/**
 					 * <> is an implicit NOT.
@@ -735,28 +735,28 @@ public abstract class EscidocTranslator extends LuceneTranslator {
                         term = "0";
                     }
                     // term is upperbound, exclusive
-                    query = new TermRangeQuery(index, "0", ctn.getTerm(), true, false);
+                    query = new TermRangeQuery(index, null, ctn.getTerm(), false, false);
                 } else if (relation.equals(">")) {
                     String term = ctn.getTerm();
                     if (term == null || term.equals("")) {
                         term = "0";
                     }
                     // term is lowerbound, exclusive
-                    query = new TermRangeQuery(index, ctn.getTerm(), "ZZZZZZZZZZZZZZZ", false, true);
+                    query = new TermRangeQuery(index, ctn.getTerm(), null, false, false);
                 } else if (relation.equals("<=")) {
                     String term = ctn.getTerm();
                     if (term == null || term.equals("")) {
                         term = "0";
                     }
                     // term is upperbound, inclusive
-                    query = new TermRangeQuery(index, "0", ctn.getTerm(), true, true);
+                    query = new TermRangeQuery(index, null, ctn.getTerm(), true, true);
                 } else if (relation.equals(">=")) {
                     String term = ctn.getTerm();
                     if (term == null || term.equals("")) {
                         term = "0";
                     }
                     // term is lowerbound, inclusive
-                    query = new TermRangeQuery(index, ctn.getTerm(), "ZZZZZZZZZZZZZZZ", true, true);
+                    query = new TermRangeQuery(index, ctn.getTerm(), null, true, true);
                 } else if (relation.equals("<>")) {
                     /**
                      * <> is an implicit NOT.

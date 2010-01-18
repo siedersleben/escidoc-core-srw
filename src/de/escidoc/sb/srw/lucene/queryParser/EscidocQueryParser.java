@@ -41,8 +41,8 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.util.Version;
 
 /**
@@ -88,6 +88,37 @@ public class EscidocQueryParser extends QueryParser {
         final Analyzer wildcardAnalyzer) {
         super(Version.LUCENE_CURRENT, field, analyzer);
         setWildcardAnalyzer(wildcardAnalyzer);
+    }
+
+    /**
+     * Constructs a TermRangeQuery.
+     * TermRangeQuery with null as upper 
+     * or lower boundary creates QueryString containing *.
+     * So if reparsing this String, handle * as null
+     * 
+     * @param field
+     *            the field.
+     * @param part1
+     *            lower bound of range.
+     * @param part2
+     *            upper bound of range.
+     * @param inclusive
+     *            boundary-inclusive?.
+     */
+    protected Query newRangeQuery(
+            String field, String part1, String part2, boolean inclusive) {
+        //TermRangeQuery with null as upper or lower boundary creates QueryString containing *
+        //So if reparsing this String, handle * as null
+        if (part1 != null && part1.equals("*")) {
+            part1 = null;
+        }
+        if (part2 != null && part2.equals("*")) {
+            part2 = null;
+        }
+        TermRangeQuery query = new TermRangeQuery(
+                field, part1, part2, inclusive, inclusive, super.getRangeCollator());
+        query.setRewriteMethod(super.getMultiTermRewriteMethod());
+        return query;
     }
 
     /**
