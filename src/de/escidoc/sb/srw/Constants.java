@@ -103,6 +103,12 @@ public class Constants {
     public static final String PROPERTY_SIMILARITY =
         "cqlTranslator.similarity";
     
+    //used to indicate if scoring has to get calculated 
+    //even for wildcard- and range-queries
+    //(slows down search)
+    public static final String PROPERTY_FORCE_SCORING =
+        "cqlTranslator.forceScoring";
+    
     public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT =
         "cqlTranslator.highlightTermFulltext";
 

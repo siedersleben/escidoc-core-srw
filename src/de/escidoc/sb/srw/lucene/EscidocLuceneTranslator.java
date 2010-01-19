@@ -209,6 +209,26 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     }
 
     /**
+     * Force score-calculation, even for wildcard- and range-queries.
+     * (Slows down search)
+     */
+    private boolean forceScoring = false;
+
+    /**
+     * @return String similarity.
+     */
+    public boolean getForceScoring() {
+        return forceScoring;
+    }
+
+    /**
+     * @param inp forceScoring.
+     */
+    public void setForceScoring(final boolean inp) {
+        forceScoring = inp;
+    }
+
+    /**
      * construct.
      * 
      * @sb
@@ -334,6 +354,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
         }
 
+        temp = (String) properties.get(Constants.PROPERTY_FORCE_SCORING);
+        if (temp != null && temp.trim().length() != 0) {
+            forceScoring = new Boolean(temp).booleanValue();
+        }
+
     }
 
     /**
@@ -385,11 +410,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // rewrite query to analyzed query
             // EscidocQueryParser also analyzes wildcard-queries
             // If you want scoring with wildcard-queries,
-            // uncomment first lines in EscidocQueryParser.getWildcardQuery
-            // and EscidocQueryParser.getPrefixQuery
+            // set property cqlTranslator.forceScoring in your configuration
             // NOTE: this will slow down search approx by factor 10!!
             QueryParser parser =
-                new EscidocQueryParser(getDefaultIndexField(), analyzer);
+                new EscidocQueryParser(
+                        getDefaultIndexField(), analyzer, forceScoring);
             Query query = parser.parse(unanalyzedQuery.toString());
             
             //execute fuzzy-queries with lower maxClauseCount
@@ -506,7 +531,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
 
             // rewrite query to analyzed query
             QueryParser parser =
-                new EscidocQueryParser(getDefaultIndexField(), analyzer);
+                new EscidocQueryParser(
+                        getDefaultIndexField(), analyzer);
             Query query = parser.parse(unanalyzedQuery.toString());
             log.info("lucene search=" + query);
 
