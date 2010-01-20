@@ -120,20 +120,15 @@ public class EscidocHighlighter implements SrwHighlighter {
         String temp;
 
         temp = (String) props.get(Constants.PROPERTY_ANALYZER);
-        try {
-            //Try to get Analyzer from escidoc-configuration
-            String analyzerStr = EscidocConfiguration.getInstance()
-            .get(
-                EscidocConfiguration.LUCENE_ANALYZER, temp);
-            if (analyzerStr != null && analyzerStr.trim().length() != 0) {
-                analyzer = (Analyzer) Class.forName(analyzerStr).newInstance();
-            } else {
+        if (temp != null && temp.trim().length() != 0) {
+            try {
+                analyzer =
+                    (Analyzer) Class.forName(temp).newInstance();
+            }
+            catch (Exception e) {
+                log.error(e);
                 analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
             }
-        }
-        catch (Exception e) {
-            log.error(e);
-            analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
         }
 
         temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_XMLIZER);
