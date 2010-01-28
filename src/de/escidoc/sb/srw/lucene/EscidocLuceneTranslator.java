@@ -445,7 +445,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
 
             // initialize Highlighter
             if (highlighter != null) {
-                highlighter.initialize(getIndexPath(), query);
+                try {
+                    highlighter.initialize(getIndexPath(), query);
+                } catch (Exception e) {
+                    log.error(e);
+                }
             }
 
             log.info(size + " handles found");

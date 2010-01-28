@@ -29,7 +29,6 @@
 
 package de.escidoc.sb.srw.lucene.highlighting;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -48,7 +47,6 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -57,11 +55,8 @@ import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleFragmenter;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
-import de.escidoc.core.common.util.configuration.EscidocConfiguration;
 import de.escidoc.sb.srw.Constants;
 
 /**
@@ -105,9 +100,9 @@ public class EscidocHighlighter implements SrwHighlighter {
 
     private HashSet<String> searchFields = new HashSet<String>();
 
-    private BooleanQuery fulltextQuery = new BooleanQuery();
+    private Query fulltextQuery = null;
 
-    private BooleanQuery metadataQuery = new BooleanQuery();
+    private Query metadataQuery = null;
 
     private final Pattern SEARCHFIELD_PATTERN = 
                     Pattern.compile("([^\\s\\\\:]+?):");
@@ -226,26 +221,26 @@ public class EscidocHighlighter implements SrwHighlighter {
     public void initialize(final String indexPath, final Query query)
         throws Exception {
 
-        Query replacedQuery = query;
         searchFields = new HashSet<String>();
-        fulltextQuery = new BooleanQuery();
-        metadataQuery = new BooleanQuery();
+        fulltextQuery = null;
+        metadataQuery = null;
         if (indexPath != null && indexPath.trim().length() != 0
-            && query != null && query.toString() != null) {
+                && query != null && query.toString() != null) {
 
             // get search-fields from query////////////////////////////////////
             SEARCHFIELD_MATCHER.reset(query.toString());
             boolean fulltextFound = false;
             boolean nonFulltextFound = false;
-            
-            Collection<BooleanClause> clauses = 
-                new ArrayList<BooleanClause>();
+
+            Collection<BooleanClause> clauses =
+                    new ArrayList<BooleanClause>();
             if (query instanceof BooleanQuery) {
                 try {
-                    clauses = getBooleanClauses((BooleanQuery)query);
-                } catch (Exception e) {}
+                    clauses = getBooleanClauses((BooleanQuery) query);
+                } catch (Exception e) {
+                }
             }
-            
+
             if (clauses != null && clauses.size() > 0) {
                 for (BooleanClause clause : clauses) {
                     SEARCHFIELD_MATCHER.reset(clause.toString());
@@ -253,12 +248,18 @@ public class EscidocHighlighter implements SrwHighlighter {
                         if (SEARCHFIELD_MATCHER.group(1) != null
                                 && fulltextIndexField != null
                                 && SEARCHFIELD_MATCHER.group(1)
-                                    .matches(".*" + fulltextIndexField + ".*")) {
+                                .matches(".*" + fulltextIndexField + ".*")) {
                             fulltextFound = true;
-                            fulltextQuery.add(clause);
+                            if (fulltextQuery == null) {
+                                fulltextQuery = new BooleanQuery();
+                            }
+                            ((BooleanQuery) fulltextQuery).add(clause);
                         } else {
                             nonFulltextFound = true;
-                            metadataQuery.add(clause);
+                            if (metadataQuery == null) {
+                                metadataQuery = new BooleanQuery();
+                            }
+                            ((BooleanQuery) metadataQuery).add(clause);
                         }
                     }
                 }
@@ -268,12 +269,16 @@ public class EscidocHighlighter implements SrwHighlighter {
                     if (SEARCHFIELD_MATCHER.group(1) != null
                             && fulltextIndexField != null
                             && SEARCHFIELD_MATCHER.group(1)
-                                .matches(".*" + fulltextIndexField + ".*")) {
+                            .matches(".*" + fulltextIndexField + ".*")) {
                         fulltextFound = true;
-                        fulltextQuery.add(query, BooleanClause.Occur.MUST);
+                        if (fulltextQuery == null) {
+                            fulltextQuery = query;
+                        }
                     } else {
                         nonFulltextFound = true;
-                        metadataQuery.add(query, BooleanClause.Occur.MUST);
+                        if (metadataQuery == null) {
+                            metadataQuery = query;
+                        }
                     }
                 }
             }
@@ -285,46 +290,14 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
             // ////////////////////////////////////////////////////////////////
 
-            // Initialize Highlighter with query, highlight-start + end marker
-            // and highlightFragmentSize
-//            Directory directory = null;
-//            IndexReader reader = null;
-//            try {
-//                directory = FSDirectory.open(new File(indexPath));
-//                reader = IndexReader.open(directory);
-//                replacedQuery = query.rewrite(reader);
-                // Initialize Highlighter with formatter and scorer
-                highlighter =
+            // Initialize Highlighter with formatter, highlight-start + end marker
+            highlighter =
                     new Highlighter(new SimpleHTMLFormatter(
-                        highlightStartMarker, highlightEndMarker),
-                        new QueryScorer(query));
-                // Set Text-Fragmenter
-                highlighter.setTextFragmenter(new SimpleFragmenter(
+                    highlightStartMarker, highlightEndMarker),
+                    null);
+            // Set Text-Fragmenter
+            highlighter.setTextFragmenter(new SimpleFragmenter(
                     highlightFragmentSize));
-//            }
-//            finally {
-//                if (directory != null) {
-//                    try {
-//                        directory.close();
-//                    }
-//                    catch (IOException e) {
-//                        log.error(
-//                            "Exception while closing lucene directory object",
-//                            e);
-//                    }
-//                    directory = null;
-//                }
-//                if (reader != null) {
-//                    try {
-//                        reader.close();
-//                    }
-//                    catch (IOException e) {
-//                        log.error(
-//                            "Exception while closing lucene reader object", e);
-//                    }
-//                    reader = null;
-//                }
-//            }
         }
     }
 
