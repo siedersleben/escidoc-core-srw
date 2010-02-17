@@ -98,34 +98,6 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
  */
 public class EscidocLuceneTranslator extends EscidocTranslator {
 
-//    /**
-//     * IndexSearcher.
-//     */
-//    private IndexSearcher searcher = null;
-
-//    /**
-//     * @return String searcher.
-//     */
-//    public IndexSearcher getIndexSearcher() throws SRWDiagnostic {
-//        if (searcher == null) {
-//            try {
-//                setIndexSearcher(new IndexSearcher(FSDirectory.open(
-//                        new File(getIndexPath()))));
-//            } catch (Exception e) {
-//                throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, 
-//                            "indexSearcher is null due to previous error");
-//            }
-//        }
-//        return searcher;
-//    }
-//
-//    /**
-//     * @param inp
-//     *            searcher.
-//     */
-//    public void setIndexSearcher(final IndexSearcher inp) {
-//        searcher = inp;
-//    }
 
     /**
      * SrwHighlighter.
@@ -626,6 +598,18 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         }
         catch (IOException e) {
             e.printStackTrace();
+        }
+        finally {
+            if (searcher != null) {
+                try {
+                    searcher.close();
+                }
+                catch (IOException e) {
+                    log.error("Exception while closing lucene index searcher",
+                        e);
+                }
+                searcher = null;
+            }
         }
 
         return response;
