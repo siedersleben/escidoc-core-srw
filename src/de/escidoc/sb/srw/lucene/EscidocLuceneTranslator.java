@@ -74,7 +74,6 @@ import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLTermNode;
 
 import ORG.oclc.os.SRW.QueryResult;
-import de.escidoc.core.common.util.configuration.EscidocConfiguration;
 import de.escidoc.sb.srw.Constants;
 import de.escidoc.sb.srw.EscidocTranslator;
 import de.escidoc.sb.srw.lucene.highlighting.SrwHighlighter;
@@ -99,34 +98,34 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
  */
 public class EscidocLuceneTranslator extends EscidocTranslator {
 
-    /**
-     * IndexSearcher.
-     */
-    private IndexSearcher searcher = null;
+//    /**
+//     * IndexSearcher.
+//     */
+//    private IndexSearcher searcher = null;
 
-    /**
-     * @return String searcher.
-     */
-    public IndexSearcher getIndexSearcher() throws SRWDiagnostic {
-        if (searcher == null) {
-            try {
-                setIndexSearcher(new IndexSearcher(FSDirectory.open(
-                        new File(getIndexPath()))));
-            } catch (Exception e) {
-                throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, 
-                            "indexSearcher is null due to previous error");
-            }
-        }
-        return searcher;
-    }
-
-    /**
-     * @param inp
-     *            searcher.
-     */
-    public void setIndexSearcher(final IndexSearcher inp) {
-        searcher = inp;
-    }
+//    /**
+//     * @return String searcher.
+//     */
+//    public IndexSearcher getIndexSearcher() throws SRWDiagnostic {
+//        if (searcher == null) {
+//            try {
+//                setIndexSearcher(new IndexSearcher(FSDirectory.open(
+//                        new File(getIndexPath()))));
+//            } catch (Exception e) {
+//                throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, 
+//                            "indexSearcher is null due to previous error");
+//            }
+//        }
+//        return searcher;
+//    }
+//
+//    /**
+//     * @param inp
+//     *            searcher.
+//     */
+//    public void setIndexSearcher(final IndexSearcher inp) {
+//        searcher = inp;
+//    }
 
     /**
      * SrwHighlighter.
@@ -342,7 +341,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         if (temp != null && temp.trim().length() != 0) {
             try {
                 similarity = (Similarity) Class.forName(temp).newInstance();
-                searcher.setSimilarity(similarity);
             }
             catch (Exception e) {
                 log.error(e);
@@ -385,7 +383,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         Sort sort = null;
 
         String[] identifiers = null;
-
+        IndexSearcher searcher = null;
         try {
             if (request.getSortKeys() != null 
                     && !request.getSortKeys().equals("")) {
@@ -420,6 +418,13 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
 
             log.info("escidoc lucene search=" + query);
 
+            searcher = 
+                new IndexSearcher(FSDirectory.open(new File(getIndexPath())));
+            //check if custom scoring should be done
+            if (similarity != null) {
+                searcher.setSimilarity(similarity);
+            }
+
             TopDocs results = null;
             int size = 0;
             //calculate maximum hits
@@ -434,12 +439,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             // perform sorted search?
             if (sort == null) {
-                getIndexSearcher().setDefaultFieldSortScoring(false, false);
-                results = getIndexSearcher().search(query, maximumHits);
+                searcher.setDefaultFieldSortScoring(false, false);
+                results = searcher.search(query, maximumHits);
             }
             else {
-                getIndexSearcher().setDefaultFieldSortScoring(true, false);
-                results = getIndexSearcher().search(query, null, maximumHits, sort);
+                searcher.setDefaultFieldSortScoring(true, false);
+                results = searcher.search(query, null, maximumHits, sort);
             }
             size = results.totalHits;
 
@@ -492,12 +497,24 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 log.debug("iterating resultset from record " + startRecord
                     + " to " + endRecord);
             }
-            identifiers = createIdentifiers(results, startRecord, endRecord);
+            identifiers = createIdentifiers(searcher, results, startRecord, endRecord);
             
         }
         catch (Exception e) {
             throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
                 .toString());
+        }
+        finally {
+            if (searcher != null) {
+                try {
+                    searcher.close();
+                }
+                catch (IOException e) {
+                    log.error("Exception while closing lucene index searcher",
+                        e);
+                }
+                searcher = null;
+            }
         }
         return new ResolvingQueryResult(identifiers);
     }
@@ -523,6 +540,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
 
         TermType[] response = new TermType[0];
         Map termMap = new HashMap();
+        IndexSearcher searcher = null;
 
         try {
             // convert the CQL search to lucene search
@@ -545,7 +563,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     .getRelation().toCQL().equalsIgnoreCase("exact");
 
             // perform search
-            TopDocs results = getIndexSearcher().search(query, 1000);
+            searcher = 
+                new IndexSearcher(FSDirectory.open(new File(getIndexPath())));
+            TopDocs results = searcher.search(query, 1000);
             int size = results.scoreDocs.length;
 
             log.info(size + " handles found");
@@ -554,7 +574,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 // iterater through hits counting terms
                 for (int i = 0; i < size; i++) {
                     org.apache.lucene.document.Document doc = 
-                            getIndexSearcher().doc(results.scoreDocs[i].doc);
+                        searcher.doc(results.scoreDocs[i].doc);
 
                     // MIH: Changed: get all fileds and not only one.
                     // Concat fieldValues into fieldString
@@ -697,8 +717,10 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * Creates the identifiers (search-xmls that are returned as response) with
      * extra information (highlight, score....)
      * 
+     * @param searcher
+     *            Lucene IndexSearcher
      * @param hits
-     *            Lucene Hit-Documents
+     *            Lucene TopDocs
      * @param startRecord
      *            startRecord
      * @param endRecord endRecord
@@ -709,6 +731,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * @sb
      */
     private String[] createIdentifiers(
+                    final IndexSearcher searcher,
                     final TopDocs hits, 
                     final int startRecord, 
                     final int endRecord)
@@ -718,7 +741,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         for (int i = startRecord - 1; i < endRecord; i++) {
             //get next hit
             org.apache.lucene.document.Document doc = 
-                        getIndexSearcher().doc(hits.scoreDocs[i].doc);
+                        searcher.doc(hits.scoreDocs[i].doc);
 
             //initialize surrounding xml
             StringBuffer complete = new StringBuffer(
