@@ -277,7 +277,7 @@ public class SRWServletInfo {
 //    public void init(final ServletConfig config) {
 //        try {
 //            String propsfilePath = EscidocConfiguration.getInstance().get(
-//                    EscidocConfiguration.SEARCH_PROPERTIES_DIRECTORY, "search");
+//                    EscidocConfiguration.SEARCH_PROPERTIES_DIRECTORY, "search/config");
 //            if (!propsfilePath.equals("")) {
 //                propsfilePath += "/";
 //            }
