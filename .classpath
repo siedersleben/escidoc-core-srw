@@ -14,7 +14,6 @@
 	<classpathentry kind="lib" path="lib/lucene/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="lib/srw/axis.jar"/>
 	<classpathentry kind="lib" path="lib/srw/commons-discovery.jar"/>
-	<classpathentry kind="lib" path="lib/srw/commons-logging.jar"/>
 	<classpathentry kind="lib" path="lib/srw/cql-java.jar"/>
 	<classpathentry kind="lib" path="lib/srw/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="lib/srw/log4j.jar"/>
@@ -30,5 +29,8 @@
 	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-snowball-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/lucene-memory-3.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/jcl-over-slf4j-1.5.8.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/slf4j-api-1.5.8.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/slf4j-log4j12-1.5.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
