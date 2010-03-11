@@ -1199,7 +1199,7 @@ public class SRWServlet extends AxisServlet {
 //
 //        msgContext.setProperty(Constants.MC_CONFIGPATH, getWebInfPath());
 //        msgContext.setProperty("targetURL", req.getRequestURL().append('?').append(req.getQueryString()).toString());
-//        servletLog.debug("targetURL property set to "+msgContext.getProperty("targetURL"));
+//        servletLog.info("targetURL property set to "+msgContext.getProperty("targetURL"));
 //        
 //        return msgContext;
 //    }
