@@ -44,9 +44,9 @@ import de.escidoc.sb.srw.PermissionFilterGenerator;
  */
 public class LucenePermissionFilterGenerator implements PermissionFilterGenerator {
 
-    private String idsFile = "/search/config/hierarchies1.txt";
+    private String idsFile = "search/config/hierarchies1.txt";
 
-    private String roleCountFile = "/search/config/roleCounts.txt";
+    private String roleCountFile = "search/config/roleCounts.txt";
 
     private static HashMap<String, ArrayList<String>> idsArray = null;
     private static String[] idsList = null;
