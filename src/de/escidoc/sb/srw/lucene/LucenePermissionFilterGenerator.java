@@ -44,31 +44,14 @@ import de.escidoc.sb.srw.PermissionFilterGenerator;
  */
 public class LucenePermissionFilterGenerator implements PermissionFilterGenerator {
 
-    private String idsFile = "hierarchies1.txt";
+    private String idsFile = "/search/config/hierarchies1.txt";
+
+    private String roleCountFile = "/search/config/roleCounts.txt";
 
     private static HashMap<String, ArrayList<String>> idsArray = null;
     private static String[] idsList = null;
 
-    private HashMap<String, String> roleCount = new HashMap<String, String>() {{
-        put("administrator.role", "1");    
-        put("Collaborator.role", "1");    
-        put("Collaborator-Modifier.role", "1");    
-        put("Collaborator-Modifier-Container-Add-Remove-Any-Members.role", "10");    
-        put("Collaborator-Modifier-Container-Add-Remove-Members.role", "1");    
-        put("Collaborator-Modifier-Container-Update-Any-Members.role", "1");    
-        put("Collaborator-Modifier-Container-Update-Direct-Members.role", "1");    
-        put("Content-Relation-Manager.role", "1");    
-        put("Content-Relation-Modifier.role", "1");    
-        put("Context-Administrator.role", "1");    
-        put("Context-Modifier.role", "1");    
-        put("Default-User.role", "1");    
-        put("Depositor.role", "1");    
-        put("MD-Editor.role", "1");    
-        put("Moderator.role", "1");    
-        put("OU-Administrator.role", "1");    
-        put("Systemadministrator.role", "0");    
-        put("System-Inspector.role", "0");    
-    }};
+    private HashMap<String, String> roleCount = null;
     
     private HashMap<String, String> roleQueries = new HashMap<String, String>() {{
         put("administrator.role", 
@@ -168,6 +151,7 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
     public String getPermissionFilter(final String userId) throws Exception {
         fillIdsArray();
         fillIdsList();
+        fillRoleCountHash();
         StringBuffer queryBuf = new StringBuffer("");
         int counter = 0;
         for (String roleName : roleQueries.keySet()) {
@@ -277,6 +261,19 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
             str = str.replaceAll(":", "\\\\\\\\:");
             idsList[i] = str;
             i++;
+        }
+        in.close();
+    }
+
+    private void fillRoleCountHash() throws Exception {
+        roleCount = new HashMap<String, String>();
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+                getClass().getClassLoader().getResourceAsStream(roleCountFile), "UTF-8"));
+        String str = new String("");
+        while ((str = in.readLine()) != null) {
+            str = str.trim();
+            String[] parts = str.split(",");
+            roleCount.put(parts[0], parts[1]);
         }
         in.close();
     }
