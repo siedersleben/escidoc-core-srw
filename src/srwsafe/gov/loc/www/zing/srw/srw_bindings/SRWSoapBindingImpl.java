@@ -83,6 +83,26 @@ public class SRWSoapBindingImpl implements SRWPort {
     public SearchRetrieveResponseType searchRetrieveOperation(
       SearchRetrieveRequestType request) throws RemoteException {
         log.debug("Enter: searchRetrieveOperation");
+        if (log.isInfoEnabled()) {
+            log.info("request: maximumRecords:"
+                    + request.getMaximumRecords()
+                    + " query:"
+                    + request.getQuery()
+                    + " recordPacking:"
+                    + request.getRecordPacking()
+                    + " recordSchema:"
+                    + request.getRecordSchema()
+                    + " recordXpath:"
+                    + request.getRecordXPath()
+                    + " sortKeys:"
+                    + request.getSortKeys()
+                    + " startRecord:"
+                    + request.getStartRecord()
+                    + " stylesheet:"
+                    + request.getStylesheet()
+                    + " version:"
+                    + request.getVersion());
+        }
         long startTime=System.currentTimeMillis();
         MessageContext             msgContext=MessageContext.getCurrentContext();
         SearchRetrieveResponseType response;
@@ -204,6 +224,18 @@ public class SRWSoapBindingImpl implements SRWPort {
     public ScanResponseType scanOperation(ScanRequestType request)
       throws java.rmi.RemoteException {
         log.debug("Enter: scanOperation");
+        if (log.isInfoEnabled()) {
+            log.info("request: maximumTerms:"
+                    + request.getMaximumTerms()
+                    + " scanClause:"
+                    + request.getScanClause()
+                    + " stylesheet:"
+                    + request.getStylesheet()
+                    + " responsePosition:"
+                    + request.getResponsePosition()
+                    + " version:"
+                    + request.getVersion());
+        }
         MessageContext   msgContext=MessageContext.getCurrentContext();
         ScanResponseType response;
         String dbname=(String)msgContext.getProperty("dbname");
