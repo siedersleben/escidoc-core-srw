@@ -1350,6 +1350,7 @@ public abstract class SRWDatabase {
 //            sb.append("          <port>"+request.getServerPort()+"</port>\n");
 //            if(request.getServerPort()!=80)
 //                urlStr.append(":").append(request.getServerPort());
+//            urlStr.append("/");
 //            sb.append("          <database>");
 //            String contextPath=request.getContextPath();
 //            if(contextPath!=null && contextPath.length()>1) {
