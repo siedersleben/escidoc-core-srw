@@ -41,7 +41,7 @@
             <zipfileset dir="" includes="*.wsdl" prefix=""/>
         </jar>
 -modify SRW-Repository/nbproject/project.properties, add lib/escidoc/common.jar to classpath
--build SRW-Repository (target do-dist-with-manifest)
+-build SRW-Repository (target -do-dist-with-manifest)
 -copy SRW-Repository/dist/SRW.jar to eSciDocCoreSrw/lib/srw
 -check for additional libs in SRW-Repository (NOT commons-logging.jar!!)
 -copy SRW-Repository/web/WEB-INF/deploy.wsdd,undeploy.wsdd + server-config.wsdd to eSciDocCoreSrw/conf

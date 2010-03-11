@@ -76,6 +76,7 @@ import org.z3950.zing.cql.CQLTermNode;
 import ORG.oclc.os.SRW.QueryResult;
 import de.escidoc.sb.srw.Constants;
 import de.escidoc.sb.srw.EscidocTranslator;
+import de.escidoc.sb.srw.PermissionFilterGenerator;
 import de.escidoc.sb.srw.lucene.highlighting.SrwHighlighter;
 import de.escidoc.sb.srw.lucene.queryParser.EscidocQueryParser;
 import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
@@ -92,9 +93,9 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
  * field 
  * -we have to analyze the terms with the analyzer 
  * -enable fuzzy search
+ * -check for permission-filtering
  * 
  * @author MIH
- * @sb
  */
 public class EscidocLuceneTranslator extends EscidocTranslator {
 
@@ -200,6 +201,26 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     }
 
     /**
+     * Expand query with filter for permission.
+     * only works if permission-filtering fields are indexed.
+     */
+    private boolean permissionFiltering = false;
+
+    /**
+     * @return String similarity.
+     */
+    public boolean getPermissionFiltering() {
+        return forceScoring;
+    }
+
+    /**
+     * @param inp forceScoring.
+     */
+    public void setPermissionFiltering(final boolean inp) {
+        forceScoring = inp;
+    }
+
+    /**
      * construct.
      * 
      * @sb
@@ -207,6 +228,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     public EscidocLuceneTranslator() {
         setIdentifierTerm(DEFAULT_ID_TERM);
     }
+    
+    private PermissionFilterGenerator permissionFilterGenerator = 
+                                    new LucenePermissionFilterGenerator();
 
     /**
      * construct with path to lucene-index.
@@ -324,6 +348,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             forceScoring = new Boolean(temp).booleanValue();
         }
 
+        temp = (String) properties.get(Constants.PROPERTY_PERMISSION_FILTERING);
+        if (temp != null && temp.trim().length() != 0) {
+            permissionFiltering = new Boolean(temp).booleanValue();
+        }
+
     }
 
     /**
@@ -372,6 +401,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // with the defaultFieldName from configuration
             Query unanalyzedQuery = makeQuery(queryRoot);
 
+            //execute fuzzy-queries with lower maxClauseCount
+            if (unanalyzedQuery.toString().indexOf("~") > -1) {
+                BooleanQuery.setMaxClauseCount(
+                        Constants.FUZZY_BOOLEAN_MAX_CLAUSE_COUNT);
+            }
+
             // rewrite query to analyzed query
             // EscidocQueryParser also analyzes wildcard-queries
             // If you want scoring with wildcard-queries,
@@ -380,14 +415,18 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             QueryParser parser =
                 new EscidocQueryParser(
                         getDefaultIndexField(), analyzer, forceScoring);
-            Query query = parser.parse(unanalyzedQuery.toString());
-            
-            //execute fuzzy-queries with lower maxClauseCount
-            if (query.toString().indexOf("~") > -1) {
-                BooleanQuery.setMaxClauseCount(
-                        Constants.FUZZY_BOOLEAN_MAX_CLAUSE_COUNT);
+            Query query = null;
+            if (permissionFiltering) {
+                StringBuffer queryBuffer = new StringBuffer("(\n")
+                                                .append(unanalyzedQuery.toString())
+                                                .append("\n) AND (\n")
+                                                .append(permissionFilterGenerator.getPermissionFilter(null))
+                                                .append("\n)");
+                query = parser.parse(queryBuffer.toString());
+            } else {
+                query = parser.parse(unanalyzedQuery.toString());
             }
-
+            
             log.info("escidoc lucene search=" + query);
 
             searcher = 
@@ -410,6 +449,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 maximumHits += getDefaultNumberOfRecords();
             }
             // perform sorted search?
+            long time = System.currentTimeMillis();
             if (sort == null) {
                 searcher.setDefaultFieldSortScoring(false, false);
                 results = searcher.search(query, maximumHits);
@@ -418,12 +458,16 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 searcher.setDefaultFieldSortScoring(true, false);
                 results = searcher.search(query, null, maximumHits, sort);
             }
+            if (log.isInfoEnabled()) {
+                log.info("search needed " + (System.currentTimeMillis() - time) + " ms");
+            }
             size = results.totalHits;
 
             // initialize Highlighter
             if (highlighter != null) {
                 try {
-                    highlighter.initialize(getIndexPath(), query);
+                    highlighter.initialize(getIndexPath(), 
+                                parser.parse(unanalyzedQuery.toString()));
                 } catch (Exception e) {
                     log.error(e);
                 }

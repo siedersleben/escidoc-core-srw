@@ -109,6 +109,11 @@ public class Constants {
     public static final String PROPERTY_FORCE_SCORING =
         "cqlTranslator.forceScoring";
     
+    //used to indicate if query has to get expanded with filter for permission
+    //only works if permission-filtering fields are indexed
+    public static final String PROPERTY_PERMISSION_FILTERING =
+        "cqlTranslator.permissionFiltering";
+    
     public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT =
         "cqlTranslator.highlightTermFulltext";
 
