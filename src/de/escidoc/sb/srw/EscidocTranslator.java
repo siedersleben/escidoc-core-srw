@@ -33,6 +33,7 @@ import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -62,6 +63,8 @@ import org.z3950.zing.cql.CQLSortNode;
 import org.z3950.zing.cql.CQLTermNode;
 import org.z3950.zing.cql.Modifier;
 import org.z3950.zing.cql.ModifierSet;
+
+import de.escidoc.core.common.util.configuration.EscidocConfiguration;
 
 import ORG.oclc.os.SRW.QueryResult;
 
@@ -248,6 +251,9 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	 * @sb
 	 */
 	protected String replaceEnvVariables(final String property) {
+	    try {
+	        EscidocConfiguration.getInstance();
+	    } catch (IOException e) {}
 		String replacedProperty = property;
 		if (property.indexOf("${") > -1) {
 			String[] envVariables = property.split("\\}.*?\\$\\{");
