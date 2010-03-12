@@ -4,7 +4,7 @@
   <parameter name="sendMultiRefs" value="true"/>
   <parameter name="disablePrettyXML" value="true"/>
   <parameter name="adminPassword" value="admin"/>
-  <!--parameter name="attachments.Directory" value="D:\Apache Tomcat 4.1\webapps"/-->
+  <parameter name="attachments.Directory" value="./attachments"/>
   <parameter name="axis.sendMinimizedElements" value="true"/>
   <parameter name="enableNamespacePrefixOptimization" value="true"/>
   <parameter name="sendXMLDeclaration" value="true"/>
