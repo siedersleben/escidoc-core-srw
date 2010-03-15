@@ -96,9 +96,9 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
         put("Context-Modifier.role", 
                 "(permissions-filter.objecttype:context AND permissions-filter.PID:escidoc\\:elibmcontext1)");    
         put("Default-User.role", 
-                "((permissions-filter.objecttype:item AND permissions-filter.version-status:released)  "
+                "((permissions-filter.objecttype:item AND permissions-filter.version.status:released)  "
                 + "OR "
-                + "(permissions-filter.objecttype:container AND permissions-filter.version-status:released) "
+                + "(permissions-filter.objecttype:container AND permissions-filter.version.status:released) "
                 + "OR "
                 + "(permissions-filter.objecttype:context AND permissions-filter.public-status:(opened closed)) "
                 + "OR "
@@ -114,19 +114,19 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
         put("MD-Editor.role", 
                 "((permissions-filter.objecttype:item AND permissions-filter.context-id:${anyScope} AND  "
                 + "permissions-filter.public-status:(submitted released in-revision withdrawn) AND  "
-                + "permissions-filter.version-status:(pending submitted released in-revision)) "
+                + "permissions-filter.version.status:(pending submitted released in-revision)) "
                 + "OR "
                 + "(permissions-filter.objecttype:container AND permissions-filter.context-id:${anyScope} AND  "
                 + "permissions-filter.public-status:(submitted released in-revision withdrawn) AND  "
-                + "permissions-filter.version-status:(pending submitted released in-revision)))");    
+                + "permissions-filter.version.status:(pending submitted released in-revision)))");    
         put("Moderator.role", 
                 "((permissions-filter.objecttype:item AND permissions-filter.context-id:${anyScope} AND  "
                 + "permissions-filter.public-status:(submitted released in-revision withdrawn) AND  "
-                + "permissions-filter.version-status:(pending submitted released in-revision)) "
+                + "permissions-filter.version.status:(pending submitted released in-revision)) "
                 + "OR "
                 + "(permissions-filter.objecttype:container AND permissions-filter.context-id:${anyScope} AND  "
                 + "permissions-filter.public-status:(submitted released in-revision withdrawn) AND  "
-                + "permissions-filter.version-status:(pending submitted released in-revision)))");    
+                + "permissions-filter.version.status:(pending submitted released in-revision)))");    
         put("OU-Administrator.role", 
                 "(permissions-filter.objecttype:organizational-unit AND permissions-filter.PID:(${hierarchicalContainerScope}))");    
         put("System-Inspector.role", 
