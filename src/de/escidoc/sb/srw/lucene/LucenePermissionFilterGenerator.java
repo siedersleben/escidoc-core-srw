@@ -61,9 +61,9 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
               + "OR "
               + "(permissions-filter.objecttype:context AND permissions-filter.PID=escidoc\\:elibmcontext1))");    
         put("Collaborator-Modifier-Container-Add-Remove-Any-Members.role", 
-                "((permissions-filter.objecttype:item AND permissions-filter.PID:(${hierarchicalContainerScope})) "
+                "((permissions-filter.objecttype:item AND permissions-filter.PID:(${containerScope})) "
                 + "OR "
-                + "(permissions-filter.objecttype:container AND permissions-filter.PID:(${hierarchicalContainerScope}))) ");    
+                + "(permissions-filter.objecttype:container AND permissions-filter.PID:(${containerScope}))) ");    
         put("Collaborator-Modifier-Container-Add-Remove-Members.role", 
                 "(permissions-filter.objecttype:container AND permissions-filter.PID:${containerScope})");    
         put("Collaborator-Modifier-Container-Update-Any-Members.role", 
@@ -216,10 +216,10 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
         int random = randomGenerator.nextInt(idsArray.size());
         StringBuffer buf = new StringBuffer("");
         for (String key : idsArray.keySet()) {
-            i++;
             if (i == random) {
                 buf.append(key);
             }
+            i++;
         }
         return buf.toString();
     }

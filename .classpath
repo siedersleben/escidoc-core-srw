@@ -32,5 +32,8 @@
 	<classpathentry kind="lib" path="lib/escidoc/jcl-over-slf4j-1.5.11.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/slf4j-api-1.5.11.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/slf4j-log4j12-1.5.11.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-tiger-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/wss4j-1.5.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

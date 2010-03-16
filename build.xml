@@ -41,9 +41,11 @@
     </target>
 
     <target name="jar" depends="compile">
+        <copy todir="${build.dir}/META-INF/services">
+            <fileset dir="${conf.dir}" includes="*.wsdd.Provider"/>
+        </copy>
     	<!--MIH: also include packages de.escidoc.* in compilation -->
-        <!--jar jarfile="dist/SRW.jar" basedir="build" includes="gov/**/*.class ORG/oclc/os/SRW/*.class"/-->
-        <jar jarfile="${dist.dir}/${escidoc.srw.jarfile.name}" basedir="${build.dir}" includes="org/osuosl/**/*.class de/escidoc/**/*.class"/>
+        <jar jarfile="${dist.dir}/${escidoc.srw.jarfile.name}" basedir="${build.dir}" includes="org/osuosl/**/*.class de/escidoc/**/*.class META-INF/services/*"/>
     	
     </target>
 
@@ -59,12 +61,10 @@
             <zipfileset dir="${dist.dir}" includes="${escidoc.srw.jarfile.name}" prefix="WEB-INF/lib"/>
 
         	<!--MIH: add web.xml from conf/escidoc-directory -->
-        	<!--zipfileset dir="conf" includes="*.wsdd web.xml" prefix="WEB-INF"/-->
         	<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
         	<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
 
         	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
-            <!--zipfileset dir="conf" includes="SRWServer.props" prefix="WEB-INF/classes"/-->
             <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
 
         	<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>

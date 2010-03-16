@@ -51,6 +51,7 @@ import org.w3c.dom.Element;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 //import javax.servlet.http.HttpUtils;
@@ -70,6 +71,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import org.apache.axis.SOAPPart;
+
+import de.escidoc.core.common.util.string.StringUtility;
 
 /**
  *
@@ -125,6 +128,8 @@ public class SRWServlet extends AxisServlet {
 //     * hole)
 //     */
 //    private boolean enableList = false;
+//
+//    public static final String COOKIE_LOGIN = "escidocCookie";
 //
 //
 //    /**
@@ -1323,6 +1328,16 @@ public class SRWServlet extends AxisServlet {
 //              .append("xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" ")
 //              .append("xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" ")
 //              .append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">")
+//              .append("<soap:Header>")
+//              .append("<wsse:Security xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" soap:mustUnderstand=\"1\">")
+//              .append("<wsse:UsernameToken>")
+//              .append("<wsse:Username>eSciDocUser</wsse:Username>")
+//              .append("<wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\">")
+//              .append(getHandle(req))
+//              .append("</wsse:Password>")
+//              .append("</wsse:UsernameToken>")
+//              .append("</wsse:Security>")
+//              .append("</soap:Header>")
 //              .append("<soap:Body xmlns:srw=\"http://www.loc.gov/zing/srw/\">")
 //              .append("<srw:searchRetrieveRequest>")
 //              .append("<srw:query>").append(encode(query)).append("</srw:query>");
@@ -1510,6 +1525,16 @@ public class SRWServlet extends AxisServlet {
 //              .append("xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" ")
 //              .append("xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" ")
 //              .append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">")
+//              .append("<soap:Header>")
+//              .append("<wsse:Security xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" soap:mustUnderstand=\"1\">")
+//              .append("<wsse:UsernameToken>")
+//              .append("<wsse:Username>eSciDocUser</wsse:Username>")
+//              .append("<wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\">")
+//              .append(getHandle(req))
+//              .append("</wsse:Password>")
+//              .append("</wsse:UsernameToken>")
+//              .append("</wsse:Security>")
+//              .append("</soap:Header>")
 //              .append("<soap:Body>")
 //              .append("<srw:scanRequest ")
 //              .append("xmlns:srw=\"http://www.loc.gov/zing/srw/\">")
@@ -1698,4 +1723,47 @@ public class SRWServlet extends AxisServlet {
 //        }
 //    }
 //    ///////////////////////////////////////////////////////////////////////////////////////
+//    /**
+//     * Gets the eSciDoc-Cookie containing the user-handle.<br>
+//     * 
+//     * @param request
+//     *            The http request.
+//     * @return Returns an <code>String</code> array with the user name value at
+//     *         the first position and the password at the second position.<br>
+//     *         If no Authorization header has been set, <code>null</code> is
+//     *         returned.
+//     * @throws IOException
+//     *             In case of an I/O error.
+//     */
+//    public static String getHandle(final HttpServletRequest request)
+//        throws IOException {
+//
+//        // Authentication via browser cookie
+//        Cookie cookie = null;
+//        final Cookie[] cookies = request.getCookies();
+//        if ((cookies != null) && (cookies.length > 0)) {
+//            for (int i = 0; i < cookies.length; ++i) {
+//                if (COOKIE_LOGIN.equals(cookies[i].getName())) {
+//                    cookie = cookies[i];
+//                    break;
+//                }
+//            }
+//        }
+//
+//        if (cookie != null) {
+//            final String handle = cookie.getValue();
+//            if (log.isDebugEnabled()) {
+//                log.debug(
+//                    StringUtility.concatenate("Received handle in cookie: ",
+//                        handle));
+//            }
+//            return handle;
+//        }
+//        else {
+//            log.info(
+//                "No handle in cookie received, assuming  anonymous access.");
+//            return "";
+//        }
+//    }
+
 }

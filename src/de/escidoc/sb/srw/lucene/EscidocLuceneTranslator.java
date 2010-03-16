@@ -74,6 +74,7 @@ import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLTermNode;
 
 import ORG.oclc.os.SRW.QueryResult;
+import de.escidoc.core.common.util.service.UserContext;
 import de.escidoc.sb.srw.Constants;
 import de.escidoc.sb.srw.EscidocTranslator;
 import de.escidoc.sb.srw.PermissionFilterGenerator;
@@ -378,6 +379,10 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     public QueryResult search(
         final CQLNode queryRoot, final ExtraDataType extraDataType,
         final SearchRetrieveRequestType request) throws SRWDiagnostic {
+        long time = 0;
+        if (log.isInfoEnabled()) {
+            time = System.currentTimeMillis();
+        }
         // Increase maxClauseCount of BooleanQuery for Wildcard-Searches
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
 
@@ -420,7 +425,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 StringBuffer queryBuffer = new StringBuffer("(\n")
                                                 .append(unanalyzedQuery.toString())
                                                 .append("\n) AND (\n")
-                                                .append(permissionFilterGenerator.getPermissionFilter(null))
+                                                .append(permissionFilterGenerator.getPermissionFilter(UserContext.getHandle()))
                                                 .append("\n)");
                 query = parser.parse(queryBuffer.toString());
             } else {
@@ -448,8 +453,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             } else {
                 maximumHits += getDefaultNumberOfRecords();
             }
+            
+            if (log.isInfoEnabled()) {
+                log.info("search query preparation finished at " 
+                            + (System.currentTimeMillis() - time) + " ms");
+            }
             // perform sorted search?
-            long time = System.currentTimeMillis();
             if (sort == null) {
                 searcher.setDefaultFieldSortScoring(false, false);
                 results = searcher.search(query, maximumHits);
@@ -459,7 +468,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 results = searcher.search(query, null, maximumHits, sort);
             }
             if (log.isInfoEnabled()) {
-                log.info("search needed " + (System.currentTimeMillis() - time) + " ms");
+                log.info("search finished at " 
+                            + (System.currentTimeMillis() - time) + " ms");
             }
             size = results.totalHits;
 
@@ -514,7 +524,10 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     + " to " + endRecord);
             }
             identifiers = createIdentifiers(searcher, results, startRecord, endRecord);
-            
+            if (log.isInfoEnabled()) {
+                log.info("identifier creation finished at " 
+                            + (System.currentTimeMillis() - time) + " ms");
+            }
         }
         catch (Exception e) {
             throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
