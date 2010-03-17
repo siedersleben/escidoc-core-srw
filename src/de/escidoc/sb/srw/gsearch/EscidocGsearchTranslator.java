@@ -36,6 +36,7 @@ import gov.loc.www.zing.srw.TermType;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,6 +49,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
@@ -63,7 +65,7 @@ import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLTermNode;
 
 import ORG.oclc.os.SRW.QueryResult;
-import de.escidoc.core.common.util.service.HttpRequester;
+import de.escidoc.core.common.util.service.ConnectionUtility;
 import de.escidoc.core.common.util.stax.StaxParser;
 import de.escidoc.sb.srw.Constants;
 import de.escidoc.sb.srw.EscidocTranslator;
@@ -82,7 +84,9 @@ import de.escidoc.sb.srw.stax.handler.SplitHandler;
  */
 public class EscidocGsearchTranslator extends EscidocTranslator {
 
-	/**
+    private ConnectionUtility connectionUtility = new ConnectionUtility();
+    
+    /**
 	 * construct.
 	 * 
 	 * @sb
@@ -206,9 +210,10 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 
 		String[] identifiers = null;
 		try {
-			HttpRequester httpRequester = new HttpRequester(
-					Constants.GSEARCH_URL);
-			String records = httpRequester.doGet(parameters.toString());
+            GetMethod getMethod = connectionUtility.getRequestURL(
+                    new URL(Constants.GSEARCH_URL 
+                        + parameters.toString()));
+            String records = getMethod.getResponseBodyAsString();
 			StaxParser sp = new StaxParser();
 			SplitHandler handler = new SplitHandler(sp, Constants.XML_HIT_PATH);
 			sp.addHandler(handler);

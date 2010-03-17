@@ -5,7 +5,6 @@
 	<classpathentry kind="lib" path="lib/escidoc/stax/jsr173_1.0_api.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/stax/stax2.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/stax/wstx-asl-3.1.2.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/common.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-lang-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/escidoc-analyzers.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-ja.jar"/>
@@ -35,5 +34,7 @@
 	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-2.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-tiger-2.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/wss4j-1.5.3.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/commons-httpclient-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/escidoc-core-utilities-1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

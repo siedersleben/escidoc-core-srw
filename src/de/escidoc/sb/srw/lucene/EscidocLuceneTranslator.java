@@ -421,6 +421,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 new EscidocQueryParser(
                         getDefaultIndexField(), analyzer, forceScoring);
             Query query = null;
+            String handle = UserContext.getHandle();
             if (permissionFiltering) {
                 StringBuffer queryBuffer = new StringBuffer("(\n")
                                                 .append(unanalyzedQuery.toString())
