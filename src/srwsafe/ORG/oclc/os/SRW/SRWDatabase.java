@@ -1366,7 +1366,7 @@ public abstract class SRWDatabase {
 //            }
 //            sb.append("</database>\n");
 //            baseURL=urlStr.toString();
-//            log.error("baseURL="+baseURL);
+//            log.info("baseURL="+baseURL);
 //        }
 //        sb.append("          </serverInfo>\n");
 //        sb.append(getDatabaseInfo());
