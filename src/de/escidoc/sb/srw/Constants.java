@@ -65,8 +65,7 @@ public class Constants {
     public static final String SEARCH_RESULT_START_ELEMENT = 
         "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":search-result-record "
         + "xmlns:" + SEARCH_RESULT_NAMESPACE_PREFIX 
-        + "=\"http://www.escidoc.de/schemas/searchresult/0.8\" "
-        + "xml:base=\"http://www.escidoc.de/\">\n";
+        + "=\"http://www.escidoc.de/schemas/searchresult/0.8\">\n";
 
     public static final String SEARCH_RESULT_END_ELEMENT = 
         "</" + SEARCH_RESULT_NAMESPACE_PREFIX + ":search-result-record>";
