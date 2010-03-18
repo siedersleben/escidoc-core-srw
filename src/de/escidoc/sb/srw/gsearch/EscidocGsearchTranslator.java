@@ -210,10 +210,9 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 
 		String[] identifiers = null;
 		try {
-            GetMethod getMethod = connectionUtility.getRequestURL(
+		    String records = connectionUtility.getRequestURLAsString(
                     new URL(Constants.GSEARCH_URL 
                         + parameters.toString()));
-            String records = getMethod.getResponseBodyAsString();
 			StaxParser sp = new StaxParser();
 			SplitHandler handler = new SplitHandler(sp, Constants.XML_HIT_PATH);
 			sp.addHandler(handler);
