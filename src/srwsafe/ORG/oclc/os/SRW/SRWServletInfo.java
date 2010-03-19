@@ -202,8 +202,9 @@ public class SRWServletInfo {
 //                    break;
 //            }
 //        }
-//        if(dbnames.get(dbname)==null)
-//            dbname=defaultDatabase;
+//    //MIH: dont return defaultDatabase
+////        if(dbnames.get(dbname)==null)
+////            dbname=defaultDatabase;
 //        log.info("dbname="+dbname);
 //        return dbname;
 //    }
