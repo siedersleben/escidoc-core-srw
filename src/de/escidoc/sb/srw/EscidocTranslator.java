@@ -30,6 +30,7 @@
 package de.escidoc.sb.srw;
 
 import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
 
@@ -76,6 +77,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 
     public static final String PROPERTY_DEFAULT_NUMBER_OF_RECORDS = "numberOfRecords";
 
+    public static final String PROPERTY_DEFAULT_NUMBER_OF_SCAN_TERMS = "numberOfScanTerms";
+
 	public static final int DIAGNOSTIC_CODE_NINETEEN = 19;
 
 	public static final int DIAGNOSTIC_CODE_TWENTY = 19;
@@ -116,6 +119,11 @@ public abstract class EscidocTranslator extends LuceneTranslator {
     protected int defaultNumberOfRecords = 20;
 
     /**
+     * Default number of records
+     */
+    protected int defaultNumberOfScanTerms = 20;
+
+    /**
      * @return String defaultNumberOfRecords.
      */
     public int getDefaultNumberOfRecords() {
@@ -128,6 +136,21 @@ public abstract class EscidocTranslator extends LuceneTranslator {
      */
     public void setDefaultNumberOfRecords(final String inp) {
         defaultNumberOfRecords = Integer.parseInt(inp);
+    }
+
+    /**
+     * @return String defaultNumberOfScanTerms.
+     */
+    public int getDefaultNumberOfScanTerms() {
+        return defaultNumberOfScanTerms;
+    }
+
+    /**
+     * @param inp
+     *            defaultNumberOfScanTerms.
+     */
+    public void setDefaultNumberOfScanTerms(final String inp) {
+        defaultNumberOfScanTerms = Integer.parseInt(inp);
     }
 
 	/**
@@ -191,7 +214,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	 */
 	@Override
     public abstract TermType[] scan(final CQLTermNode queryRoot,
-			final ExtraDataType extraDataType) throws Exception;
+			final ScanRequestType scanRequestType) throws Exception;
 	
     /**
      * Returns a list of all FieldNames currently in lucene-index

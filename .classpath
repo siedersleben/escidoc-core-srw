@@ -36,5 +36,6 @@
 	<classpathentry kind="lib" path="lib/escidoc/wss4j-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/common.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/commons-collections.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -30,6 +30,7 @@
 package de.escidoc.sb.srw.lucene;
 
 import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
 
@@ -37,17 +38,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.axis.types.NonNegativeInteger;
 import org.apache.axis.types.PositiveInteger;
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -56,6 +52,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
@@ -293,6 +291,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             setDefaultNumberOfRecords(temp);
         }
 
+        temp = (String) properties.get(PROPERTY_DEFAULT_NUMBER_OF_SCAN_TERMS);
+        if (temp != null && temp.trim().length() != 0) {
+            setDefaultNumberOfScanTerms(temp);
+        }
+
         temp = (String) properties.get(PROPERTY_IDENTIFIER_TERM);
         if (temp != null && temp.trim().length() != 0) {
             setIdentifierTerm(temp);
@@ -503,7 +506,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             /**
              * get endRecord
              */
-            int maxRecords = DIAGNOSTIC_CODE_TWENTY;
+            int maxRecords = getDefaultNumberOfRecords();
             int endRecord = 0;
             NonNegativeInteger maxRecordsInt = request.getMaximumRecords();
             if (maxRecordsInt != null) {
@@ -565,113 +568,250 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      */
     @Override
     public TermType[] scan(
-        final CQLTermNode queryRoot, final ExtraDataType extraDataType)
-        throws Exception {
+            final CQLTermNode queryRoot, final ScanRequestType scanRequestType)
+            throws Exception {
 
-        TermType[] response = new TermType[0];
-        Map termMap = new HashMap();
-        IndexSearcher searcher = null;
-
-        try {
-            // convert the CQL search to lucene search
-            Query unanalyzedQuery = makeQuery(queryRoot);
-
-            // rewrite query to analyzed query
-            QueryParser parser =
-                new EscidocQueryParser(
-                        getDefaultIndexField(), analyzer);
-            Query query = parser.parse(unanalyzedQuery.toString());
-            log.info("lucene search=" + query);
-
-            /**
-             * scan query should always be a single term, just get that term's
-             * qualifier
-             */
-            String searchField = queryRoot.getIndex();
+            int responsePosition = 0;
+            if (scanRequestType.getResponsePosition() != null) {
+                responsePosition = scanRequestType.getResponsePosition().intValue();
+            }
+            
+            int maximumTerms = getDefaultNumberOfScanTerms();
+            if (scanRequestType.getMaximumTerms() != null) {
+                maximumTerms = scanRequestType.getMaximumTerms().intValue();
+            }
+            
             boolean exact =
-                queryRoot
-                    .getRelation().toCQL().equalsIgnoreCase("exact");
+                queryRoot.getRelation().toCQL().equalsIgnoreCase("exact");
 
-            // perform search
-            searcher = 
-                new IndexSearcher(FSDirectory.open(new File(getIndexPath())));
-            TopDocs results = searcher.search(query, 1000);
-            int size = results.scoreDocs.length;
+            String searchField = queryRoot.getIndex();
+            String searchTerm = queryRoot.getTerm();
+            
+            if (!exact) {
+                return scanByTermList(
+                        responsePosition, 
+                        maximumTerms, 
+                        searchField, 
+                        searchTerm);
+                
+            } else {
+                return scanBySearch(queryRoot, maximumTerms, searchField);
+            }
 
-            log.info(size + " handles found");
-
-            if (size != 0) {
-                // iterater through hits counting terms
-                for (int i = 0; i < size; i++) {
-                    org.apache.lucene.document.Document doc = 
-                        searcher.doc(results.scoreDocs[i].doc);
-
-                    // MIH: Changed: get all fileds and not only one.
-                    // Concat fieldValues into fieldString
-                    Field[] fields = doc.getFields(searchField);
-                    StringBuffer fieldValue = new StringBuffer("");
-                    if (fields != null) {
-                        for (int j = 0; j < fields.length; j++) {
-                            fieldValue.append(fields[j].stringValue()).append(
-                                " ");
+        }
+        
+        /**
+         * Scans index for terms by getting terms with IndexReader. 
+         * 
+         * @param responsePosition position of searchTerm in response
+         * @param maximumTerms maximum Terms to return
+         * @param searchField field containing the terms
+         * @param searchTerm searchTerm
+         * @return TermType[] Array of TermTypes
+         * @throws Exception
+         *             e
+         * 
+         */
+        private TermType[] scanByTermList(
+                final int responsePosition, 
+                final int maximumTerms, 
+                final String searchField, 
+                final String searchTerm) throws Exception {
+            TermType[] response = new TermType[0];
+            Collection<TermType> termList = new ArrayList<TermType>();
+            IndexReader reader = null;
+            int termCounter = 0;
+            try {
+                reader = IndexReader.open(FSDirectory.open(
+                        new File(getIndexPath())));
+                TermEnum terms = reader.terms(new Term(searchField, searchTerm));
+                if (terms.term() == null) {
+                    return (TermType[]) termList.toArray(response);
+                }
+                String firstTerm = terms.term().text();
+                if (responsePosition < 2) {
+                    //just read termList starting with searchTerm
+                    if (responsePosition == 1) {
+                        String term = terms.term().text();
+                        String field = terms.term().field();
+                        int freq = terms.docFreq();
+                        if (field.equals(searchField)) {
+                            termList.add(fillTermType(term, freq));
+                            termCounter++;
                         }
                     }
-                    // /////////////////////////////////////////////////////////
+                    while (terms.next() 
+                            && terms.term().field().equals(searchField) 
+                            && termCounter < maximumTerms) {
+                        String term = terms.term().text();
+                        int freq = terms.docFreq();
+                        termList.add(fillTermType(term, freq));
+                        termCounter++;
+                    }
+                    return (TermType[]) termList.toArray(response);
 
-                    if (exact) {
+                } else {
+                    //get complete termList of search-field.
+                    //cache terms in list before search-term 
+                    //because also Terms occurring before searchTerm have to be in list.
+                    boolean termReached = false;
+                    LRUMap prev = new LRUMap(responsePosition - 1);
+                    terms = reader.terms(new Term(searchField, ""));
+                    if (terms.term() == null) {
+                        return (TermType[]) termList.toArray(response);
+                    }
+                    String term = terms.term().text();
+                    String field = terms.term().field();
+                    int freq = terms.docFreq();
+                    if (term.equals(firstTerm)) {
+                        termReached = true;
+                    }
+                    if (field.equals(searchField)) {
+                        if (termReached) {
+                            termList.add(fillTermType(term, freq));
+                            termCounter++;
+                        } else {
+                            prev.put(term, fillTermType(term, freq));
+                        }
+                    }
+                    while (terms.next() 
+                            && terms.term().field().equals(searchField)
+                            && termCounter < maximumTerms) {
+                        term = terms.term().text();
+                        field = terms.term().field();
+                        freq = terms.docFreq();
+                        if (term.equals(firstTerm)) {
+                            Collection<TermType> col = prev.values();
+                            for (TermType termType : col) {
+                                if (termCounter >= maximumTerms) {
+                                    break;
+                                }
+                                termList.add(termType);
+                                termCounter++;
+                            }
+                            termReached = true;
+                        }
+                        if (termReached && termCounter < maximumTerms) {
+                            termList.add(fillTermType(term, freq));
+                            termCounter++;
+                        } else {
+                            prev.put(term, fillTermType(term, freq));
+                        }
+                    }
+                    return (TermType[]) termList.toArray(response);
+                }
+            } catch (Exception e) {
+                throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
+                        .toString());
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    }
+                    catch (IOException e) {
+                        log.error("Exception while closing lucene index reader",
+                            e);
+                    }
+                    reader = null;
+                }
+            }
+        }
+        
+        /**
+         * Fill TermType-Object with given Values. 
+         * 
+         * @param term term-value
+         * @param freq number of lucene-documents where term appears.
+         * @return TermType TermType
+         * 
+         */
+        private TermType fillTermType(final String term, final int freq) {
+            TermType termType = new TermType();
+            termType.setValue(term);
+            termType.setNumberOfRecords(new NonNegativeInteger(Integer.toString(freq)));
+            return termType;
+        }
+
+        /**
+         * Scans index for terms by first searching with given CQL-Query 
+         * and then reading values of search-field. 
+         * 
+         * @param queryRoot CQL-Query
+         * @param maximumTerms maximum Terms to return
+         * @param searchField field containing the terms
+         * @return TermType[] Array of TermTypes
+         * @throws Exception
+         *             e
+         * 
+         */
+        private TermType[] scanBySearch(
+                final CQLTermNode queryRoot,
+                final int maximumTerms, 
+                final String searchField) throws Exception {
+            TermType[] response = new TermType[0];
+            Collection<TermType> termList = new ArrayList<TermType>();
+            IndexSearcher searcher = null;
+            try {
+                // convert the CQL search to lucene search
+                Query unanalyzedQuery = makeQuery(queryRoot);
+
+                // rewrite query to analyzed query
+                QueryParser parser =
+                    new EscidocQueryParser(getDefaultIndexField(), analyzer);
+                Query query = parser.parse(unanalyzedQuery.toString());
+                log.info("lucene search=" + query);
+                
+                searcher = 
+                    new IndexSearcher(FSDirectory.open(new File(getIndexPath())));
+                TopDocs results = searcher.search(query, maximumTerms);
+                int size = results.scoreDocs.length;
+
+                log.info(size + " handles found");
+
+                if (size != 0) {
+                    // iterate through hits counting terms
+                    for (int i = 0; i < size; i++) {
+                        org.apache.lucene.document.Document doc = 
+                            searcher.doc(results.scoreDocs[i].doc);
+
+                        // MIH: Changed: get all fields and not only one.
+                        // Concat fieldValues into fieldString
+                        Field[] fields = doc.getFields(searchField);
+                        StringBuffer fieldValue = new StringBuffer("");
+                        if (fields != null) {
+                            for (int j = 0; j < fields.length; j++) {
+                                fieldValue.append(fields[j].stringValue()).append(
+                                    " ");
+                            }
+                        }
+                        // /////////////////////////////////////////////////////////
+
                         // each field is counted as a term
-                        countTerm(termMap, fieldValue.toString());
-
-                    }
-                    else {
-                        /**
-                         * each word in the field is counted as a term. A term
-                         * should only be counted once per document so use a
-                         * tokenizer and a Set to create a list of unique terms
-                         * 
-                         * this is the default scan but can be explicitly
-                         * invoked with the "any" keyword.
-                         * 
-                         * example: 'dc.title any fish'
-                         */
-                        StringTokenizer tokenizer =
-                            new StringTokenizer(fieldValue.toString(), " ");
-                        Set termSet = new HashSet();
-                        while (tokenizer.hasMoreTokens()) {
-                            termSet.add(tokenizer.nextToken());
-                        }
-                        // count all terms
-                        Iterator iter = termSet.iterator();
-                        while (iter.hasNext()) {
-                            String term = (String) iter.next();
-                            countTerm(termMap, term);
-                        }
+                        termList.add(fillTermType(fieldValue.toString(), 1));
                     }
                 }
 
                 // done counting terms in all documents, convert map to array
-                response = (TermType[]) termMap.values().toArray(response);
+                response = (TermType[]) termList.toArray(response);
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            finally {
+                if (searcher != null) {
+                    try {
+                        searcher.close();
+                    }
+                    catch (IOException e) {
+                        log.error("Exception while closing lucene index searcher",
+                            e);
+                    }
+                    searcher = null;
+                }
             }
 
+            return response;
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if (searcher != null) {
-                try {
-                    searcher.close();
-                }
-                catch (IOException e) {
-                    log.error("Exception while closing lucene index searcher",
-                        e);
-                }
-                searcher = null;
-            }
-        }
-
-        return response;
-    }
 
     /**
      * Returns a list of all FieldNames currently in lucene-index

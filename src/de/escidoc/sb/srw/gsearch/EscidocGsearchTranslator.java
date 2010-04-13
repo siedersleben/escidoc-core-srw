@@ -30,6 +30,7 @@
 package de.escidoc.sb.srw.gsearch;
 
 import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
 
@@ -251,7 +252,7 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 	 */
 	@Override
     public TermType[] scan(final CQLTermNode queryRoot,
-			final ExtraDataType extraDataType) throws Exception {
+			final ScanRequestType scanRequestType) throws Exception {
 
 		TermType[] response = new TermType[0];
 		Map termMap = new HashMap();

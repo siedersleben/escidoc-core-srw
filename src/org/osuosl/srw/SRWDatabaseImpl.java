@@ -110,7 +110,7 @@ public class SRWDatabaseImpl extends ORG.oclc.os.SRW.SRWDatabase{
             CQLTermNode cqltermnode, ScanRequestType scanrequesttype) 
     throws Exception {
         TermList termList = new TermList();
-        TermType[] terms = cqlTranslator.scan(cqltermnode, scanrequesttype.getExtraRequestData());
+        TermType[] terms = cqlTranslator.scan(cqltermnode, scanrequesttype);
         termList.setTerms(terms);
         return termList;
     }
@@ -150,7 +150,7 @@ public class SRWDatabaseImpl extends ORG.oclc.os.SRW.SRWDatabase{
                         "cql.resultSetId", response);
             }
 
-            TermList termList = getTermList(root, position, maxTerms, request);
+            TermList termList = getTermList(root, request);
             
             TermsType terms=new TermsType();
             terms.setTerm(termList.getTerms());

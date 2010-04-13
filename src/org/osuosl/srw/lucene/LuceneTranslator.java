@@ -17,6 +17,7 @@
 package org.osuosl.srw.lucene;
 
 import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.TermType;
 
 import java.io.File;
@@ -159,6 +160,13 @@ public class LuceneTranslator implements CQLTranslator {
         }
 
         return new ResolvingQueryResult(identifiers);
+    }
+
+    public TermType[] scan(
+            CQLTermNode queryRoot, 
+            ScanRequestType scanRequestType) 
+                                throws Exception {
+        return scan(queryRoot, scanRequestType.getExtraRequestData());
     }
 
     public TermType[] scan(CQLTermNode queryRoot, ExtraDataType extraDataType) throws Exception {

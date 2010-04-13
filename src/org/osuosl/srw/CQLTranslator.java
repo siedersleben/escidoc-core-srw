@@ -20,6 +20,7 @@ import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLTermNode;
 
 import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.TermType;
 
 import java.util.Properties;
@@ -55,6 +56,16 @@ public interface CQLTranslator {
      * @return an array of terms and thier document counts.
      */
     public TermType[] scan(CQLTermNode queryRoot, ExtraDataType extraDataType) throws Exception;
+
+    /**
+     * Accepts a CQL Scan search and translates it into another search language,
+     * executes it, and then returns the results.
+     *
+     * @param queryRoot - The root node of a CQL search.
+     * @param extraDataType - nonstandard search parameters
+     * @return an array of terms and thier document counts.
+     */
+    public TermType[] scan(CQLTermNode queryRoot, ScanRequestType scanRequestType) throws Exception;
 
     /**
      * Initializes the translator with the properties passed in
