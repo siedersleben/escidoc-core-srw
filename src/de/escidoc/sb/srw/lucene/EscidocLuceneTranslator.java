@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -51,6 +52,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
@@ -209,14 +211,38 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * @return String similarity.
      */
     public boolean getPermissionFiltering() {
-        return forceScoring;
+        return permissionFiltering;
     }
 
     /**
      * @param inp forceScoring.
      */
     public void setPermissionFiltering(final boolean inp) {
-        forceScoring = inp;
+        permissionFiltering = inp;
+    }
+    
+    /**
+     * Map holding searchers for each index.
+     */
+    private HashMap<String, IndexSearcher> searchers = 
+                        new HashMap<String, IndexSearcher>();
+
+    /**
+     * @return IndexSearcher searcher.
+     */
+    public IndexSearcher getSearcher(final String indexPath) 
+                        throws IOException, CorruptIndexException {
+        if (searchers.get(indexPath) == null 
+                || !searchers.get(indexPath).getIndexReader().isCurrent()) {
+            if (searchers.get(indexPath) != null) {
+                try {
+                    searchers.get(indexPath).close();
+                } catch (Exception e) {}
+            }
+            searchers.put(indexPath, new IndexSearcher(
+                        FSDirectory.open(new File(indexPath))));
+        }
+        return searchers.get(indexPath);
     }
 
     /**
@@ -424,7 +450,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 new EscidocQueryParser(
                         getDefaultIndexField(), analyzer, forceScoring);
             Query query = null;
-            String handle = UserContext.getHandle();
             if (permissionFiltering) {
                 StringBuffer queryBuffer = new StringBuffer("(\n")
                                                 .append(unanalyzedQuery.toString())
@@ -438,8 +463,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             
             log.info("escidoc lucene search=" + query);
 
-            searcher = 
-                new IndexSearcher(FSDirectory.open(new File(getIndexPath())));
+            searcher = getSearcher(getIndexPath());
             //check if custom scoring should be done
             if (similarity != null) {
                 searcher.setSimilarity(similarity);
@@ -468,7 +492,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 results = searcher.search(query, maximumHits);
             }
             else {
-                searcher.setDefaultFieldSortScoring(true, false);
+                searcher.setDefaultFieldSortScoring(forceScoring, false);
                 results = searcher.search(query, null, maximumHits, sort);
             }
             if (log.isInfoEnabled()) {
@@ -536,18 +560,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         catch (Exception e) {
             throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
                 .toString());
-        }
-        finally {
-            if (searcher != null) {
-                try {
-                    searcher.close();
-                }
-                catch (IOException e) {
-                    log.error("Exception while closing lucene index searcher",
-                        e);
-                }
-                searcher = null;
-            }
         }
         return new ResolvingQueryResult(identifiers);
     }
@@ -622,8 +634,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             IndexReader reader = null;
             int termCounter = 0;
             try {
-                reader = IndexReader.open(FSDirectory.open(
-                        new File(getIndexPath())));
+                reader = getSearcher(getIndexPath()).getIndexReader();
                 TermEnum terms = reader.terms(new Term(searchField, searchTerm));
                 if (terms.term() == null) {
                     return (TermType[]) termList.toArray(response);
@@ -703,17 +714,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             } catch (Exception e) {
                 throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
                         .toString());
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    }
-                    catch (IOException e) {
-                        log.error("Exception while closing lucene index reader",
-                            e);
-                    }
-                    reader = null;
-                }
             }
         }
         
@@ -761,8 +761,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 Query query = parser.parse(unanalyzedQuery.toString());
                 log.info("lucene search=" + query);
                 
-                searcher = 
-                    new IndexSearcher(FSDirectory.open(new File(getIndexPath())));
+                searcher = getSearcher(getIndexPath());
                 TopDocs results = searcher.search(query, maximumTerms);
                 int size = results.scoreDocs.length;
 
@@ -797,18 +796,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             catch (IOException e) {
                 e.printStackTrace();
             }
-            finally {
-                if (searcher != null) {
-                    try {
-                        searcher.close();
-                    }
-                    catch (IOException e) {
-                        log.error("Exception while closing lucene index searcher",
-                            e);
-                    }
-                    searcher = null;
-                }
-            }
 
             return response;
         }
@@ -827,23 +814,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         Collection<String> fieldList = new ArrayList<String>();
         IndexReader reader = null;
         try {
-            reader = IndexReader.open(FSDirectory.open(
-                    new File(getIndexPath())));
+            reader = getSearcher(getIndexPath()).getIndexReader();
             fieldList = reader.getFieldNames(FieldOption.INDEXED);
         }
         catch (Exception e) {
             log.error(e);
-        }
-        finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                }
-                catch (IOException e) {
-                    log.error("Exception while closing lucene index reader", e);
-                }
-                reader = null;
-            }
         }
         return fieldList;
     }
@@ -862,8 +837,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         Collection<String> fieldList = new ArrayList<String>();
         IndexReader reader = null;
         try {
-            reader = IndexReader.open(FSDirectory.open(
-                    new File(getIndexPath())));
+            reader = getSearcher(getIndexPath()).getIndexReader();
             //Hack, because its not possible to get all stored fields
             //of an index
             for (int i = 0; i < 10 ; i++) {
@@ -880,17 +854,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         }
         catch (Exception e) {
             log.error(e);
-        }
-        finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                }
-                catch (IOException e) {
-                    log.error("Exception while closing lucene index reader", e);
-                }
-                reader = null;
-            }
         }
         return fieldList;
     }
