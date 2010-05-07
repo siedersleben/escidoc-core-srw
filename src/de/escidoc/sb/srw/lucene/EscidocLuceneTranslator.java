@@ -34,11 +34,9 @@ import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -53,7 +51,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.IndexReader.FieldOption;
@@ -66,7 +63,6 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.osuosl.srw.ResolvingQueryResult;
 import org.osuosl.srw.SRWDiagnostic;
@@ -222,27 +218,17 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     }
     
     /**
-     * Map holding searchers for each index.
-     */
-    private HashMap<String, IndexSearcher> searchers = 
-                        new HashMap<String, IndexSearcher>();
-
-    /**
      * @return IndexSearcher searcher.
      */
     public IndexSearcher getSearcher(final String indexPath) 
                         throws IOException, CorruptIndexException {
-        if (searchers.get(indexPath) == null 
-                || !searchers.get(indexPath).getIndexReader().isCurrent()) {
-            if (searchers.get(indexPath) != null) {
-                try {
-                    searchers.get(indexPath).close();
-                } catch (Exception e) {}
-            }
-            searchers.put(indexPath, new IndexSearcher(
-                        FSDirectory.open(new File(indexPath))));
-        }
-        return searchers.get(indexPath);
+        return IndexSearcherCache.getInstance().getIndexSearcher(indexPath);
+    }
+
+    /**
+     * @param IndexSearcher searcher.
+     */
+    public void releaseSearcher(final IndexSearcher searcher) {
     }
 
     /**
@@ -560,6 +546,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         catch (Exception e) {
             throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
                 .toString());
+        } finally {
+            releaseSearcher(searcher);
         }
         return new ResolvingQueryResult(identifiers);
     }
@@ -631,11 +619,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 final String searchTerm) throws Exception {
             TermType[] response = new TermType[0];
             Collection<TermType> termList = new ArrayList<TermType>();
-            IndexReader reader = null;
+            IndexSearcher searcher = null;
             int termCounter = 0;
             try {
-                reader = getSearcher(getIndexPath()).getIndexReader();
-                TermEnum terms = reader.terms(new Term(searchField, searchTerm));
+                searcher = getSearcher(getIndexPath());
+                TermEnum terms = searcher.getIndexReader()
+                            .terms(new Term(searchField, searchTerm));
                 if (terms.term() == null) {
                     return (TermType[]) termList.toArray(response);
                 }
@@ -667,7 +656,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     //because also Terms occurring before searchTerm have to be in list.
                     boolean termReached = false;
                     LRUMap prev = new LRUMap(responsePosition - 1);
-                    terms = reader.terms(new Term(searchField, ""));
+                    terms = searcher.getIndexReader()
+                            .terms(new Term(searchField, ""));
                     if (terms.term() == null) {
                         return (TermType[]) termList.toArray(response);
                     }
@@ -714,6 +704,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             } catch (Exception e) {
                 throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
                         .toString());
+            } finally {
+                releaseSearcher(searcher);
             }
         }
         
@@ -795,6 +787,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                releaseSearcher(searcher);
             }
 
             return response;
@@ -812,13 +806,16 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     @Override
     public Collection<String> getIndexedFieldList() {
         Collection<String> fieldList = new ArrayList<String>();
-        IndexReader reader = null;
+        IndexSearcher searcher = null;
         try {
-            reader = getSearcher(getIndexPath()).getIndexReader();
-            fieldList = reader.getFieldNames(FieldOption.INDEXED);
+            searcher = getSearcher(getIndexPath());
+            fieldList = searcher.getIndexReader()
+                        .getFieldNames(FieldOption.INDEXED);
         }
         catch (Exception e) {
             log.error(e);
+        } finally {
+            releaseSearcher(searcher);
         }
         return fieldList;
     }
@@ -835,14 +832,14 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     @Override
     public Collection<String> getStoredFieldList() {
         Collection<String> fieldList = new ArrayList<String>();
-        IndexReader reader = null;
+        IndexSearcher searcher = null;
         try {
-            reader = getSearcher(getIndexPath()).getIndexReader();
+            searcher = getSearcher(getIndexPath());
             //Hack, because its not possible to get all stored fields
             //of an index
             for (int i = 0; i < 10 ; i++) {
             	try {
-                	Document doc = reader.document(i);
+                	Document doc = searcher.getIndexReader().document(i);
                 	List<Fieldable> fields = doc.getFields();
                 	for (Fieldable field : fields) {
                 		if (field.isStored() && !fieldList.contains(field.name())) {
@@ -854,6 +851,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         }
         catch (Exception e) {
             log.error(e);
+        } finally {
+            releaseSearcher(searcher);
         }
         return fieldList;
     }
