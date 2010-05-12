@@ -30,6 +30,7 @@ package de.escidoc.sb.srw.lucene;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.lucene.index.CorruptIndexException;
@@ -53,7 +54,8 @@ public final class IndexSearcherCache {
         new AppLogger(IndexSearcherCache.class.getName());
 
     /** Holds IndexSeracher for each index. */
-    private Map<String, IndexSearcher> indexSearchers = null;
+    private Map<String, IndexSearcher> indexSearchers = 
+                        new HashMap<String, IndexSearcher>();
 
     /**
      * private Constructor for Singleton.
