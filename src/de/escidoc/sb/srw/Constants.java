@@ -81,6 +81,14 @@ public class Constants {
 
     public static final String HIGHLIGHT_END_ELEMENT = 
         "</" + SEARCH_RESULT_NAMESPACE_PREFIX + ":highlight>\n";
+    
+    //Constants for duplicate filtering
+    public static final String DUPLICATE_IDENTIFIER_FIELD = "rootPid";
+    
+    public static final String DUPLICATE_DISTINGUISHER_FIELD = "type";
+    
+    public static final int DISTINGUISHER_PRIORITY_VAL = 0;
+    
 
     //SRW Property-Names
     //custom lucene analyzer
@@ -112,6 +120,11 @@ public class Constants {
     //only works if permission-filtering fields are indexed
     public static final String PROPERTY_PERMISSION_FILTERING =
         "cqlTranslator.permissionFiltering";
+    
+    //used to indicate if query has to get expanded with filter for permission
+    //only works if permission-filtering fields are indexed
+    public static final String PROPERTY_FILTER_LATEST_RELEASE =
+        "cqlTranslator.filterLatestRelease";
     
     public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT =
         "cqlTranslator.highlightTermFulltext";
