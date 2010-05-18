@@ -56,9 +56,13 @@ import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.EscidocTopDocsCollector;
+import org.apache.lucene.search.EscidocTopFieldCollector;
+import org.apache.lucene.search.EscidocTopScoreDocCollector;
 import org.apache.lucene.search.FieldComparatorSource;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -184,7 +188,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     private boolean forceScoring = false;
 
     /**
-     * @return String similarity.
+     * @return boolean forceScoring.
      */
     public boolean getForceScoring() {
         return forceScoring;
@@ -204,17 +208,37 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     private boolean permissionFiltering = false;
 
     /**
-     * @return String similarity.
+     * @return boolean permissionFiltering.
      */
     public boolean getPermissionFiltering() {
         return permissionFiltering;
     }
 
     /**
-     * @param inp forceScoring.
+     * @param inp permissionFiltering.
      */
     public void setPermissionFiltering(final boolean inp) {
         permissionFiltering = inp;
+    }
+    
+    /**
+     * filter out latestReleased version if
+     * latestRelease and latestVersion exist in index.
+     */
+    private boolean filterLatestRelease = false;
+
+    /**
+     * @return boolean filterLatestRelease.
+     */
+    public boolean getFilterLatestRelease() {
+        return filterLatestRelease;
+    }
+
+    /**
+     * @param inp filterLatestRelease.
+     */
+    public void setFilterLatestRelease(final boolean inp) {
+        filterLatestRelease = inp;
     }
     
     /**
@@ -369,6 +393,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             permissionFiltering = new Boolean(temp).booleanValue();
         }
 
+        temp = (String) properties.get(Constants.PROPERTY_FILTER_LATEST_RELEASE);
+        if (temp != null && temp.trim().length() != 0) {
+            filterLatestRelease = new Boolean(temp).booleanValue();
+        }
+
     }
 
     /**
@@ -475,11 +504,36 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // perform sorted search?
             if (sort == null) {
                 searcher.setDefaultFieldSortScoring(false, false);
-                results = searcher.search(query, maximumHits);
+                if (filterLatestRelease) {
+                    EscidocTopDocsCollector<ScoreDoc> collector = 
+                        EscidocTopScoreDocCollector.create(
+                                maximumHits, true, searcher.getIndexReader(), 
+                                Constants.DUPLICATE_IDENTIFIER_FIELD, 
+                                Constants.DUPLICATE_DISTINGUISHER_FIELD, 
+                                Constants.DISTINGUISHER_PRIORITY_VAL);
+                    searcher.search(query, collector);
+                    results = collector.topDocs();
+                    
+                } 
+                else {
+                    results = searcher.search(query, maximumHits);
+                }
             }
             else {
                 searcher.setDefaultFieldSortScoring(forceScoring, false);
-                results = searcher.search(query, null, maximumHits, sort);
+                if (filterLatestRelease) {
+                    EscidocTopDocsCollector collector = EscidocTopFieldCollector.create(
+                            sort, maximumHits, true, forceScoring, 
+                            false, false, searcher.getIndexReader(),
+                            Constants.DUPLICATE_IDENTIFIER_FIELD, 
+                            Constants.DUPLICATE_DISTINGUISHER_FIELD, 
+                            Constants.DISTINGUISHER_PRIORITY_VAL);
+                    searcher.search(query, collector);
+                    results = collector.topDocs();
+                }
+                else {
+                    results = searcher.search(query, null, maximumHits, sort);
+                }
             }
             if (log.isInfoEnabled()) {
                 log.info("search finished at " 
