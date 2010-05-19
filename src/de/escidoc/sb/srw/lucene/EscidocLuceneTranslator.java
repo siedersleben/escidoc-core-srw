@@ -877,6 +877,13 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             searcher = getSearcher(getIndexPath());
             fieldList = searcher.getIndexReader()
                         .getFieldNames(FieldOption.INDEXED);
+            Collection<String> toRemove = new ArrayList<String>();
+            for (String fieldName : fieldList) {
+                if (fieldName.startsWith("permissions-filter")) {
+                    toRemove.add(fieldName);
+                }
+            }
+            fieldList.removeAll(toRemove);
         }
         catch (Exception e) {
             log.error(e);
