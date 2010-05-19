@@ -149,27 +149,27 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
      * 
      */
     public String getPermissionFilter(final String userId) throws Exception {
-        fillIdsArray();
-        fillIdsList();
-        fillRoleCountHash();
         StringBuffer queryBuf = new StringBuffer("");
-        int counter = 0;
-        for (String roleName : roleQueries.keySet()) {
-            try {
-                String thisRoleCount = roleCount.get(roleName);
-                for (int i = 0; i < Integer.parseInt(thisRoleCount); i++) {
-                    if (counter > 0) {
-                        queryBuf.append("\n OR ");
-                    }
-                    counter++;
-                    queryBuf.append(replacePlaceholders(roleQueries.get(roleName)));
-                }
-            } catch (Exception e) {
-                System.out.println("caught a " + e.getClass()
-                        + "\n with message: " + e.getMessage());
-            }
-
-        }
+//        fillIdsArray();
+//        fillIdsList();
+//        fillRoleCountHash();
+//        int counter = 0;
+//        for (String roleName : roleQueries.keySet()) {
+//            try {
+//                String thisRoleCount = roleCount.get(roleName);
+//                for (int i = 0; i < Integer.parseInt(thisRoleCount); i++) {
+//                    if (counter > 0) {
+//                        queryBuf.append("\n OR ");
+//                    }
+//                    counter++;
+//                    queryBuf.append(replacePlaceholders(roleQueries.get(roleName)));
+//                }
+//            } catch (Exception e) {
+//                System.out.println("caught a " + e.getClass()
+//                        + "\n with message: " + e.getMessage());
+//            }
+//
+//        }
 
         return queryBuf.toString();
     }

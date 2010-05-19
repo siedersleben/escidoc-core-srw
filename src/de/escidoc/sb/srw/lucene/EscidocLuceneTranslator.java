@@ -466,12 +466,24 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                         getDefaultIndexField(), analyzer, forceScoring);
             Query query = null;
             if (permissionFiltering) {
-                StringBuffer queryBuffer = new StringBuffer("(\n")
-                                                .append(unanalyzedQuery.toString())
-                                                .append("\n) AND (\n")
-                                                .append(permissionFilterGenerator.getPermissionFilter(UserContext.getHandle()))
-                                                .append("\n)");
-                query = parser.parse(queryBuffer.toString());
+                if (log.isInfoEnabled()) {
+                    log.info("getting permission filter");
+                }
+                String permissionFilter = permissionFilterGenerator
+                        .getPermissionFilter(UserContext.getHandle());
+                if (StringUtils.isNotEmpty(permissionFilter)) {
+                    StringBuffer queryBuffer = new StringBuffer("(\n")
+                            .append(unanalyzedQuery.toString())
+                            .append("\n) AND (\n")
+                            .append(
+                                    permissionFilterGenerator
+                                            .getPermissionFilter(UserContext
+                                                    .getHandle()))
+                            .append("\n)");
+                    query = parser.parse(queryBuffer.toString());
+                } else {
+                    query = parser.parse(unanalyzedQuery.toString());
+                }
             } else {
                 query = parser.parse(unanalyzedQuery.toString());
             }
