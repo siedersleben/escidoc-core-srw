@@ -40,9 +40,9 @@ public interface PermissionFilterGenerator {
     /**
      * get permission-filter subquery for user with given userId.
      * 
-     * @param userId userId
+     * @param handle handle
      * @return permission-filter subquery
      * 
      */
-    String getPermissionFilter(String userId) throws Exception;
+    String getPermissionFilter(String handle) throws Exception;
 }
