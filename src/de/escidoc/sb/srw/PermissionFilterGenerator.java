@@ -44,5 +44,6 @@ public interface PermissionFilterGenerator {
      * @return permission-filter subquery
      * 
      */
-    String getPermissionFilter(String handle) throws Exception;
+    String getPermissionFilter(
+            String handle, String asUserId, String withRoleId) throws Exception;
 }

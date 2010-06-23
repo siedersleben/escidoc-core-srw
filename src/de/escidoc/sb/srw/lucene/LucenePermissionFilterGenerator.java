@@ -148,7 +148,10 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
      * @return permission-filter subquery
      * 
      */
-    public String getPermissionFilter(final String handle) throws Exception {
+    public String getPermissionFilter(
+                                    final String handle, 
+                                    final String asUserId, 
+                                    final String withRoleId) throws Exception {
         StringBuffer queryBuf = new StringBuffer("");
 //        fillIdsArray();
 //        fillIdsList();

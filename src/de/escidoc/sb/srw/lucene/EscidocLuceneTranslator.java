@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.axis.message.MessageElement;
 import org.apache.axis.types.NonNegativeInteger;
 import org.apache.axis.types.PositiveInteger;
 import org.apache.commons.collections.map.LRUMap;
@@ -429,7 +430,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         }
         // Increase maxClauseCount of BooleanQuery for Wildcard-Searches
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
-
+        
         Sort sort = null;
 
         String[] identifiers = null;
@@ -469,16 +470,30 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 if (log.isInfoEnabled()) {
                     log.info("getting permission filter");
                 }
+                //get extra data
+                String userId = null;
+                String roleId = null;
+                if (extraDataType != null && extraDataType.get_any() != null) {
+                    for (int i = 0; i < extraDataType.get_any().length; i++) {
+                        MessageElement messageElement = extraDataType.get_any()[i];
+                        if (messageElement.getName() != null 
+                                && messageElement.getName().equals("roleId")) {
+                            roleId = messageElement.getValue();
+                        }
+                        else if (messageElement.getName() != null 
+                                && messageElement.getName().equals("userId")) {
+                            userId = messageElement.getValue();
+                        }
+                    }
+                }
+
                 String permissionFilter = permissionFilterGenerator
-                        .getPermissionFilter(UserContext.getHandle());
+                        .getPermissionFilter(UserContext.getHandle(), userId, roleId);
                 if (StringUtils.isNotEmpty(permissionFilter)) {
                     StringBuffer queryBuffer = new StringBuffer("(\n")
                             .append(unanalyzedQuery.toString())
                             .append("\n) AND (\n")
-                            .append(
-                                    permissionFilterGenerator
-                                            .getPermissionFilter(UserContext
-                                                    .getHandle()))
+                            .append(permissionFilter)
                             .append("\n)");
                     query = parser.parse(queryBuffer.toString());
                 } else {
