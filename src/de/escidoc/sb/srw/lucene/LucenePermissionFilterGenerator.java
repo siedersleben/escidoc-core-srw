@@ -31,10 +31,17 @@ package de.escidoc.sb.srw.lucene;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.apache.commons.httpclient.Cookie;
+
+import ORG.oclc.os.SRW.SRWServlet;
+
+import de.escidoc.core.common.util.configuration.EscidocConfiguration;
+import de.escidoc.core.common.util.service.ConnectionUtility;
 import de.escidoc.sb.srw.PermissionFilterGenerator;
 
 /**
@@ -44,6 +51,8 @@ import de.escidoc.sb.srw.PermissionFilterGenerator;
  */
 public class LucenePermissionFilterGenerator implements PermissionFilterGenerator {
 
+    private ConnectionUtility connectionUtility = new ConnectionUtility();
+    
     private String idsFile = "search/config/hierarchies1.txt";
 
     private String roleCountFile = "search/config/roleCounts.txt";
@@ -141,6 +150,11 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
                 + "permissions-filter.objecttype:organizational-unit)");    
     }};
 
+    
+    public LucenePermissionFilterGenerator() {
+        connectionUtility.setTimeout(30000);
+    }
+    
     /**
      * get permission-filter subquery for user with given userId.
      * 
@@ -152,6 +166,18 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
                                     final String handle, 
                                     final String asUserId, 
                                     final String withRoleId) throws Exception {
+//        String url = EscidocConfiguration.getInstance()
+//                            .get(EscidocConfiguration.ESCIDOC_CORE_SELFURL) + "/aa/...";
+//        String postXml = "";
+//        return connectionUtility
+//                .postRequestURLAsString(
+//                        new URL(url), 
+//                        postXml, 
+//                        new Cookie("", SRWServlet.COOKIE_LOGIN, handle));
+        
+
+        
+        
         StringBuffer queryBuf = new StringBuffer("");
 //        fillIdsArray();
 //        fillIdsList();
@@ -173,7 +199,7 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
 //            }
 //
 //        }
-
+//
         return queryBuf.toString();
     }
     
