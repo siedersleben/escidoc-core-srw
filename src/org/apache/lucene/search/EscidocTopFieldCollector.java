@@ -92,11 +92,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -111,7 +111,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(bottom.slot, doc);
         updateBottom(doc);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
 
         comparator.setBottom(bottom.slot);
@@ -122,7 +122,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(slot, doc);
         add(slot, doc, Float.NaN);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           comparator.setBottom(bottom.slot);
@@ -176,11 +176,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -194,7 +194,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(bottom.slot, doc);
         updateBottom(doc);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         comparator.setBottom(bottom.slot);
       } else {
@@ -204,7 +204,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(slot, doc);
         add(slot, doc, Float.NaN);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           comparator.setBottom(bottom.slot);
@@ -264,11 +264,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -286,7 +286,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(bottom.slot, doc);
         updateBottom(doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         comparator.setBottom(bottom.slot);
       } else {
@@ -299,7 +299,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(slot, doc);
         add(slot, doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           comparator.setBottom(bottom.slot);
@@ -349,11 +349,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -370,7 +370,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(bottom.slot, doc);
         updateBottom(doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         comparator.setBottom(bottom.slot);
       } else {
@@ -383,7 +383,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(slot, doc);
         add(slot, doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           comparator.setBottom(bottom.slot);
@@ -449,11 +449,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -468,7 +468,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(bottom.slot, doc);
         updateBottom(doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         comparator.setBottom(bottom.slot);
       } else {
@@ -478,7 +478,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(slot, doc);
         add(slot, doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           comparator.setBottom(bottom.slot);
@@ -531,11 +531,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -549,7 +549,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(bottom.slot, doc);
         updateBottom(doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         comparator.setBottom(bottom.slot);
       } else {
@@ -559,7 +559,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         comparator.copy(slot, doc);
         add(slot, doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           comparator.setBottom(bottom.slot);
@@ -621,11 +621,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -653,7 +653,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
 
         updateBottom(doc);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
 
         for (int i = 0; i < comparators.length; i++) {
@@ -668,7 +668,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         }
         add(slot, doc, Float.NaN);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           for (int i = 0; i < comparators.length; i++) {
@@ -728,11 +728,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -762,7 +762,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
 
         updateBottom(doc);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
 
         for (int i = 0; i < comparators.length; i++) {
@@ -777,7 +777,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         }
         add(slot, doc, Float.NaN);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           for (int i = 0; i < comparators.length; i++) {
@@ -844,11 +844,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -876,7 +876,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
 
         updateBottom(doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
 
         for (int i = 0; i < comparators.length; i++) {
@@ -891,7 +891,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         }
         add(slot, doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           for (int i = 0; i < comparators.length; i++) {
@@ -945,11 +945,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -979,7 +979,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
 
         updateBottom(doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
 
         for (int i = 0; i < comparators.length; i++) {
@@ -994,7 +994,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         }
         add(slot, doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           for (int i = 0; i < comparators.length; i++) {
@@ -1055,11 +1055,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -1089,7 +1089,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         final float score = scorer.score();
         updateBottom(doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
 
         for (int i = 0; i < comparators.length; i++) {
@@ -1107,7 +1107,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         final float score = scorer.score();
         add(slot, doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           for (int i = 0; i < comparators.length; i++) {
@@ -1158,11 +1158,11 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       if (queueFull) {
@@ -1194,7 +1194,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         final float score = scorer.score();
         updateBottom(doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
 
         for (int i = 0; i < comparators.length; i++) {
@@ -1212,7 +1212,7 @@ public abstract class EscidocTopFieldCollector extends EscidocTopDocsCollector<E
         final float score = scorer.score();
         add(slot, doc, score);
         if (remove) {
-            entriesToRemove.add(duplicateIdentifiers[doc]);
+            entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
         }
         if (queueFull) {
           for (int i = 0; i < comparators.length; i++) {

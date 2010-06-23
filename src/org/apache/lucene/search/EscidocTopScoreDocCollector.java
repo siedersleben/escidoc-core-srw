@@ -131,11 +131,11 @@ public abstract class EscidocTopScoreDocCollector extends EscidocTopDocsCollecto
       //MIH: added
       filteredTotalHits++;
       boolean remove = false;
-      if (entries.contains(duplicateIdentifiers[doc])) {
+      if (entries.contains(duplicateIdentifiers[docBase + doc])) {
           filteredTotalHits--;
           remove = true;
       } else {
-          entries.add(duplicateIdentifiers[doc]);
+          entries.add(duplicateIdentifiers[docBase + doc]);
       }
       
       doc += docBase;
@@ -143,7 +143,7 @@ public abstract class EscidocTopScoreDocCollector extends EscidocTopDocsCollecto
         return;
       }
       if (remove) {
-          entriesToRemove.add(duplicateIdentifiers[doc]);
+          entriesToRemove.add(duplicateIdentifiers[docBase + doc]);
       }
       pqTop.doc = doc;
       pqTop.score = score;
