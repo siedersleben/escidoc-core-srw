@@ -30,6 +30,7 @@
 package de.escidoc.sb.srw.lucene;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,12 +38,15 @@ import java.util.HashMap;
 import java.util.Random;
 
 import org.apache.commons.httpclient.Cookie;
+import org.osuosl.srw.SRWDiagnostic;
 
 import ORG.oclc.os.SRW.SRWServlet;
-
 import de.escidoc.core.common.util.configuration.EscidocConfiguration;
 import de.escidoc.core.common.util.service.ConnectionUtility;
+import de.escidoc.core.common.util.stax.StaxParser;
+import de.escidoc.sb.srw.Constants;
 import de.escidoc.sb.srw.PermissionFilterGenerator;
+import de.escidoc.sb.srw.stax.handler.PermissionFilterHandler;
 
 /**
  * generates a lucene-subquery for permission-filtering.
@@ -165,16 +169,28 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
     public String getPermissionFilter(
                                     final String handle, 
                                     final String asUserId, 
-                                    final String withRoleId) throws Exception {
-//        String url = EscidocConfiguration.getInstance()
-//                            .get(EscidocConfiguration.ESCIDOC_CORE_SELFURL) + "/aa/...";
-//        String postXml = "";
-//        return connectionUtility
-//                .postRequestURLAsString(
-//                        new URL(url), 
-//                        postXml, 
-//                        new Cookie("", SRWServlet.COOKIE_LOGIN, handle));
-        
+                                    final String withRoleId) throws SRWDiagnostic {
+//        try {
+//            String url = EscidocConfiguration.getInstance()
+//                    .get(EscidocConfiguration.ESCIDOC_CORE_SELFURL) 
+//                        + Constants.PERMISSION_FILTER_URI;
+//            String permissionFilterXml = connectionUtility
+//                    .postRequestURLAsString(
+//                            new URL(url),
+//                            getPostXml(handle, asUserId, withRoleId),
+//                            new Cookie("", SRWServlet.COOKIE_LOGIN, handle));
+//            StaxParser sp = new StaxParser();
+//            PermissionFilterHandler handler = new PermissionFilterHandler(sp);
+//            sp.addHandler(handler);
+//
+//            sp.parse(new ByteArrayInputStream(permissionFilterXml.getBytes(
+//                    Constants.CHARACTER_ENCODING)));
+//            return handler.getPermissionFilterQuery();
+//        } catch (Exception e) {
+//            throw new SRWDiagnostic(
+//                    SRWDiagnostic.GeneralSystemError,
+//                    "couldnt retrieve permissionFilterQuery " + e.getMessage());
+//        } 
 
         
         
@@ -201,6 +217,15 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
 //        }
 //
         return queryBuf.toString();
+    }
+    
+    private String getPostXml(
+                           final String handle, 
+                           final String asUserId, 
+                           final String withRoleId) {
+        StringBuffer postXml = 
+            new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        return postXml.toString();
     }
     
     private static String replacePlaceholders(String strToReplace) {

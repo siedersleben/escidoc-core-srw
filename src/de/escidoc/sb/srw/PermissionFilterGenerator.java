@@ -29,6 +29,8 @@
 
 package de.escidoc.sb.srw;
 
+import org.osuosl.srw.SRWDiagnostic;
+
 /**
  * Interface for permission-filter generator.
  * permission-filter-generators generate a subquery for permission-filtering.
@@ -45,5 +47,5 @@ public interface PermissionFilterGenerator {
      * 
      */
     String getPermissionFilter(
-            String handle, String asUserId, String withRoleId) throws Exception;
+            String handle, String asUserId, String withRoleId) throws SRWDiagnostic;
 }
