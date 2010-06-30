@@ -347,6 +347,7 @@ public class EscidocHighlighter implements SrwHighlighter {
                             .addHighlightFragmentData(highlightFragmentData);
                     }
                 }
+                catch (NoSuchFieldException e) {}
                 catch (Exception e) {
                     log.error(e);
                 }

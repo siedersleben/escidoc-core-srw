@@ -112,11 +112,8 @@ public class EscidocSimpleHighlightXmlizer implements SrwHighlightXmlizer{
                         .append("<")
                         .append(Constants.SEARCH_RESULT_NAMESPACE_PREFIX).append(
                             ":search-hit type=\"").append(type).append("\"");
-                    if (type.equals("fulltext")) {
-                        if (objid == null || objid.equals("")) {
-                            throw new Exception(
-                                "highlightLocator may not be null");
-                        }
+                    if (type.equals("fulltext") 
+                            && objid != null && objid.length() > 0) {
                         xml.append(" objid=\"").append(objid).append("\"");
                     }
                     xml.append(">");
