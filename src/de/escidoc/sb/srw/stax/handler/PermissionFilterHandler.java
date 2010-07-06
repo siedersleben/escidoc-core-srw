@@ -36,7 +36,7 @@ import de.escidoc.core.common.util.xml.stax.handler.DefaultHandler;
 public class PermissionFilterHandler extends DefaultHandler {
     protected StaxParser parser;
     protected String permissionFilterQuery = null;
-    private final String permissionFilterQueryPath = "/properties/name";
+    private final String permissionFilterQueryPath = "/result/filter";
 
     /*
      * 

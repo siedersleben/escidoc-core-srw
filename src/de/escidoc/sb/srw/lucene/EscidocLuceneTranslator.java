@@ -468,9 +468,27 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 new EscidocQueryParser(
                         getDefaultIndexField(), analyzer, forceScoring);
             Query query = null;
-            if (permissionFiltering) {
+            // MIH: FOR TESTING ONLY!!//////////////////////////////////////
+            boolean skipPermissions = false; 
+            boolean skipFilterLatestRelease = false; 
+            if (extraDataType != null && extraDataType.get_any() != null) {
+                for (int i = 0; i < extraDataType.get_any().length; i++) {
+                    MessageElement messageElement = extraDataType.get_any()[i];
+                    if (messageElement.getName() != null 
+                            && messageElement.getName().equals("skipPermissions")) {
+                        skipPermissions = new Boolean(messageElement.getValue());
+                    }
+                    else if (messageElement.getName() != null 
+                            && messageElement.getName().equals("skipFilterLatestRelease")) {
+                        skipFilterLatestRelease = new Boolean(messageElement.getValue());
+                    }
+                }
+            }
+            ////////////////////////////////////////////////////////////////
+            if (permissionFiltering && !skipPermissions) {
                 if (log.isInfoEnabled()) {
-                    log.info("getting permission filter");
+                    log.info("starting getting permission filter query at " 
+                            + (System.currentTimeMillis() - time) + " ms");
                 }
                 //get extra data
                 String userId = null;
@@ -489,8 +507,16 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     }
                 }
 
+                if (log.isInfoEnabled()) {
+                    log.info("direct pre permission-filter at " 
+                            + (System.currentTimeMillis() - time) + " ms");
+                }
                 String permissionFilter = permissionFilterGenerator
                         .getPermissionFilter(dbName, UserContext.getHandle(), userId, roleId);
+                if (log.isInfoEnabled()) {
+                    log.info("direct post permission-filter at " 
+                            + (System.currentTimeMillis() - time) + " ms");
+                }
                 if (StringUtils.isNotEmpty(permissionFilter)) {
                     StringBuffer queryBuffer = new StringBuffer("(\n")
                             .append(unanalyzedQuery.toString())
@@ -533,7 +559,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // perform sorted search?
             if (sort == null) {
                 searcher.setDefaultFieldSortScoring(false, false);
-                if (filterLatestRelease) {
+                if (filterLatestRelease && !skipFilterLatestRelease) {
                     EscidocTopDocsCollector<ScoreDoc> collector = 
                         EscidocTopScoreDocCollector.create(
                                 maximumHits, true, searcher.getIndexReader(), 
@@ -550,7 +576,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             else {
                 searcher.setDefaultFieldSortScoring(forceScoring, false);
-                if (filterLatestRelease) {
+                if (filterLatestRelease && !skipFilterLatestRelease) {
                     EscidocTopDocsCollector collector = EscidocTopFieldCollector.create(
                             sort, maximumHits, true, forceScoring, 
                             false, false, searcher.getIndexReader(),
