@@ -167,34 +167,39 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
      * 
      */
     public String getPermissionFilter(
+                                    final String dbName,
                                     final String handle, 
                                     final String asUserId, 
                                     final String withRoleId) throws SRWDiagnostic {
-//        try {
-//            String url = EscidocConfiguration.getInstance()
-//                    .get(EscidocConfiguration.ESCIDOC_CORE_SELFURL) 
-//                        + Constants.PERMISSION_FILTER_URI;
+        try {
+            StringBuffer url = new StringBuffer(EscidocConfiguration.getInstance()
+                    .get(EscidocConfiguration.ESCIDOC_CORE_SELFURL));
+            url.append(Constants.PERMISSION_FILTER_URI).append("?index=").append(dbName);
 //            String permissionFilterXml = connectionUtility
 //                    .postRequestURLAsString(
 //                            new URL(url),
 //                            getPostXml(handle, asUserId, withRoleId),
 //                            new Cookie("", SRWServlet.COOKIE_LOGIN, handle));
-//            StaxParser sp = new StaxParser();
-//            PermissionFilterHandler handler = new PermissionFilterHandler(sp);
-//            sp.addHandler(handler);
-//
-//            sp.parse(new ByteArrayInputStream(permissionFilterXml.getBytes(
-//                    Constants.CHARACTER_ENCODING)));
-//            return handler.getPermissionFilterQuery();
-//        } catch (Exception e) {
-//            throw new SRWDiagnostic(
-//                    SRWDiagnostic.GeneralSystemError,
-//                    "couldnt retrieve permissionFilterQuery " + e.getMessage());
-//        } 
+            String permissionFilterXml = connectionUtility
+            .getRequestURLAsString(
+                    new URL(url.toString()),
+                    new Cookie("", SRWServlet.COOKIE_LOGIN, handle));
+            StaxParser sp = new StaxParser();
+            PermissionFilterHandler handler = new PermissionFilterHandler(sp);
+            sp.addHandler(handler);
+
+            sp.parse(new ByteArrayInputStream(permissionFilterXml.getBytes(
+                    Constants.CHARACTER_ENCODING)));
+            return handler.getPermissionFilterQuery();
+        } catch (Exception e) {
+            throw new SRWDiagnostic(
+                    SRWDiagnostic.GeneralSystemError,
+                    "couldnt retrieve permissionFilterQuery " + e.getMessage());
+        } 
 
         
         
-        StringBuffer queryBuf = new StringBuffer("");
+//        StringBuffer queryBuf = new StringBuffer("");
 //        fillIdsArray();
 //        fillIdsList();
 //        fillRoleCountHash();
@@ -216,7 +221,7 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
 //
 //        }
 //
-        return queryBuf.toString();
+//        return queryBuf.toString();
     }
     
     private String getPostXml(

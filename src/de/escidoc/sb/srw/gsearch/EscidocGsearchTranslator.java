@@ -175,7 +175,8 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 	@Override
     public QueryResult search(final CQLNode queryRoot,
 			final ExtraDataType extraDataType,
-			final SearchRetrieveRequestType request) throws SRWDiagnostic {
+			final SearchRetrieveRequestType request, final String dbName) 
+	                                                throws SRWDiagnostic {
 		/**
 		 * get indexName
 		 */

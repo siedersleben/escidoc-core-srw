@@ -172,7 +172,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	@Override
     public QueryResult search(final CQLNode queryRoot,
 			final ExtraDataType extraDataType) throws SRWDiagnostic {
-		return search(queryRoot, extraDataType, null);
+		return search(queryRoot, extraDataType, null, null);
 	}
 
     /**
@@ -188,6 +188,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
      *            extraDataType
      * @param request
      *            SearchRetrieveRequestType
+     * @param dbName
+     *            Name of Database
      * @return QueryResult queryResult-Object
      * @throws SRWDiagnostic
      *             e
@@ -196,7 +198,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
      */
 	public abstract QueryResult search(
             final CQLNode queryRoot, final ExtraDataType extraDataType,
-            final SearchRetrieveRequestType request) throws SRWDiagnostic;
+            final SearchRetrieveRequestType request, final String dbName) throws SRWDiagnostic;
 
 	/**
 	 * Scan-Request. Scans index for terms that are alphabetically around the

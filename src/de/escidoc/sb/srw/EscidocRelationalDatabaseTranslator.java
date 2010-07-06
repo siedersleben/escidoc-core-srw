@@ -56,7 +56,7 @@ public class EscidocRelationalDatabaseTranslator extends EscidocTranslator {
     @Override
     public QueryResult search(final CQLNode cqlnode,
             final ExtraDataType extradatatype,
-            final SearchRetrieveRequestType request) throws SRWDiagnostic {
+            final SearchRetrieveRequestType request, final String dbName) throws SRWDiagnostic {
         
         String sortKeys = request.getSortKeys();
 

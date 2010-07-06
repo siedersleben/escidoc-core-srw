@@ -57,7 +57,7 @@ public class Constants {
 
     public static final String XML_HIT_PATH = "/hits/hit";
     
-    public static final String PERMISSION_FILTER_URI = "/aa/...";
+    public static final String PERMISSION_FILTER_URI = "/aa/user-account/retrievePermissionFilterQuery";
 
     public static final String RELEVANCE_SORT_FIELD_NAME = "_relevance_";
     

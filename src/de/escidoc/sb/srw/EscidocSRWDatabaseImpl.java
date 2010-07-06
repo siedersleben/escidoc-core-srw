@@ -245,10 +245,11 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                 // Escidoc..Translator:
                 // 3rd parameter: request (to get sortKeys,
                 // startRecord, maxRecords..)!
+                // 4th parameter: dbname (to get filterQuery for db)!
                 results =
                     (ResolvingQueryResult) (
                         (EscidocTranslator) getCQLTranslator())
-                        .search(queryRoot, extraData, request);
+                        .search(queryRoot, extraData, request, dbname);
 
                 results.setResolver(getResolver());
                 results.setExtraDataType(extraData);

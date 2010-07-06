@@ -423,7 +423,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     @Override
     public QueryResult search(
         final CQLNode queryRoot, final ExtraDataType extraDataType,
-        final SearchRetrieveRequestType request) throws SRWDiagnostic {
+        final SearchRetrieveRequestType request, final String dbName) 
+                                                    throws SRWDiagnostic {
         long time = 0;
         if (log.isInfoEnabled()) {
             time = System.currentTimeMillis();
@@ -435,6 +436,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
 
         String[] identifiers = null;
         IndexSearcher searcher = null;
+        
         try {
             if (request.getSortKeys() != null 
                     && !request.getSortKeys().equals("")) {
@@ -488,7 +490,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 }
 
                 String permissionFilter = permissionFilterGenerator
-                        .getPermissionFilter(UserContext.getHandle(), userId, roleId);
+                        .getPermissionFilter(dbName, UserContext.getHandle(), userId, roleId);
                 if (StringUtils.isNotEmpty(permissionFilter)) {
                     StringBuffer queryBuffer = new StringBuffer("(\n")
                             .append(unanalyzedQuery.toString())

@@ -47,5 +47,6 @@ public interface PermissionFilterGenerator {
      * 
      */
     String getPermissionFilter(
-            String handle, String asUserId, String withRoleId) throws SRWDiagnostic;
+            String dbName, String handle, 
+            String asUserId, String withRoleId) throws SRWDiagnostic;
 }
