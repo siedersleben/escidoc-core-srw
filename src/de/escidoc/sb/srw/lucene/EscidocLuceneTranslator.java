@@ -426,7 +426,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         final SearchRetrieveRequestType request, final String dbName) 
                                                     throws SRWDiagnostic {
         long time = 0;
-        if (log.isInfoEnabled()) {
+        if (log.isDebugEnabled()) {
             time = System.currentTimeMillis();
         }
         // Increase maxClauseCount of BooleanQuery for Wildcard-Searches
@@ -452,6 +452,10 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // (this is the case if user gives no field name)
             // with the defaultFieldName from configuration
             Query unanalyzedQuery = makeQuery(queryRoot);
+            if (log.isDebugEnabled()) {
+                log.debug("query converted at " 
+                        + (System.currentTimeMillis() - time) + " ms");
+            }
 
             //execute fuzzy-queries with lower maxClauseCount
             if (unanalyzedQuery.toString().indexOf("~") > -1) {
@@ -486,8 +490,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             ////////////////////////////////////////////////////////////////
             if (permissionFiltering && !skipPermissions) {
-                if (log.isInfoEnabled()) {
-                    log.info("starting getting permission filter query at " 
+                if (log.isDebugEnabled()) {
+                    log.debug("starting getting permission filter query at " 
                             + (System.currentTimeMillis() - time) + " ms");
                 }
                 //get extra data
@@ -507,14 +511,17 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     }
                 }
 
-                if (log.isInfoEnabled()) {
-                    log.info("direct pre permission-filter at " 
+                if (log.isDebugEnabled()) {
+                    log.debug("direct pre permission-filter at " 
                             + (System.currentTimeMillis() - time) + " ms");
+                    log.debug("calling permissionFilterGenerator with dbName:" 
+                            + dbName + ",handle:" + UserContext.getHandle() 
+                            + ",userId:" + userId + ",roleId:" + roleId);
                 }
                 String permissionFilter = permissionFilterGenerator
                         .getPermissionFilter(dbName, UserContext.getHandle(), userId, roleId);
-                if (log.isInfoEnabled()) {
-                    log.info("direct post permission-filter at " 
+                if (log.isDebugEnabled()) {
+                    log.debug("direct post permission-filter at " 
                             + (System.currentTimeMillis() - time) + " ms");
                 }
                 if (StringUtils.isNotEmpty(permissionFilter)) {
@@ -552,8 +559,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 maximumHits += getDefaultNumberOfRecords();
             }
             
-            if (log.isInfoEnabled()) {
-                log.info("search query preparation finished at " 
+            if (log.isDebugEnabled()) {
+                log.debug("search query preparation finished at " 
                             + (System.currentTimeMillis() - time) + " ms");
             }
             // perform sorted search?
@@ -590,8 +597,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     results = searcher.search(query, null, maximumHits, sort);
                 }
             }
-            if (log.isInfoEnabled()) {
-                log.info("search finished at " 
+            if (log.isDebugEnabled()) {
+                log.debug("search finished at " 
                             + (System.currentTimeMillis() - time) + " ms");
             }
             size = results.totalHits;
@@ -647,8 +654,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     + " to " + endRecord);
             }
             identifiers = createIdentifiers(searcher, results, startRecord, endRecord);
-            if (log.isInfoEnabled()) {
-                log.info("identifier creation finished at " 
+            if (log.isDebugEnabled()) {
+                log.debug("identifier creation finished at " 
                             + (System.currentTimeMillis() - time) + " ms");
             }
         }
