@@ -46,6 +46,8 @@ import org.apache.axis.types.PositiveInteger;
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -101,6 +103,8 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
  */
 public class EscidocLuceneTranslator extends EscidocTranslator {
 
+
+    private Log log = LogFactory.getLog(EscidocLuceneTranslator.class);
 
     /**
      * SrwHighlighter.
@@ -426,7 +430,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         final SearchRetrieveRequestType request, final String dbName) 
                                                     throws SRWDiagnostic {
         long time = 0;
-        if (log.isDebugEnabled()) {
+        if (log.isInfoEnabled()) {
             time = System.currentTimeMillis();
         }
         // Increase maxClauseCount of BooleanQuery for Wildcard-Searches
@@ -452,8 +456,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // (this is the case if user gives no field name)
             // with the defaultFieldName from configuration
             Query unanalyzedQuery = makeQuery(queryRoot);
-            if (log.isDebugEnabled()) {
-                log.debug("query converted at " 
+            if (log.isInfoEnabled()) {
+                log.info("query converted at " 
                         + (System.currentTimeMillis() - time) + " ms");
             }
 
@@ -490,8 +494,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             ////////////////////////////////////////////////////////////////
             if (permissionFiltering && !skipPermissions) {
-                if (log.isDebugEnabled()) {
-                    log.debug("starting getting permission filter query at " 
+                if (log.isInfoEnabled()) {
+                    log.info("starting getting permission filter query at " 
                             + (System.currentTimeMillis() - time) + " ms");
                 }
                 //get extra data
@@ -511,17 +515,17 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     }
                 }
 
-                if (log.isDebugEnabled()) {
-                    log.debug("direct pre permission-filter at " 
+                if (log.isInfoEnabled()) {
+                    log.info("direct pre permission-filter at " 
                             + (System.currentTimeMillis() - time) + " ms");
-                    log.debug("calling permissionFilterGenerator with dbName:" 
+                    log.info("calling permissionFilterGenerator with dbName:" 
                             + dbName + ",handle:" + UserContext.getHandle() 
                             + ",userId:" + userId + ",roleId:" + roleId);
                 }
                 String permissionFilter = permissionFilterGenerator
                         .getPermissionFilter(dbName, UserContext.getHandle(), userId, roleId);
-                if (log.isDebugEnabled()) {
-                    log.debug("direct post permission-filter at " 
+                if (log.isInfoEnabled()) {
+                    log.info("direct post permission-filter at " 
                             + (System.currentTimeMillis() - time) + " ms");
                 }
                 if (StringUtils.isNotEmpty(permissionFilter)) {
@@ -538,7 +542,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 query = parser.parse(unanalyzedQuery.toString());
             }
             
-            log.info("escidoc lucene search=" + query);
+            if (log.isInfoEnabled()) {
+                log.info("escidoc lucene search=" + query);
+            }
 
             searcher = getSearcher(getIndexPath());
             //check if custom scoring should be done
@@ -559,8 +565,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 maximumHits += getDefaultNumberOfRecords();
             }
             
-            if (log.isDebugEnabled()) {
-                log.debug("search query preparation finished at " 
+            if (log.isInfoEnabled()) {
+                log.info("search query preparation finished at " 
                             + (System.currentTimeMillis() - time) + " ms");
             }
             // perform sorted search?
@@ -597,8 +603,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     results = searcher.search(query, null, maximumHits, sort);
                 }
             }
-            if (log.isDebugEnabled()) {
-                log.debug("search finished at " 
+            if (log.isInfoEnabled()) {
+                log.info("search finished at " 
                             + (System.currentTimeMillis() - time) + " ms");
             }
             size = results.totalHits;
@@ -613,7 +619,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 }
             }
 
-            log.info(size + " handles found");
+            if (log.isInfoEnabled()) {
+                log.info(size + " handles found");
+            }
 
             /**
              * get startRecord
@@ -649,13 +657,13 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
 
             // now instantiate the results and put them into the response object
-            if (log.isDebugEnabled()) {
-                log.debug("iterating resultset from record " + startRecord
+            if (log.isInfoEnabled()) {
+                log.info("iterating resultset from record " + startRecord
                     + " to " + endRecord);
             }
             identifiers = createIdentifiers(searcher, results, startRecord, endRecord);
-            if (log.isDebugEnabled()) {
-                log.debug("identifier creation finished at " 
+            if (log.isInfoEnabled()) {
+                log.info("identifier creation finished at " 
                             + (System.currentTimeMillis() - time) + " ms");
             }
         }
@@ -867,13 +875,17 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 QueryParser parser =
                     new EscidocQueryParser(getDefaultIndexField(), analyzer);
                 Query query = parser.parse(unanalyzedQuery.toString());
-                log.info("lucene search=" + query);
+                if (log.isInfoEnabled()) {
+                    log.info("lucene search=" + query);
+                }
                 
                 searcher = getSearcher(getIndexPath());
                 TopDocs results = searcher.search(query, maximumTerms);
                 int size = results.scoreDocs.length;
 
-                log.info(size + " handles found");
+                if (log.isInfoEnabled()) {
+                    log.info(size + " handles found");
+                }
 
                 if (size != 0) {
                     // iterate through hits counting terms
