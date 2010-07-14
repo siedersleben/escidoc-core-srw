@@ -46,8 +46,6 @@ import org.apache.axis.types.PositiveInteger;
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -103,8 +101,6 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
  */
 public class EscidocLuceneTranslator extends EscidocTranslator {
 
-
-    private Log log = LogFactory.getLog(EscidocLuceneTranslator.class);
 
     /**
      * SrwHighlighter.
