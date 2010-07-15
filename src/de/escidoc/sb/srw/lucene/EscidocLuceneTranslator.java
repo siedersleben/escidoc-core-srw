@@ -1013,6 +1013,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                                 throws Exception {
         String[] searchResultXmls = new String[hits.totalHits];
 
+        long time = 0;
         for (int i = startRecord - 1; i < endRecord; i++) {
             //get next hit
             org.apache.lucene.document.Document doc = 
@@ -1028,6 +1029,10 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             complete.append(Constants.SCORE_END_ELEMENT);
             
             //append highlighting
+            long time1 = 0;
+            if (log.isInfoEnabled()) {
+                time1 = System.currentTimeMillis();
+            }
             if (highlighter != null) {
                 String highlight = null;
                 try {
@@ -1039,11 +1044,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     complete.append(highlight);
                 }
             }
+            if (log.isInfoEnabled()) {
+                time += (System.currentTimeMillis() - time1);
+            }
             
             //get field containing the search-result-xml from lucene for this hit
-            if (log.isDebugEnabled()) {
-                log.debug("identifierTerm: " + getIdentifierTerm());
-            }
             Field idField = doc.getField(getIdentifierTerm());
             String idFieldStr = null;
             if (idField != null) {
@@ -1069,6 +1074,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             
             //append xml to search-results
             searchResultXmls[i] = complete.toString();
+        }
+        if (log.isInfoEnabled()) {
+            log.info("highlighting-time was " + time + " ms");
         }
         return searchResultXmls;
     }
