@@ -664,6 +664,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
         }
         catch (Exception e) {
+            if (log.isInfoEnabled()) {
+                log.info(e.toString());
+            }
             throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
                 .toString());
         } finally {
@@ -1014,10 +1017,20 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         String[] searchResultXmls = new String[hits.totalHits];
 
         long time = 0;
+        long docTime = 0;
+        long docTime2 = 0;
+        long docTime3 = 0;
         for (int i = startRecord - 1; i < endRecord; i++) {
             //get next hit
+            long docTime1 = 0;
+            if (log.isInfoEnabled()) {
+                docTime1 = System.currentTimeMillis();
+            }
             org.apache.lucene.document.Document doc = 
                         searcher.doc(hits.scoreDocs[i].doc);
+            if (log.isInfoEnabled()) {
+                docTime += (System.currentTimeMillis() - docTime1);
+            }
 
             //initialize surrounding xml
             StringBuffer complete = new StringBuffer(
@@ -1025,7 +1038,13 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             
             //append score-element
             complete.append(Constants.SCORE_START_ELEMENT);
+            if (log.isInfoEnabled()) {
+                docTime1 = System.currentTimeMillis();
+            }
             complete.append(hits.scoreDocs[i].score);
+            if (log.isInfoEnabled()) {
+                docTime2 += (System.currentTimeMillis() - docTime1);
+            }
             complete.append(Constants.SCORE_END_ELEMENT);
             
             //append highlighting
@@ -1049,7 +1068,13 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             
             //get field containing the search-result-xml from lucene for this hit
+            if (log.isInfoEnabled()) {
+                docTime1 = System.currentTimeMillis();
+            }
             Field idField = doc.getField(getIdentifierTerm());
+            if (log.isInfoEnabled()) {
+                docTime3 += (System.currentTimeMillis() - docTime1);
+            }
             String idFieldStr = null;
             if (idField != null) {
                 idFieldStr = idField.stringValue();
@@ -1077,6 +1102,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         }
         if (log.isInfoEnabled()) {
             log.info("highlighting-time was " + time + " ms");
+            log.info("hits.scoreDocs[i].doc-time was " + docTime + " ms");
+            log.info("hits.scoreDocs[i].score-time was " + docTime2 + " ms");
+            log.info("doc.getField(getIdentifierTerm())-time was " + docTime3 + " ms");
         }
         return searchResultXmls;
     }
