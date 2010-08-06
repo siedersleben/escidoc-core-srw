@@ -29,13 +29,8 @@
 
 package de.escidoc.sb.srw.lucene;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
 
 import org.apache.commons.httpclient.Cookie;
 import org.osuosl.srw.SRWDiagnostic;
@@ -58,7 +53,7 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
     private ConnectionUtility connectionUtility = new ConnectionUtility();
     
     public LucenePermissionFilterGenerator() {
-        connectionUtility.setTimeout(60000);
+        connectionUtility.setTimeout(180000);
     }
     
     /**
