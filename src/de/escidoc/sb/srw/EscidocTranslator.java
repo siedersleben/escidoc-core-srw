@@ -536,9 +536,6 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 			throw new SRWDiagnostic(DIAGNOSTIC_CODE_FOURTYSEVEN,
 					"UnknownCQLNode: " + node + ")");
 		}
-		if (query != null) {
-			log.info("Query : " + query.toString());
-		}
 		return query;
 	}
 
@@ -848,9 +845,6 @@ public abstract class EscidocTranslator extends LuceneTranslator {
         } else {
             throw new SRWDiagnostic(DIAGNOSTIC_CODE_FOURTYSEVEN,
                     "UnknownCQLNode: " + node + ")");
-        }
-        if (query != null) {
-            log.info("Query : " + query.toString());
         }
         returnMap.put("query", query);
         return returnMap;

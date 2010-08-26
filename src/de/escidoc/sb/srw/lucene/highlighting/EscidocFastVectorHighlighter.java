@@ -30,7 +30,6 @@
 package de.escidoc.sb.srw.lucene.highlighting;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,39 +38,39 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
-import org.apache.lucene.search.highlight.QueryScorer;
-import org.apache.lucene.search.highlight.SimpleFragmenter;
-import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter;
+import org.apache.lucene.search.vectorhighlight.FieldQuery;
+import org.apache.lucene.search.vectorhighlight.SimpleFragListBuilder;
+import org.apache.lucene.search.vectorhighlight.SimpleFragmentsBuilder;
 import org.apache.lucene.util.Version;
 
 import de.escidoc.sb.srw.Constants;
 
 /**
- * Class implements lucene-highlighting of configurable lucene-fields.
+ * Class implements lucene-highlighting of configurable lucene-fields
+ * with FastVectorHighlighter.
  * 
  * @author MIH
- * @sb
  */
-public class EscidocHighlighter implements SrwHighlighter {
+public class EscidocFastVectorHighlighter implements SrwHighlighter {
 
     //********Defaults*********************************************************
-    private Highlighter highlighter = null;
+    private FastVectorHighlighter highlighter = null;
 
     private IndexSearcher indexSearcher = null;
     
@@ -102,30 +101,30 @@ public class EscidocHighlighter implements SrwHighlighter {
 
     private String highlightMetadataFieldIterable = "false";
     //*************************************************************************
-
+    
     private final String FULLTEXT_IDENTIFIER = "fulltext";
 
     private final String METADATA_IDENTIFIER = "metadata";
 
     private HashSet<String> searchFields = new HashSet<String>();
 
-    private Query fulltextQuery = null;
-
-    private Query metadataQuery = null;
+    private HashMap<String, FieldQuery> fieldQueries = 
+    						new HashMap<String, FieldQuery>();
 
     private final Pattern SEARCHFIELD_PATTERN = 
                     Pattern.compile("([^\\s\\\\:]+?):");
 
     private Matcher SEARCHFIELD_MATCHER = SEARCHFIELD_PATTERN.matcher("");
 
-	private static final String LUCENE_ESCAPE_CHARS = "[\\\\+\\-\\!\\(\\)\\:\\^\\]\\{\\}\\~\\*\\?]";
+	private static final String LUCENE_ESCAPE_CHARS = 
+					"[\\\\+\\-\\!\\(\\)\\:\\^\\]\\{\\}\\~\\*\\?]";
 
-	private static final Pattern LUCENE_PATTERN = Pattern
-			.compile(LUCENE_ESCAPE_CHARS);
+	private static final Pattern LUCENE_PATTERN = 
+						Pattern.compile(LUCENE_ESCAPE_CHARS);
 
 	private static final String REPLACEMENT_STRING = "\\\\$0";
 
-	private static Log log = LogFactory.getLog(EscidocHighlighter.class);
+	private static Log log = LogFactory.getLog(EscidocFastVectorHighlighter.class);
 
     /**
      * set properties from config-file into variables.
@@ -238,11 +237,24 @@ public class EscidocHighlighter implements SrwHighlighter {
         throws Exception {
 
     	this.indexSearcher = indexSearcher;
+        QueryParser parser = new QueryParser(Version.LUCENE_CURRENT, "q", analyzer);
+        parser.setMultiTermRewriteMethod(
+        		MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
+
         searchFields = new HashSet<String>();
-        fulltextQuery = null;
-        metadataQuery = null;
+        Query fulltextQuery = null;
+        Query metadataQuery = null;
         if (indexSearcher != null
                 && query != null && query.toString() != null) {
+
+        	// Initialize Highlighter with formatter, highlight-start + end marker
+            highlighter = new FastVectorHighlighter(
+            		true, false, 
+            		new SimpleFragListBuilder(), 
+            		new SimpleFragmentsBuilder(
+            				new String[]{highlightStartMarker}, 
+            				new String[]{highlightEndMarker}));
+
             // get search-fields from query////////////////////////////////////
             SEARCHFIELD_MATCHER.reset(query.toString());
             boolean fulltextFound = false;
@@ -300,20 +312,18 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
             if (fulltextFound) {
                 searchFields.add(FULLTEXT_IDENTIFIER);
+                fieldQueries.put(FULLTEXT_IDENTIFIER, highlighter.getFieldQuery(
+                		parser.parse(fulltextQuery.toString())
+                			.rewrite(indexSearcher.getIndexReader())));
             }
             if (nonFulltextFound) {
                 searchFields.add(METADATA_IDENTIFIER);
+                fieldQueries.put(METADATA_IDENTIFIER, highlighter.getFieldQuery(
+                		parser.parse(metadataQuery.toString())
+                			.rewrite(indexSearcher.getIndexReader())));
             }
             // ////////////////////////////////////////////////////////////////
 
-            // Initialize Highlighter with formatter, highlight-start + end marker
-            highlighter =
-                    new Highlighter(new SimpleHTMLFormatter(
-                    highlightStartMarker, highlightEndMarker),
-                    null);
-            // Set Text-Fragmenter
-            highlighter.setTextFragmenter(new SimpleFragmenter(
-                    highlightFragmentSize));
         }
     }
 
@@ -326,7 +336,7 @@ public class EscidocHighlighter implements SrwHighlighter {
      * @param doc
      *            lucene-document
      * @param docId
-     *            id of lucene-document
+     *            lucene-document id
      * @exception Exception
      *                e
      * 
@@ -351,13 +361,11 @@ public class EscidocHighlighter implements SrwHighlighter {
         if (searchFields.contains(FULLTEXT_IDENTIFIER)
             && highlightFulltextField != null
             && highlightFulltextField.trim().length() != 0) {
-            //get fulltextQuery
-            highlighter.setFragmentScorer(new QueryScorer(fulltextQuery));
             if (!highlightFulltextFieldIterable.equalsIgnoreCase("true")) {
                 try {
                     highlightFragmentData =
                         getHighlightData(highlightFulltextField,
-                            highlightFulltextFilenameField, doc, highlighter,
+                            highlightFulltextFilenameField, doc, docId, highlighter,
                             FULLTEXT_IDENTIFIER);
                     if (highlightFragmentData != null) {
                         highlightXmlizer
@@ -374,7 +382,7 @@ public class EscidocHighlighter implements SrwHighlighter {
                     try {
                         highlightFragmentData =
                             getHighlightData(highlightFulltextField + j,
-                                highlightFulltextFilenameField + j, doc,
+                                highlightFulltextFilenameField + j, doc, docId,
                                 highlighter, FULLTEXT_IDENTIFIER);
                         if (highlightFragmentData != null) {
                             highlightXmlizer
@@ -395,12 +403,10 @@ public class EscidocHighlighter implements SrwHighlighter {
         if (searchFields.contains(METADATA_IDENTIFIER)
             && highlightMetadataField != null
             && highlightMetadataField.trim().length() != 0) {
-            //get metadataQuery
-            highlighter.setFragmentScorer(new QueryScorer(metadataQuery));
             if (!highlightMetadataFieldIterable.equalsIgnoreCase("true")) {
                 try {
                     highlightFragmentData =
-                        getHighlightData(highlightMetadataField, null, doc,
+                        getHighlightData(highlightMetadataField, null, doc, docId,
                             highlighter, METADATA_IDENTIFIER);
                     if (highlightFragmentData != null) {
                         highlightXmlizer
@@ -416,7 +422,7 @@ public class EscidocHighlighter implements SrwHighlighter {
                     try {
                         highlightFragmentData =
                             getHighlightData(highlightMetadataField + j, null,
-                                doc, highlighter, METADATA_IDENTIFIER);
+                                doc, docId, highlighter, METADATA_IDENTIFIER);
                         if (highlightFragmentData != null) {
                             highlightXmlizer
                                 .addHighlightFragmentData(highlightFragmentData);
@@ -463,7 +469,8 @@ public class EscidocHighlighter implements SrwHighlighter {
      */
     private HashMap<String, String> getHighlightData(
         final String fieldName, final String locatorFieldName,
-        final Document doc, final Highlighter highlighterIn, final String type)
+        final Document doc, final int docId, 
+        final FastVectorHighlighter highlighterIn, final String type)
         throws IOException, NoSuchFieldException, InvalidTokenOffsetsException {
         
         //check values
@@ -471,55 +478,29 @@ public class EscidocHighlighter implements SrwHighlighter {
                 || type == null || type.trim().length() == 0) {
             return null;
         }
-        
-        HashMap<String, String> highlightData = new HashMap<String, String>();
-        highlightData.put("type", type);
-        String highlightSnippet = null;
-
-        // Get text of all Fields with name <fieldName>////////////////////////
-        // and concatenate then with highlightFragmentSeparator////////////////
-        StringBuffer fieldValues = new StringBuffer("");
-        Field[] fields = doc.getFields(fieldName);
-        if (fields != null && fields.length > 0) {
-            for (int j = 0; j < fields.length; j++) {
-                Field field = fields[j];
-                if (fieldValues.length() > 0) {
-                    fieldValues.append(highlightFragmentSeparator);
-                }
-                fieldValues.append(field.stringValue());
-            }
-        }
-        else {
+        if (doc.getField(fieldName) == null) {
             throw new NoSuchFieldException("Field not found " + fieldName);
         }
-        String text = fieldValues.toString();
-        // /////////////////////////////////////////////////////////////////////
 
-        text = text.replaceAll("\\s+", " ");
-        text = StringEscapeUtils.unescapeXml(text);
-        // /////////////////////////////////////////////////////////////////////
+        HashMap<String, String> highlightData = new HashMap<String, String>();
+        highlightData.put("type", type);
+        String[] highlightSnippets = null;
 
         // Highlight text with Highlighter//////////////////////////////////////
-        if (text != null && !text.equals("")) {
-            TokenStream tokenStream =
-                analyzer.tokenStream(fieldName, new StringReader(text));
-            highlightSnippet =
-                highlighterIn.getBestFragments(tokenStream, text,
-                    highlightMaxFragments, highlightFragmentSeparator);
-            if (highlightSnippet == null) {
-                highlightSnippet = "";
-            }
-            //remove non-valid unicode-characters
-            highlightSnippet = stripNonValidXMLCharacters(highlightSnippet);
-            if (highlightSnippet.equals("")) {
-                return null;
-            }
-            highlightData.put("highlightSnippet", highlightSnippet);
+        highlightSnippets =
+            highlighterIn.getBestFragments(fieldQueries.get(type), indexSearcher.getIndexReader(), 
+            		docId, fieldName, highlightFragmentSize, highlightMaxFragments);
+        StringBuffer highlightSnippet = new StringBuffer("");
+        //remove non-valid unicode-characters
+        highlightSnippet = stripNonValidXMLCharacters(highlightSnippets);
+        if (highlightSnippet.length() == 0) {
+            return null;
         }
+        highlightData.put("highlightSnippet", highlightSnippet.toString());
         // /////////////////////////////////////////////////////////////////////
         // Get Information about location of component where hit was found//////
         if (locatorFieldName != null) {
-            fields = doc.getFields(locatorFieldName);
+            Field[] fields = doc.getFields(locatorFieldName);
             if (fields != null && fields.length > 0) {
                 highlightData.put("highlightLocator", fields[0].stringValue());
             }
@@ -539,22 +520,25 @@ public class EscidocHighlighter implements SrwHighlighter {
      * @param in The String whose non-valid characters we want to remove.
      * @return The in String, stripped of non-valid characters.
      */
-    public String stripNonValidXMLCharacters(String in) {
-        StringBuffer out = new StringBuffer(); // Used to hold the output.
+    public StringBuffer stripNonValidXMLCharacters(String[] in) {
+        StringBuffer out = new StringBuffer(""); // Used to hold the output.
         char current; // Used to reference the current character.
 
-        if (in == null || ("".equals(in))) return ""; // vacancy test.
-        for (int i = 0; i < in.length(); i++) {
-            current = in.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
-            if ((current == 0x9) ||
-                (current == 0xA) ||
-                (current == 0xD) ||
-                ((current >= 0x20) && (current <= 0xD7FF)) ||
-                ((current >= 0xE000) && (current <= 0xFFFD)) ||
-                ((current >= 0x10000) && (current <= 0x10FFFF)))
-                out.append(current);
-        }
-        return out.toString();
+        for (int j = 0; j < in.length; j++) {
+            if (in[j] == null || ("".equals(in[j]))) continue;
+            out.append(highlightFragmentSeparator);
+            for (int i = 0; i < in[j].length(); i++) {
+                current = in[j].charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
+                if ((current == 0x9) ||
+                    (current == 0xA) ||
+                    (current == 0xD) ||
+                    ((current >= 0x20) && (current <= 0xD7FF)) ||
+                    ((current >= 0xE000) && (current <= 0xFFFD)) ||
+                    ((current >= 0x10000) && (current <= 0x10FFFF)))
+                    out.append(current);
+            }
+		}
+        return out;
     } 
     
     /**

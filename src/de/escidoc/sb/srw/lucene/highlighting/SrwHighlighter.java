@@ -32,6 +32,7 @@ package de.escidoc.sb.srw.lucene.highlighting;
 import java.util.Properties;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 
 /**
@@ -56,8 +57,8 @@ public interface SrwHighlighter {
     /**
      * initialize lucene-highlighter.
      * 
-     * @param indexPath
-     *            path to lucene-index
+     * @param indexSearcher
+     *            indexSearcher
      * @param query
      *            lucene-query
      * 
@@ -66,7 +67,7 @@ public interface SrwHighlighter {
      * 
      * @sb
      */
-    void initialize(final String indexPath, Query query) throws Exception;
+    void initialize(final IndexSearcher indexSearcher, Query query) throws Exception;
 
     /**
      * Gets all highlight-snippets for the given lucene-document and returns it
@@ -76,6 +77,8 @@ public interface SrwHighlighter {
      * 
      * @param doc
      *            lucene-document
+     * @param docId
+     *            lucene-document id
      * @exception Exception
      *                e
      * 
@@ -83,7 +86,7 @@ public interface SrwHighlighter {
      * 
      * @sb
      */
-    String getFragments(final Document doc)
+    String getFragments(final Document doc, final int docId)
         throws Exception;
 
 }

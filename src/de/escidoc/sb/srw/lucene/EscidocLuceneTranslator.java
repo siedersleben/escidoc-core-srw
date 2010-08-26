@@ -453,6 +453,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // with the defaultFieldName from configuration
             Query unanalyzedQuery = makeQuery(queryRoot);
             if (log.isInfoEnabled()) {
+                log.info("query: " + unanalyzedQuery.toString());
+            }
+            if (log.isInfoEnabled()) {
                 log.info("query converted at " 
                         + (System.currentTimeMillis() - time) + " ms");
             }
@@ -608,7 +611,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // initialize Highlighter
             if (highlighter != null) {
                 try {
-                    highlighter.initialize(getIndexPath(), 
+                    highlighter.initialize(searcher, 
                                 parser.parse(unanalyzedQuery.toString()));
                 } catch (Exception e) {
                     log.error(e);
@@ -1055,7 +1058,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             if (highlighter != null) {
                 String highlight = null;
                 try {
-                    highlight = highlighter.getFragments(doc);
+                    highlight = highlighter.getFragments(doc, hits.scoreDocs[i].doc);
                 } catch (Exception e) {
                     log.error(e);
                 }
