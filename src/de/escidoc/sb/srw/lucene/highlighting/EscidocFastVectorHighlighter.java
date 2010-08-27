@@ -57,6 +57,7 @@ import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter;
 import org.apache.lucene.search.vectorhighlight.FieldQuery;
 import org.apache.lucene.search.vectorhighlight.SimpleFragListBuilder;
 import org.apache.lucene.search.vectorhighlight.SimpleFragmentsBuilder;
+import org.apache.lucene.search.vectorhighlight.WhitespaceFragmentsBuilder;
 import org.apache.lucene.util.Version;
 
 import de.escidoc.sb.srw.Constants;
@@ -251,7 +252,7 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
             highlighter = new FastVectorHighlighter(
             		true, false, 
             		new SimpleFragListBuilder(), 
-            		new SimpleFragmentsBuilder(
+            		new WhitespaceFragmentsBuilder(
             				new String[]{highlightStartMarker}, 
             				new String[]{highlightEndMarker}));
 

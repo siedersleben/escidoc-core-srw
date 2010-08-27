@@ -39,6 +39,6 @@
 	<classpathentry kind="lib" path="lib/escidoc/commons-collections.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-pool.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-codec-1.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/lucene-fast-vector-highlighter-3.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-fast-vector-highlighter-3.0.2.jar" sourcepath="/home/mih/.m2/repository/org/apache/lucene/lucene-fast-vector-highlighter/3.0.2/lucene-fast-vector-highlighter-3.0.2-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
