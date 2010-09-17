@@ -3,6 +3,7 @@
 <project name="eSciDocCoreSrw" basedir="." default="war">
 
 	<property name="webapp.name" value="srw" />
+	<property name="nolibs.webapp.name" value="${webapp.name}-nolibs" />
 	<property name="build.dir" value="build" />
 	<property name="dist.dir" value="dist" />
 	<property name="src.dir" value="src" />
@@ -56,6 +57,19 @@
         
     <target name="war" depends="jar">
         <fail unless="webapp.name" message="You need to specify a webapp.name"/>
+        <delete file="${dist.dir}/${nolibs.webapp.name}.war"/>
+        <jar jarfile="${dist.dir}/${nolibs.webapp.name}.war">
+            <zipfileset dir="${dist.dir}" includes="${escidoc.srw.jarfile.name}" prefix="WEB-INF/lib"/>
+
+        	<!--MIH: add web.xml from conf/escidoc-directory -->
+        	<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
+        	<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
+
+        	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
+            <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
+
+        	<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
+        </jar>
         <delete file="${dist.dir}/${webapp.name}.war"/>
         <jar jarfile="${dist.dir}/${webapp.name}.war">
             <zipfileset dir="${dist.dir}" includes="${escidoc.srw.jarfile.name}" prefix="WEB-INF/lib"/>
