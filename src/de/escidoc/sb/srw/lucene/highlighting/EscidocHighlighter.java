@@ -73,9 +73,7 @@ public class EscidocHighlighter implements SrwHighlighter {
     //********Defaults*********************************************************
     private Highlighter highlighter = null;
 
-    private IndexSearcher indexSearcher = null;
-    
-    private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+    private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
     
     private SrwHighlightXmlizer highlightXmlizer = 
                     new EscidocSimpleHighlightXmlizer();
@@ -146,7 +144,7 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
             catch (Exception e) {
                 log.error(e);
-                analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+                analyzer = new StandardAnalyzer(Version.LUCENE_30);
             }
         }
 
@@ -237,7 +235,6 @@ public class EscidocHighlighter implements SrwHighlighter {
     public void initialize(final IndexSearcher indexSearcher, final Query query)
         throws Exception {
 
-    	this.indexSearcher = indexSearcher;
         searchFields = new HashSet<String>();
         fulltextQuery = null;
         metadataQuery = null;

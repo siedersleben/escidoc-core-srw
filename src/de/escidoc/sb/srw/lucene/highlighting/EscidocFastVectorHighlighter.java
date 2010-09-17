@@ -56,7 +56,6 @@ import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter;
 import org.apache.lucene.search.vectorhighlight.FieldQuery;
 import org.apache.lucene.search.vectorhighlight.SimpleFragListBuilder;
-import org.apache.lucene.search.vectorhighlight.SimpleFragmentsBuilder;
 import org.apache.lucene.search.vectorhighlight.WhitespaceFragmentsBuilder;
 import org.apache.lucene.util.Version;
 
@@ -75,7 +74,7 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
 
     private IndexSearcher indexSearcher = null;
     
-    private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+    private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
     
     private SrwHighlightXmlizer highlightXmlizer = 
                     new EscidocSimpleHighlightXmlizer();
@@ -146,7 +145,7 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
             }
             catch (Exception e) {
                 log.error(e);
-                analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+                analyzer = new StandardAnalyzer(Version.LUCENE_30);
             }
         }
 
@@ -238,7 +237,7 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
         throws Exception {
 
     	this.indexSearcher = indexSearcher;
-        QueryParser parser = new QueryParser(Version.LUCENE_CURRENT, "q", analyzer);
+        QueryParser parser = new QueryParser(Version.LUCENE_30, "q", analyzer);
         parser.setMultiTermRewriteMethod(
         		MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
 

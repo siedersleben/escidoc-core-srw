@@ -359,7 +359,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             catch (Exception e) {
                 log.error(e);
-                analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+                analyzer = new StandardAnalyzer(Version.LUCENE_30);
             }
         }
 
