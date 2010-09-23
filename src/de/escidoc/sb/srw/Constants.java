@@ -85,9 +85,11 @@ public class Constants {
         "</" + SEARCH_RESULT_NAMESPACE_PREFIX + ":highlight>\n";
     
     //Constants for duplicate filtering
-    public static final String DUPLICATE_IDENTIFIER_FIELD = "rootPid";
+    public static final String DUPLICATE_IDENTIFIER_FIELD = 
+                                        "distinction.rootPid";
     
-    public static final String DUPLICATE_DISTINGUISHER_FIELD = "type";
+    public static final String DUPLICATE_DISTINGUISHER_FIELD = 
+                                            "distinction.type";
     
     public static final int DISTINGUISHER_PRIORITY_VAL = 0;
     
