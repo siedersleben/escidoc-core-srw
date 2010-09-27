@@ -42,16 +42,20 @@ public class Constants {
 
     public static final int FUZZY_BOOLEAN_MAX_CLAUSE_COUNT = 10000;
     
-    public static final Pattern CONTEXT_SET_PATTERN = Pattern.compile("contextSet\\.(.*)");
+    public static final Pattern CONTEXT_SET_PATTERN = 
+        Pattern.compile("contextSet\\.(.*)");
     
     public static final Pattern RESERVED_SET_PATTERN = Pattern.compile(
             "xml_representation.*|xml_metadata.*|stored_fulltext.*|stored_filename.*");
 
-    public static final Pattern SORT_SET_PATTERN = Pattern.compile("sortSet\\.(.*)");
+    public static final Pattern SORT_SET_PATTERN = 
+        Pattern.compile("sortSet\\.(.*)");
 
-    public static final Pattern QUALIFIER_PATTERN = Pattern.compile("qualifier\\.(.*)");
+    public static final Pattern QUALIFIER_PATTERN = 
+        Pattern.compile("qualifier\\.(.*)");
 
-    public static final Pattern DOT_PATTERN = Pattern.compile("(.*?)\\.(.*)");
+    public static final Pattern DOT_PATTERN = 
+        Pattern.compile("\\/?(.*?)[\\.\\/](.*)");
 
     public static final String GSEARCH_URL = "http://localhost:8080/fedoragsearch/rest";
 
