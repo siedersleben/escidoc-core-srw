@@ -24,11 +24,24 @@
 
 package srwsafe.ORG.oclc.os.SRW;
 
-import org.apache.axis.transport.http.AxisHttpSession;
-import org.apache.axis.transport.http.AxisServlet;
-import org.apache.axis.transport.http.HTTPConstants;
-import org.apache.axis.transport.http.HTTPTransport;
-import org.apache.axis.transport.http.ServletEndpointContextImpl;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.soap.SOAPException;
 
 import org.apache.axis.AxisEngine;
 import org.apache.axis.AxisFault;
@@ -36,11 +49,18 @@ import org.apache.axis.ConfigurationException;
 import org.apache.axis.Constants;
 import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
+import org.apache.axis.SOAPPart;
 import org.apache.axis.components.logger.LogFactory;
+import org.apache.axis.configuration.FileProvider;
 import org.apache.axis.description.OperationDesc;
 import org.apache.axis.description.ServiceDesc;
 import org.apache.axis.handlers.soap.SOAPService;
 import org.apache.axis.security.servlet.ServletSecurityProvider;
+import org.apache.axis.transport.http.AxisHttpSession;
+import org.apache.axis.transport.http.AxisServlet;
+import org.apache.axis.transport.http.HTTPConstants;
+import org.apache.axis.transport.http.HTTPTransport;
+import org.apache.axis.transport.http.ServletEndpointContextImpl;
 import org.apache.axis.utils.Admin;
 import org.apache.axis.utils.JavaUtils;
 import org.apache.axis.utils.Messages;
@@ -49,42 +69,17 @@ import org.apache.commons.logging.Log;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-//import javax.servlet.http.HttpUtils;
-import javax.xml.soap.SOAPException;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import org.apache.axis.SOAPPart;
-
-import de.escidoc.core.common.util.string.StringUtility;
-
-/**
- *
- * @author Doug Davis (dug@us.ibm.com)
- * @author Steve Loughran
- * xdoclet tags are not active yet; keep web.xml in sync
- * web.servlet name="AxisServlet"  display-name="Apache-Axis Servlet"
- * web.servlet-mapping url-pattern="/servlet/AxisServlet"
- * web.servlet-mapping url-pattern="*.jws"
- * web.servlet-mapping url-pattern="/services/\*"
- */
-public class SRWServlet extends AxisServlet {
+///**
+// *
+// * @author Doug Davis (dug@us.ibm.com)
+// * @author Steve Loughran
+// * xdoclet tags are not active yet; keep web.xml in sync
+// * web.servlet name="AxisServlet"  display-name="Apache-Axis Servlet"
+// * web.servlet-mapping url-pattern="/servlet/AxisServlet"
+// * web.servlet-mapping url-pattern="*.jws"
+// * web.servlet-mapping url-pattern="/services/\*"
+// */
+//public class SRWServlet extends AxisServlet {
 //    protected static Log servletLog=LogFactory.getLog(SRWServlet.class.getName());
 //
 //    /**
@@ -267,8 +262,10 @@ public class SRWServlet extends AxisServlet {
 //            if(log.isDebugEnabled()) log.debug("in doGet: got APP request for "+request.getRequestURI());
 //
 //        }
+//        
 //        try {
 //            AxisEngine engine = getEngine();
+//
 //            ServletContext servletContext =
 //                getServletConfig().getServletContext();
 //
@@ -1324,6 +1321,7 @@ public class SRWServlet extends AxisServlet {
 //            }
 //            ///////////////////////////////////////////////
 //
+//
 //            sb.append("<soap:Envelope ")
 //              .append("xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" ")
 //              .append("xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" ")
@@ -1723,6 +1721,7 @@ public class SRWServlet extends AxisServlet {
 //        }
 //    }
 //    ///////////////////////////////////////////////////////////////////////////////////////
+//
 //    /**
 //     * Gets the eSciDoc-Cookie containing the user-handle.<br>
 //     * 
@@ -1753,9 +1752,8 @@ public class SRWServlet extends AxisServlet {
 //        if (cookie != null) {
 //            final String handle = cookie.getValue();
 //            if (log.isDebugEnabled()) {
-//                log.debug(
-//                    StringUtility.concatenate("Received handle in cookie: ",
-//                        handle));
+//                log.debug("Received handle in cookie: " +
+//                        handle);
 //            }
 //            return handle;
 //        }
@@ -1765,5 +1763,5 @@ public class SRWServlet extends AxisServlet {
 //            return "";
 //        }
 //    }
-
-}
+//
+//}

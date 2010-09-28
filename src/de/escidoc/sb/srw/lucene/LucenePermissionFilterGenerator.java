@@ -32,7 +32,7 @@ package de.escidoc.sb.srw.lucene;
 import java.io.ByteArrayInputStream;
 import java.net.URL;
 
-import org.apache.commons.httpclient.Cookie;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.osuosl.srw.SRWDiagnostic;
 
 import ORG.oclc.os.SRW.SRWServlet;
@@ -80,7 +80,7 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
             String permissionFilterXml = connectionUtility
             .getRequestURLAsString(
                     new URL(url.toString()),
-                    new Cookie("", SRWServlet.COOKIE_LOGIN, handle));
+                    new BasicClientCookie(SRWServlet.COOKIE_LOGIN, handle));
             StaxParser sp = new StaxParser();
             PermissionFilterHandler handler = new PermissionFilterHandler(sp);
             sp.addHandler(handler);
