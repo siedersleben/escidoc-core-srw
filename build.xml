@@ -70,8 +70,8 @@
 
         	<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
             <zipfileset dir="${lib.dir}/srw" includes="SRW.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/srw" includes="axis.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/escidoc" includes="wss4j-1.5.3.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${lib.dir}/srw" includes="axis-1.4.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${lib.dir}/escidoc" includes="wss4j-1.5.6.jar" prefix="WEB-INF/lib"/>
         </jar>
         <delete file="${dist.dir}/${webapp.name}.war"/>
         <jar jarfile="${dist.dir}/${webapp.name}.war">
