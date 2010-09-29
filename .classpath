@@ -3,15 +3,9 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/escidoc/stax/jsr173_1.0_api.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/stax/stax2.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/stax/wstx-asl-3.1.2.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/commons-lang-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/escidoc-analyzers.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/sen.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/Dbutils.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/javax.servlet.jar"/>
-	<classpathentry kind="lib" path="lib/srw/axis.jar"/>
-	<classpathentry kind="lib" path="lib/srw/commons-discovery.jar"/>
 	<classpathentry kind="lib" path="lib/srw/cql-java.jar"/>
 	<classpathentry kind="lib" path="lib/srw/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="lib/srw/log4j.jar"/>
@@ -20,18 +14,10 @@
 	<classpathentry kind="lib" path="lib/srw/saaj.jar"/>
 	<classpathentry kind="lib" path="lib/srw/servlet-api.jar"/>
 	<classpathentry kind="lib" path="lib/srw/SRW.jar"/>
-	<classpathentry kind="lib" path="lib/srw/wsdl4j.jar"/>
-	<classpathentry kind="lib" path="lib/srw/xalan.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/jcl-over-slf4j-1.5.11.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/slf4j-api-1.5.11.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/slf4j-log4j12-1.5.11.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-2.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-tiger-2.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/wss4j-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-httpclient-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/commons-collections.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/commons-pool.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/commons-codec-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-3.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-ja.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-snowball-3.0.2.jar"/>
@@ -42,5 +28,20 @@
 	<classpathentry kind="lib" path="lib/escidoc/httpclient-4.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/httpcore-4.1-beta1.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/common.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/stax/stax2-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/stax/wstx-asl-3.2.9.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/commons-codec-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/commons-lang-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/commons-pool-1.5.4.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-2.0.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-tiger-2.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/wss4j-1.5.6.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/xmlsec-1.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/Dbutils-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/srw/axis-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/srw/commons-discovery-0.4.jar"/>
+	<classpathentry kind="lib" path="lib/srw/wsdl4j-1.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/srw/xalan-2.7.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
