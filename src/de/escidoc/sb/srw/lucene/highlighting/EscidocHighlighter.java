@@ -235,6 +235,7 @@ public class EscidocHighlighter implements SrwHighlighter {
     public void initialize(final IndexSearcher indexSearcher, final Query query)
         throws Exception {
 
+        log.info("OK0");
         searchFields = new HashSet<String>();
         fulltextQuery = null;
         metadataQuery = null;
@@ -245,6 +246,7 @@ public class EscidocHighlighter implements SrwHighlighter {
             boolean fulltextFound = false;
             boolean nonFulltextFound = false;
 
+            log.info("OK");
             Collection<BooleanClause> clauses =
                     new ArrayList<BooleanClause>();
             if (query instanceof BooleanQuery) {
@@ -254,8 +256,10 @@ public class EscidocHighlighter implements SrwHighlighter {
                 }
             }
 
+            log.info("OK1");
             if (clauses != null && clauses.size() > 0) {
                 for (BooleanClause clause : clauses) {
+                    log.info("OK2");
                     SEARCHFIELD_MATCHER.reset(clause.toString());
                     while (SEARCHFIELD_MATCHER.find()) {
                         if (SEARCHFIELD_MATCHER.group(1) != null
@@ -297,9 +301,11 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
             if (fulltextFound) {
                 searchFields.add(FULLTEXT_IDENTIFIER);
+                log.info("OK3");
             }
             if (nonFulltextFound) {
                 searchFields.add(METADATA_IDENTIFIER);
+                log.info("OK4");
             }
             // ////////////////////////////////////////////////////////////////
 
@@ -311,6 +317,7 @@ public class EscidocHighlighter implements SrwHighlighter {
             // Set Text-Fragmenter
             highlighter.setTextFragmenter(new SimpleFragmenter(
                     highlightFragmentSize));
+            log.info("OK5");
         }
     }
 

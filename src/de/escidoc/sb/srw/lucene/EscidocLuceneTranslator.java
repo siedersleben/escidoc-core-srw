@@ -56,12 +56,14 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.EscidocTopDocsCollector;
 import org.apache.lucene.search.EscidocTopFieldCollector;
 import org.apache.lucene.search.EscidocTopScoreDocCollector;
 import org.apache.lucene.search.FieldComparatorSource;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Similarity;
@@ -474,7 +476,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             QueryParser parser =
                 new EscidocQueryParser(
                         getDefaultIndexField(), analyzer, forceScoring);
-            Query query = null;
+            Query userQuery = parser.parse(unanalyzedQuery.toString());
+            Query query = userQuery;
             // MIH: FOR TESTING ONLY!!//////////////////////////////////////
             boolean skipPermissions = false; 
             boolean skipFilterLatestRelease = false; 
@@ -493,6 +496,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             ////////////////////////////////////////////////////////////////
             if (permissionFiltering && !skipPermissions) {
+                Query permissionQuery = null;
                 if (log.isInfoEnabled()) {
                     log.info("starting getting permission filter query at " 
                             + (System.currentTimeMillis() - time) + " ms");
@@ -528,17 +532,17 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                             + (System.currentTimeMillis() - time) + " ms");
                 }
                 if (StringUtils.isNotEmpty(permissionFilter)) {
-                    StringBuffer queryBuffer = new StringBuffer("(\n")
-                            .append(unanalyzedQuery.toString())
-                            .append("\n) AND (\n")
-                            .append(permissionFilter)
-                            .append("\n)");
-                    query = parser.parse(queryBuffer.toString());
-                } else {
-                    query = parser.parse(unanalyzedQuery.toString());
+                    permissionQuery = parser.parse(permissionFilter);
+                    if (!(query instanceof BooleanQuery)) {
+                        //make Boolean Query
+                        Query intermediateQuery = new BooleanQuery();
+                        ((BooleanQuery)intermediateQuery).add(
+                                query, BooleanClause.Occur.MUST);
+                        query = intermediateQuery;
+                    }
+                    ((BooleanQuery)query).add(
+                            permissionQuery, BooleanClause.Occur.MUST);
                 }
-            } else {
-                query = parser.parse(unanalyzedQuery.toString());
             }
             
             if (log.isInfoEnabled()) {
@@ -611,8 +615,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // initialize Highlighter
             if (highlighter != null) {
                 try {
-                    highlighter.initialize(searcher, 
-                                parser.parse(unanalyzedQuery.toString()));
+                    highlighter.initialize(searcher, userQuery);
                 } catch (Exception e) {
                     log.error(e);
                 }
