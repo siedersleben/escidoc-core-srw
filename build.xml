@@ -46,7 +46,7 @@
             <fileset dir="${conf.dir}" includes="*.wsdd.Provider"/>
         </copy>
     	<!--MIH: also include packages de.escidoc.* in compilation -->
-        <jar jarfile="${dist.dir}/${escidoc.srw.jarfile.name}" basedir="${build.dir}" includes="org/osuosl/**/*.class de/escidoc/**/*.class org/apache/lucene/search/*.class META-INF/services/*"/>
+        <jar jarfile="${dist.dir}/${escidoc.srw.jarfile.name}" basedir="${build.dir}" includes="org/osuosl/**/*.class de/escidoc/**/*.class META-INF/services/*"/>
     	
     </target>
 
