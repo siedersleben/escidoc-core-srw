@@ -623,6 +623,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
 
             if (log.isInfoEnabled()) {
                 log.info(size + " handles found");
+                log.info("highlighter-initialization finished at " 
+                        + (System.currentTimeMillis() - time) + " ms");
             }
 
             /**

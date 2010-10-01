@@ -236,10 +236,8 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
     public void initialize(final IndexSearcher indexSearcher, final Query query)
         throws Exception {
 
-        log.info("OK0");
     	this.indexSearcher = indexSearcher;
         QueryParser parser = new QueryParser(Version.LUCENE_30, "q", analyzer);
-        log.info("OK0.1");
         parser.setMultiTermRewriteMethod(
         		MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
 
@@ -248,7 +246,6 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
         Query metadataQuery = null;
         if (indexSearcher != null
                 && query != null && query.toString() != null) {
-            log.info("OK");
 
         	// Initialize Highlighter with formatter, highlight-start + end marker
             highlighter = new FastVectorHighlighter(
@@ -258,10 +255,8 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
             				new String[]{highlightStartMarker}, 
             				new String[]{highlightEndMarker}));
 
-            log.info("OK1");
             // get search-fields from query////////////////////////////////////
             SEARCHFIELD_MATCHER.reset(query.toString());
-            log.info("OK2");
             boolean fulltextFound = false;
             boolean nonFulltextFound = false;
 
@@ -274,10 +269,8 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
                 }
             }
 
-            log.info("OK3");
             if (clauses != null && clauses.size() > 0) {
                 for (BooleanClause clause : clauses) {
-                    log.info("OK4");
                     SEARCHFIELD_MATCHER.reset(clause.toString());
                     while (SEARCHFIELD_MATCHER.find()) {
                         if (SEARCHFIELD_MATCHER.group(1) != null
@@ -319,17 +312,18 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
             }
             if (fulltextFound) {
                 searchFields.add(FULLTEXT_IDENTIFIER);
-                fieldQueries.put(FULLTEXT_IDENTIFIER, highlighter.getFieldQuery(
-                		parser.parse(fulltextQuery.toString())
-                			.rewrite(indexSearcher.getIndexReader())));
-                log.info("OK5");
+                fieldQueries.put(FULLTEXT_IDENTIFIER, 
+                		highlighter.getFieldQuery(
+                				parser.parse(
+                						fulltextQuery.toString())
+                						.rewrite(indexSearcher.getIndexReader())));
             }
             if (nonFulltextFound) {
                 searchFields.add(METADATA_IDENTIFIER);
-                fieldQueries.put(METADATA_IDENTIFIER, highlighter.getFieldQuery(
-                		parser.parse(metadataQuery.toString())
-                			.rewrite(indexSearcher.getIndexReader())));
-                log.info("OK6");
+               fieldQueries.put(METADATA_IDENTIFIER, highlighter.getFieldQuery(
+                		parser.parse(
+						metadataQuery.toString())
+						.rewrite(indexSearcher.getIndexReader())));
             }
             // ////////////////////////////////////////////////////////////////
 
@@ -590,11 +584,12 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
                     			((TermQuery)clauseArr[i].getQuery()).getTerm().field(), 
                     			LUCENE_PATTERN.matcher(((TermQuery)clauseArr[i].getQuery())
                     					.getTerm().text()).replaceAll(REPLACEMENT_STRING))));
-                    } else if (clauseArr[i].getQuery() instanceof MultiTermQuery) {
-                        ((MultiTermQuery)clauseArr[i].getQuery())
-                            .setRewriteMethod(
-                                MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
                     }
+//                    else if (clauseArr[i].getQuery() instanceof MultiTermQuery) {
+//                        ((MultiTermQuery)clauseArr[i].getQuery())
+//                            .setRewriteMethod(
+//                                MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
+//                    }
                     clauses.add(clauseArr[i]);
                 }
             }
