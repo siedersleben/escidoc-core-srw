@@ -32,8 +32,14 @@ package de.escidoc.sb.srw;
 import gov.loc.www.zing.srw.ExtraDataType;
 
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,13 +52,16 @@ import ORG.oclc.os.SRW.SRWDiagnostic;
  * Class for resolving records and schemas. Also transforms between schemas.
  * 
  * @author MIH
- * @sb
  */
 public class EscidocRecordResolver implements RecordResolver {
 
     private static Log log = LogFactory.getLog(EscidocRecordResolver.class);
 
-    private HashMap schemas = new HashMap();
+    private HashMap<String, HashMap<String, String>> schemas = 
+    				new HashMap<String, HashMap<String, String>>();
+    
+    private Hashtable<String, Transformer> transformers = 
+    					new Hashtable<String, Transformer>();
 
     /**
      * initialize. Read all supported schema-names from properties. Save
@@ -60,7 +69,6 @@ public class EscidocRecordResolver implements RecordResolver {
      * 
      * @param properties
      *            properties
-     * @sb
      */
     public void init(final Properties properties) {
         if (properties != null) {
@@ -78,13 +86,13 @@ public class EscidocRecordResolver implements RecordResolver {
                 for (Iterator iter = schemas.keySet().iterator(); iter
                     .hasNext();) {
                     String schemaId = (String) iter.next();
-                    ((HashMap) schemas.get(schemaId)).put("identifier",
+                    ((HashMap<String, String>) schemas.get(schemaId)).put("identifier",
                         properties.getProperty("recordResolver." + schemaId
                             + ".identifier"));
-                    ((HashMap) schemas.get(schemaId)).put("location",
+                    ((HashMap<String, String>) schemas.get(schemaId)).put("location",
                         properties.getProperty("recordResolver." + schemaId
                             + ".location"));
-                    ((HashMap) schemas.get(schemaId)).put("title", properties
+                    ((HashMap<String, String>) schemas.get(schemaId)).put("title", properties
                         .getProperty("recordResolver." + schemaId + ".title"));
                 }
             }
@@ -102,7 +110,6 @@ public class EscidocRecordResolver implements RecordResolver {
      * @return transformed xml
      * @throws SRWDiagnostic
      *             e
-     * @sb
      */
     public String transform(
         final ORG.oclc.os.SRW.Record record, final String schemaId)
@@ -126,7 +133,6 @@ public class EscidocRecordResolver implements RecordResolver {
      * @param schema
      *            schema
      * @return boolean found
-     * @sb
      */
     public boolean containsSchema(final String schema) {
         if (log.isDebugEnabled()) {
@@ -143,7 +149,6 @@ public class EscidocRecordResolver implements RecordResolver {
      * fragment.
      * 
      * @return schema info xml fragment
-     * @sb
      */
     public StringBuffer getSchemaInfo() {
         StringBuffer schemaXML = new StringBuffer("");
@@ -151,16 +156,17 @@ public class EscidocRecordResolver implements RecordResolver {
             schemaXML.append("        <schemaInfo>\n");
             for (Iterator iter = schemas.keySet().iterator(); iter.hasNext();) {
                 String schemaId = (String) iter.next();
-                HashMap values = (HashMap) schemas.get(schemaId);
+                HashMap<String, String> values = 
+                	(HashMap<String, String>) schemas.get(schemaId);
                 if (values != null) {
                     String identifier =
-                        (String) ((HashMap) schemas.get(schemaId))
+                        (String) ((HashMap<String, String>) schemas.get(schemaId))
                             .get("identifier");
                     String location =
-                        (String) ((HashMap) schemas.get(schemaId))
+                        (String) ((HashMap<String, String>) schemas.get(schemaId))
                             .get("location");
                     String title =
-                        (String) ((HashMap) schemas.get(schemaId)).get("title");
+                        (String) ((HashMap<String, String>) schemas.get(schemaId)).get("title");
                     if (identifier != null && location != null && title != null) {
                         schemaXML
                             .append(
@@ -190,7 +196,6 @@ public class EscidocRecordResolver implements RecordResolver {
      * @param extraDataType
      *            extraDataType
      * @return record if found.
-     * @sb
      */
     public ORG.oclc.os.SRW.Record resolve(
         final Object id, final ExtraDataType extraDataType) {
@@ -199,6 +204,28 @@ public class EscidocRecordResolver implements RecordResolver {
             log.debug("return record in xml is: " + (String) id);
         }
         return new Record((String) id, "default");
+    }
+    
+    private Transformer getTransformer(String schemaId) {
+        Transformer transformer = null;
+    	if (transformers.get(schemaId) == null) {
+    		try {
+                TransformerFactory tfactory = TransformerFactory.newInstance();
+                String tFactoryImpl = System.getProperty(
+                "javax.xml.transform.TransformerFactory");
+                if (tFactoryImpl != null
+                        && tFactoryImpl.contains("saxon")) {
+                    tfactory = new org.apache.xalan.processor.TransformerFactoryImpl();
+                }
+                StreamSource xslt = new StreamSource("");
+                transformer = tfactory.newTransformer(xslt);
+                transformers.put(schemaId, transformer);
+    		}
+    		catch (TransformerConfigurationException e) {
+    			
+    		}
+    	}
+    	return transformers.get(schemaId);
     }
 
 }
