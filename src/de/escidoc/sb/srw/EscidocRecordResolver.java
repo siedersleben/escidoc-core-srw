@@ -31,6 +31,9 @@ package de.escidoc.sb.srw;
 
 import gov.loc.www.zing.srw.ExtraDataType;
 
+import java.io.FileNotFoundException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -38,7 +41,9 @@ import java.util.Properties;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.logging.Log;
@@ -47,6 +52,7 @@ import org.osuosl.srw.RecordResolver;
 
 import ORG.oclc.os.SRW.Record;
 import ORG.oclc.os.SRW.SRWDiagnostic;
+import ORG.oclc.os.SRW.Utilities;
 
 /**
  * Class for resolving records and schemas. Also transforms between schemas.
@@ -62,6 +68,8 @@ public class EscidocRecordResolver implements RecordResolver {
     
     private Hashtable<String, Transformer> transformers = 
     					new Hashtable<String, Transformer>();
+    
+    private String relativePath = null;
 
     /**
      * initialize. Read all supported schema-names from properties. Save
@@ -72,6 +80,9 @@ public class EscidocRecordResolver implements RecordResolver {
      */
     public void init(final Properties properties) {
         if (properties != null) {
+        	if (properties.get("relativePath") != null) {
+        		relativePath = properties.getProperty("relativePath");
+        	}
             // get supported schema-names
             for (Iterator iter = properties.keySet().iterator(); iter.hasNext();) {
                 String propertyName = (String) iter.next();
@@ -94,6 +105,9 @@ public class EscidocRecordResolver implements RecordResolver {
                             + ".location"));
                     ((HashMap<String, String>) schemas.get(schemaId)).put("title", properties
                         .getProperty("recordResolver." + schemaId + ".title"));
+                    ((HashMap<String, String>) schemas.get(schemaId)).put("stylesheet",
+                            relativePath + properties.getProperty("recordResolver." + schemaId
+                                + ".stylesheet"));
                 }
             }
         }
@@ -114,17 +128,23 @@ public class EscidocRecordResolver implements RecordResolver {
     public String transform(
         final ORG.oclc.os.SRW.Record record, final String schemaId)
         throws SRWDiagnostic {
-        // TODO: Implement transformation
-        // from search-record-schema to given schema
-        // In lucene.SRWDatabase.properties, dc is already included.
-        // If dc shall be included:
-        // Just uncomment dc-section in getSchemaInfo()
-        // and add transformation from default to dc
         if (log.isDebugEnabled()) {
             log.debug("EscidocRecordResolver.transform: schemaId:" + schemaId);
         }
-        return record.getRecord();
-
+        if (schemaId == null) {
+        	return record.getRecord();
+        }
+    	Transformer transformer = getTransformer(schemaId);
+        StringReader sr = new StringReader(record.getRecord());
+        StreamResult destStream = new StreamResult(new StringWriter());
+        try {
+            transformer.transform(new StreamSource(sr), destStream);
+        } catch (TransformerException e) {
+            throw new SRWDiagnostic(
+            		SRWDiagnostic.GeneralSystemError, e.toString());
+        }
+        StringWriter sw = (StringWriter)destStream.getWriter();
+        return sw.toString();
     }
 
     /**
@@ -206,10 +226,17 @@ public class EscidocRecordResolver implements RecordResolver {
         return new Record((String) id, "default");
     }
     
-    private Transformer getTransformer(String schemaId) {
+    private Transformer getTransformer(String schemaId) throws SRWDiagnostic {
         Transformer transformer = null;
     	if (transformers.get(schemaId) == null) {
     		try {
+                if (schemas.get(schemaId) == null 
+                		|| schemas.get(schemaId).get("stylesheet") == null) {
+                	throw new SRWDiagnostic(
+                    		SRWDiagnostic.UnknownSchemaForRetrieval, 
+                    		"schema with id " + schemaId + " not found");
+                	
+                }
                 TransformerFactory tfactory = TransformerFactory.newInstance();
                 String tFactoryImpl = System.getProperty(
                 "javax.xml.transform.TransformerFactory");
@@ -217,12 +244,19 @@ public class EscidocRecordResolver implements RecordResolver {
                         && tFactoryImpl.contains("saxon")) {
                     tfactory = new org.apache.xalan.processor.TransformerFactoryImpl();
                 }
-                StreamSource xslt = new StreamSource("");
+                StreamSource xslt = new StreamSource(
+                		Utilities.openInputStream(
+                				schemas.get(schemaId).get("stylesheet"), null, null));
                 transformer = tfactory.newTransformer(xslt);
                 transformers.put(schemaId, transformer);
     		}
     		catch (TransformerConfigurationException e) {
-    			
+    			throw new SRWDiagnostic(
+                		SRWDiagnostic.GeneralSystemError, e.toString());
+    		}
+    		catch (FileNotFoundException e) {
+    			throw new SRWDiagnostic(
+                		SRWDiagnostic.GeneralSystemError, e.toString());
     		}
     	}
     	return transformers.get(schemaId);
