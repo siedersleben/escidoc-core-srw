@@ -313,6 +313,8 @@ public abstract class SRWDatabase {
 //                    dbPropertiesFileName);
 //                InputStream is=Utilities.openInputStream(dbPropertiesFileName, dbHome, srwHome);
 //                dbProperties.load(is);
+//                dbProperties.put("relativePath", 
+//                		dbPropertiesFileName.replaceFirst("(.*\\/).*", "$1"));
 //                is.close();
 //            }
 //            catch(java.io.FileNotFoundException e) {
