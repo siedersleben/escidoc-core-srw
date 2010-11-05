@@ -72,11 +72,12 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
             StringBuffer url = new StringBuffer(EscidocConfiguration.getInstance()
                     .get(EscidocConfiguration.ESCIDOC_CORE_SELFURL));
             url.append(Constants.PERMISSION_FILTER_URI).append("?index=").append(dbName);
-//            String permissionFilterXml = connectionUtility
-//                    .postRequestURLAsString(
-//                            new URL(url),
-//                            getPostXml(handle, asUserId, withRoleId),
-//                            new Cookie("", SRWServlet.COOKIE_LOGIN, handle));
+            if (asUserId != null && !asUserId.equals("")) {
+            	url.append("&user=").append(asUserId);
+            }
+            if (withRoleId != null && !withRoleId.equals("")) {
+            	url.append("&role=").append(withRoleId);
+            }
             String permissionFilterXml = connectionUtility
             .getRequestURLAsString(
                     new URL(url.toString()),
