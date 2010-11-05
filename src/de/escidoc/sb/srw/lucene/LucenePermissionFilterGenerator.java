@@ -82,6 +82,12 @@ public class LucenePermissionFilterGenerator implements PermissionFilterGenerato
             .getRequestURLAsString(
                     new URL(url.toString()),
                     new BasicClientCookie(SRWServlet.COOKIE_LOGIN, handle));
+            //Check if login-page comes back because of expired handle
+            if (permissionFilterXml.matches("(?s).*<html>.*")) {
+            	throw new SecurityException(
+            			"Authorization failed because of expired handle. "
+            			+ "Try to login first.");
+            }
             StaxParser sp = new StaxParser();
             PermissionFilterHandler handler = new PermissionFilterHandler(sp);
             sp.addHandler(handler);
