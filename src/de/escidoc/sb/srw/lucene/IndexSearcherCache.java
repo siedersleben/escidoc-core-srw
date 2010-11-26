@@ -98,7 +98,7 @@ public final class IndexSearcherCache {
                     } catch (Exception e) {}
                 }
                 indexSearchers.put(indexPath, new IndexSearcher(
-                            FSDirectory.open(new File(indexPath))));
+                            FSDirectory.open(new File(indexPath)), true));
             }
         }
         return indexSearchers.get(indexPath);
