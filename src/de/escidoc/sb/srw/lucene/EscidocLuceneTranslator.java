@@ -51,6 +51,8 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.document.LazyFieldSelector;
+import org.apache.lucene.document.SetBasedFieldSelector;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
@@ -1040,7 +1042,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 docTime1 = System.currentTimeMillis();
             }
             org.apache.lucene.document.Document doc = 
-                        searcher.doc(hits.scoreDocs[i].doc);
+                        searcher.doc(hits.scoreDocs[i].doc, 
+                            new LazyFieldSelector());
             if (log.isInfoEnabled()) {
                 docTime += (System.currentTimeMillis() - docTime1);
             }
