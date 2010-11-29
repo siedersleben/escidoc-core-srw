@@ -87,21 +87,23 @@ public final class IndexSearcherCache {
      * @throws SystemException
      *             e
      */
-    public IndexSearcher getIndexSearcher(final String indexPath)
-        throws IOException, CorruptIndexException {
-        if (indexSearchers.get(indexPath) == null 
-                || !indexSearchers.get(indexPath).getIndexReader().isCurrent()) {
-            synchronized (indexSearchers) {
-                if (indexSearchers.get(indexPath) != null) {
-                    try {
-                        indexSearchers.get(indexPath).close();
-                    } catch (Exception e) {}
-                }
-                indexSearchers.put(indexPath, new IndexSearcher(
-                            FSDirectory.open(new File(indexPath)), true));
-            }
-        }
-        return indexSearchers.get(indexPath);
-    }
+	public synchronized IndexSearcher getIndexSearcher(final String indexPath)
+			throws IOException, CorruptIndexException {
+		if (indexSearchers.get(indexPath) == null
+				|| !indexSearchers.get(indexPath).getIndexReader().isCurrent()) {
+			if (indexSearchers.get(indexPath) != null) {
+				try {
+					indexSearchers.get(indexPath).close();
+				} catch (Exception e) {
+				}
+			}
+			indexSearchers.put(indexPath,
+					new IndexSearcher(FSDirectory.open(new File(indexPath)),
+							true));
+		}
+		IndexSearcher current = indexSearchers.get(indexPath);
+		current.getIndexReader().incRef();
+		return current;
+	}
 
 }

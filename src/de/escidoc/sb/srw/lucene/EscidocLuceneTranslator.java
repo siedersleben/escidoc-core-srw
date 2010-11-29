@@ -256,6 +256,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * @param IndexSearcher searcher.
      */
     public void releaseSearcher(final IndexSearcher searcher) {
+        try {
+			searcher.getIndexReader().decRef();
+		} catch (IOException e) {
+		    log.error("couldnt dereference IndexReader");
+		}
     }
 
     /**
