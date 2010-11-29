@@ -1,4 +1,6 @@
-package org.apache.lucene.document;
+package de.escidoc.sb.srw.lucene.document;
+
+import org.apache.lucene.document.FieldSelector;
 /*
  * CDDL HEADER START
  *
@@ -20,6 +22,7 @@ package org.apache.lucene.document;
  *
  * CDDL HEADER END
  */
+import org.apache.lucene.document.FieldSelectorResult;
 
 /*
  * Copyright 2010 Fachinformationszentrum Karlsruhe Gesellschaft
