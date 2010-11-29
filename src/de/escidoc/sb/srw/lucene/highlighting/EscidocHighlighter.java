@@ -46,7 +46,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -476,10 +476,10 @@ public class EscidocHighlighter implements SrwHighlighter {
         // Get text of all Fields with name <fieldName>////////////////////////
         // and concatenate then with highlightFragmentSeparator////////////////
         StringBuffer fieldValues = new StringBuffer("");
-        Field[] fields = doc.getFields(fieldName);
+        Fieldable[] fields = doc.getFieldables(fieldName);
         if (fields != null && fields.length > 0) {
             for (int j = 0; j < fields.length; j++) {
-                Field field = fields[j];
+                Fieldable field = fields[j];
                 if (fieldValues.length() > 0) {
                     fieldValues.append(highlightFragmentSeparator);
                 }
@@ -516,7 +516,7 @@ public class EscidocHighlighter implements SrwHighlighter {
         // /////////////////////////////////////////////////////////////////////
         // Get Information about location of component where hit was found//////
         if (locatorFieldName != null) {
-            fields = doc.getFields(locatorFieldName);
+            fields = doc.getFieldables(locatorFieldName);
             if (fields != null && fields.length > 0) {
                 highlightData.put("highlightLocator", fields[0].stringValue());
             }

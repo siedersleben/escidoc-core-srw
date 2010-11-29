@@ -49,13 +49,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.document.SetBasedFieldSelector;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -64,7 +62,6 @@ import org.apache.lucene.search.EscidocTopFieldCollector;
 import org.apache.lucene.search.EscidocTopScoreDocCollector;
 import org.apache.lucene.search.FieldComparatorSource;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Similarity;
@@ -905,11 +902,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     // iterate through hits counting terms
                     for (int i = 0; i < size; i++) {
                         org.apache.lucene.document.Document doc = 
-                            searcher.doc(results.scoreDocs[i].doc);
+                            searcher.doc(results.scoreDocs[i].doc, 
+                            		new LazyFieldSelector());
 
                         // MIH: Changed: get all fields and not only one.
                         // Concat fieldValues into fieldString
-                        Field[] fields = doc.getFields(searchField);
+                        Fieldable[] fields = doc.getFieldables(searchField);
                         StringBuffer fieldValue = new StringBuffer("");
                         if (fields != null) {
                             for (int j = 0; j < fields.length; j++) {
@@ -1087,7 +1085,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             if (log.isInfoEnabled()) {
                 docTime1 = System.currentTimeMillis();
             }
-            Field idField = doc.getField(getIdentifierTerm());
+            Fieldable idField = doc.getFieldable(getIdentifierTerm());
             if (log.isInfoEnabled()) {
                 docTime3 += (System.currentTimeMillis() - docTime1);
             }
@@ -1106,7 +1104,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             
             if (StringUtils.isBlank(idFieldStr)) {
                 complete.append("<default-search-result>")
-                    .append(doc.getField("PID"))
+                    .append(doc.getFieldable("PID"))
                     .append("</default-search-result>");
             }
 

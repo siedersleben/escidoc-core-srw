@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
@@ -481,7 +481,7 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
                 || type == null || type.trim().length() == 0) {
             return null;
         }
-        if (doc.getField(fieldName) == null) {
+        if (doc.getFieldable(fieldName) == null) {
             throw new NoSuchFieldException("Field not found " + fieldName);
         }
 
@@ -503,7 +503,7 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
         // /////////////////////////////////////////////////////////////////////
         // Get Information about location of component where hit was found//////
         if (locatorFieldName != null) {
-            Field[] fields = doc.getFields(locatorFieldName);
+            Fieldable[] fields = doc.getFieldables(locatorFieldName);
             if (fields != null && fields.length > 0) {
                 highlightData.put("highlightLocator", fields[0].stringValue());
             }

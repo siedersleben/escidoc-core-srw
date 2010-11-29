@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
 import org.apache.axis.types.NonNegativeInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -54,6 +54,8 @@ import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLNotNode;
 import org.z3950.zing.cql.CQLOrNode;
 import org.z3950.zing.cql.CQLTermNode;
+
+import de.escidoc.sb.srw.lucene.document.LazyFieldSelector;
 
 import ORG.oclc.os.SRW.QueryResult;
 
@@ -137,9 +139,10 @@ public class LuceneTranslator implements CQLTranslator {
             // now instantiate the results and put them into the response object
             for(int i = 0; i < size; i++ ) {
                 org.apache.lucene.document.Document doc = 
-                            searcher.doc(results.scoreDocs[i].doc);
+                            searcher.doc(results.scoreDocs[i].doc, 
+                            		new LazyFieldSelector());
                 if (log.isDebugEnabled()) log.debug("identifierTerm: " + identifierTerm);
-                Field idField = doc.getField(identifierTerm);
+                Fieldable idField = doc.getFieldable(identifierTerm);
                 if (log.isDebugEnabled()) log.debug("idField: " + idField);
                 if (idField != null) {
                     if (log.isDebugEnabled()) log.debug("idField: " + idField.stringValue());
@@ -199,8 +202,9 @@ public class LuceneTranslator implements CQLTranslator {
                 // iterater through hits counting terms
                 for(int i = 0; i < size; i++ ) {
                     org.apache.lucene.document.Document doc = 
-                                searcher.doc(results.scoreDocs[i].doc);
-                    Field field = doc.getField(searchField);
+                                searcher.doc(results.scoreDocs[i].doc, 
+                                		new LazyFieldSelector());
+                    Fieldable field = doc.getFieldable(searchField);
 
                     if (exact) {
                         // each field is counted as a term

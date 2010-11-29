@@ -52,7 +52,6 @@ import java.util.Vector;
 
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.FieldOption;
@@ -288,7 +287,7 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 
 					// MIH: Changed: get all fileds and not only one.
 					// Concat fieldValues into fieldString
-					Field[] fields = doc.getFields(searchField);
+					Fieldable[] fields = doc.getFieldables(searchField);
 					StringBuffer fieldValue = new StringBuffer("");
 					if (fields != null) {
 						for (int j = 0; j < fields.length; j++) {
