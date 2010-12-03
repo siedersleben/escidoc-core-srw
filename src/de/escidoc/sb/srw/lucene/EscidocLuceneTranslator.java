@@ -57,6 +57,7 @@ import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.EscidocTopDocsCollector;
 import org.apache.lucene.search.EscidocTopFieldCollector;
 import org.apache.lucene.search.EscidocTopScoreDocCollector;
@@ -255,11 +256,13 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * @param IndexSearcher searcher.
      */
     public void releaseSearcher(final IndexSearcher searcher) {
-        try {
-			searcher.getIndexReader().decRef();
-		} catch (IOException e) {
-		    log.error("couldnt dereference IndexReader");
-		}
+    	if (searcher != null) {
+            try {
+    			searcher.getIndexReader().decRef();
+    		} catch (IOException e) {
+    		    log.error("couldnt dereference IndexReader");
+    		}
+    	}
     }
 
     /**
@@ -500,7 +503,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             ////////////////////////////////////////////////////////////////
             if (permissionFiltering && !skipPermissions) {
-                Query permissionQuery = null;
+                ConstantScoreQuery permissionQuery = null;
                 if (log.isInfoEnabled()) {
                     log.info("starting getting permission filter query at " 
                             + (System.currentTimeMillis() - time) + " ms");
@@ -536,7 +539,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                             + (System.currentTimeMillis() - time) + " ms");
                 }
                 if (StringUtils.isNotEmpty(permissionFilter)) {
-                    permissionQuery = parser.parse(permissionFilter);
+                    permissionQuery = (ConstantScoreQuery)parser.parse(permissionFilter);
                     if (!(query instanceof BooleanQuery)) {
                         //make Boolean Query
                         Query intermediateQuery = new BooleanQuery();
