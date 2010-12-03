@@ -485,8 +485,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             QueryParser parser =
                 new EscidocQueryParser(
                         getDefaultIndexField(), analyzer, forceScoring);
-            Query userQuery = parser.parse(unanalyzedQuery.toString());
-            Query query = userQuery;
+            Query query = parser.parse(unanalyzedQuery.toString());;
             // MIH: FOR TESTING ONLY!!//////////////////////////////////////
             boolean skipPermissions = false; 
             boolean skipFilterLatestRelease = false; 
@@ -614,7 +613,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // initialize Highlighter
             if (highlighter != null) {
                 try {
-                    highlighter.initialize(searcher, userQuery);
+                    highlighter.initialize(searcher, query);
                 } catch (Exception e) {
                     log.error(e);
                 }
