@@ -62,8 +62,10 @@ import org.apache.lucene.search.EscidocTopDocsCollector;
 import org.apache.lucene.search.EscidocTopFieldCollector;
 import org.apache.lucene.search.EscidocTopScoreDocCollector;
 import org.apache.lucene.search.FieldComparatorSource;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
@@ -502,8 +504,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 }
             }
             ////////////////////////////////////////////////////////////////
+            Filter permissionFilter = null;
             if (permissionFiltering && !skipPermissions) {
-                ConstantScoreQuery permissionQuery = null;
                 if (log.isInfoEnabled()) {
                     log.info("starting getting permission filter query at " 
                             + (System.currentTimeMillis() - time) + " ms");
@@ -532,30 +534,20 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                             + dbName + ",handle:" + UserContext.getHandle() 
                             + ",userId:" + userId + ",roleId:" + roleId);
                 }
-                String permissionFilter = permissionFilterGenerator
+                String permissionFilterStr = permissionFilterGenerator
                         .getPermissionFilter(dbName, UserContext.getHandle(), userId, roleId);
                 if (log.isInfoEnabled()) {
                     log.info("direct post permission-filter at " 
                             + (System.currentTimeMillis() - time) + " ms");
                 }
-                if (StringUtils.isNotEmpty(permissionFilter)) {
-                    permissionQuery = (ConstantScoreQuery)parser.parse(permissionFilter);
-                    if (!(query instanceof BooleanQuery)) {
-                        //make Boolean Query
-                        Query intermediateQuery = new BooleanQuery();
-                        ((BooleanQuery)intermediateQuery).add(
-                                query, BooleanClause.Occur.MUST);
-                        query = intermediateQuery;
+                if (StringUtils.isNotEmpty(permissionFilterStr)) {
+                    permissionFilter = new QueryWrapperFilter(parser.parse(permissionFilterStr));
+                    if (log.isInfoEnabled()) {
+                    	log.info("permission-filter:" + permissionFilterStr);
                     }
-                    ((BooleanQuery)query).add(
-                            permissionQuery, BooleanClause.Occur.MUST);
                 }
             }
             
-            if (log.isInfoEnabled()) {
-                log.info("escidoc lucene search=" + query);
-            }
-
             searcher = getSearcher(getIndexPath());
             //check if custom scoring should be done
             if (similarity != null) {
@@ -589,12 +581,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                                 Constants.DUPLICATE_IDENTIFIER_FIELD, 
                                 Constants.DUPLICATE_DISTINGUISHER_FIELD, 
                                 Constants.DISTINGUISHER_PRIORITY_VAL);
-                    searcher.search(query, collector);
+                    searcher.search(query, permissionFilter, collector);
                     results = collector.topDocs();
                     
                 } 
                 else {
-                    results = searcher.search(query, maximumHits);
+                    results = searcher.search(query, permissionFilter, maximumHits);
                 }
             }
             else {
@@ -606,11 +598,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                             Constants.DUPLICATE_IDENTIFIER_FIELD, 
                             Constants.DUPLICATE_DISTINGUISHER_FIELD, 
                             Constants.DISTINGUISHER_PRIORITY_VAL);
-                    searcher.search(query, collector);
+                    searcher.search(query, permissionFilter, collector);
                     results = collector.topDocs();
                 }
                 else {
-                    results = searcher.search(query, null, maximumHits, sort);
+                    results = searcher.search(query, permissionFilter, maximumHits, sort);
                 }
             }
             if (log.isInfoEnabled()) {
