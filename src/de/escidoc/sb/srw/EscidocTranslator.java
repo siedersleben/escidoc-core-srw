@@ -329,6 +329,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 		}
 		String term = ctn.getTerm();
 		term = escapeSpecialCharacters(term);
+		qualifier = escapeSpecialCharacters(qualifier);
 		replacedCtn = new CQLTermNode(qualifier, ctn.getRelation(), term);
 
 		return replacedCtn;
