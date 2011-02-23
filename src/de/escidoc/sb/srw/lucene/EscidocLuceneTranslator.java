@@ -53,11 +53,10 @@ import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.EscidocTopDocsCollector;
 import org.apache.lucene.search.EscidocTopFieldCollector;
 import org.apache.lucene.search.EscidocTopScoreDocCollector;
@@ -750,9 +749,10 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             Collection<TermType> termList = new ArrayList<TermType>();
             IndexSearcher searcher = null;
             int termCounter = 0;
+            TermEnum terms = null;
             try {
                 searcher = getSearcher(getIndexPath());
-                TermEnum terms = searcher.getIndexReader()
+                terms = searcher.getIndexReader()
                             .terms(new Term(searchField, searchTerm));
                 if (terms.term() == null) {
                     return (TermType[]) termList.toArray(response);
@@ -761,21 +761,25 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 if (responsePosition < 2) {
                     //just read termList starting with searchTerm
                     if (responsePosition == 1) {
-                        String term = terms.term().text();
-                        String field = terms.term().field();
-                        int freq = terms.docFreq();
-                        if (field.equals(searchField)) {
-                            termList.add(fillTermType(term, freq));
-                            termCounter++;
-                        }
+                    	if (hasTermDocs(terms.term(), searcher)) {
+                            String term = terms.term().text();
+                            String field = terms.term().field();
+                            int freq = terms.docFreq();
+                            if (field.equals(searchField)) {
+                                termList.add(fillTermType(term, freq));
+                                termCounter++;
+                            }
+                    	}
                     }
                     while (terms.next() 
                             && terms.term().field().equals(searchField) 
                             && termCounter < maximumTerms) {
-                        String term = terms.term().text();
-                        int freq = terms.docFreq();
-                        termList.add(fillTermType(term, freq));
-                        termCounter++;
+                    	if (hasTermDocs(terms.term(), searcher)) {
+                            String term = terms.term().text();
+                            int freq = terms.docFreq();
+                            termList.add(fillTermType(term, freq));
+                            termCounter++;
+                    	}
                     }
                     return (TermType[]) termList.toArray(response);
 
@@ -790,43 +794,46 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     if (terms.term() == null) {
                         return (TermType[]) termList.toArray(response);
                     }
-                    String term = terms.term().text();
-                    String field = terms.term().field();
-                    int freq = terms.docFreq();
-                    if (term.equals(firstTerm)) {
-                        termReached = true;
-                    }
-                    if (field.equals(searchField)) {
-                        if (termReached) {
-                            termList.add(fillTermType(term, freq));
-                            termCounter++;
-                        } else {
-                            prev.put(term, fillTermType(term, freq));
+                	if (hasTermDocs(terms.term(), searcher)) {
+                        String term = terms.term().text();
+                        String field = terms.term().field();
+                        int freq = terms.docFreq();
+                        if (term.equals(firstTerm)) {
+                            termReached = true;
                         }
-                    }
+                        if (field.equals(searchField)) {
+                            if (termReached) {
+                                termList.add(fillTermType(term, freq));
+                                termCounter++;
+                            } else {
+                                prev.put(term, fillTermType(term, freq));
+                            }
+                        }
+                	}
                     while (terms.next() 
                             && terms.term().field().equals(searchField)
                             && termCounter < maximumTerms) {
-                        term = terms.term().text();
-                        field = terms.term().field();
-                        freq = terms.docFreq();
-                        if (term.equals(firstTerm)) {
-                            Collection<TermType> col = prev.values();
-                            for (TermType termType : col) {
-                                if (termCounter >= maximumTerms) {
-                                    break;
+                    	if (hasTermDocs(terms.term(), searcher)) {
+                            String term = terms.term().text();
+                            int freq = terms.docFreq();
+                            if (term.equals(firstTerm)) {
+                                Collection<TermType> col = prev.values();
+                                for (TermType termType : col) {
+                                    if (termCounter >= maximumTerms) {
+                                        break;
+                                    }
+                                    termList.add(termType);
+                                    termCounter++;
                                 }
-                                termList.add(termType);
-                                termCounter++;
+                                termReached = true;
                             }
-                            termReached = true;
-                        }
-                        if (termReached && termCounter < maximumTerms) {
-                            termList.add(fillTermType(term, freq));
-                            termCounter++;
-                        } else {
-                            prev.put(term, fillTermType(term, freq));
-                        }
+                            if (termReached && termCounter < maximumTerms) {
+                                termList.add(fillTermType(term, freq));
+                                termCounter++;
+                            } else {
+                                prev.put(term, fillTermType(term, freq));
+                            }
+                    	}
                     }
                     return (TermType[]) termList.toArray(response);
                 }
@@ -835,9 +842,45 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                         .toString());
             } finally {
                 releaseSearcher(searcher);
+                if (terms != null) {
+                	try {
+                		terms.close();
+                	} catch (Exception e) {
+                		//Do Nothing
+                	}
+                }
             }
         }
         
+        /**
+         * Workaround, because TermEnum in Lucene 
+         * also contains terms of deleted documents.
+         * Check if Term occurs in non-deleted Documents. 
+         * 
+         * @param term Term
+         * @return boolean true if Term occurs in non-deleted Documents
+         * 
+         */
+        private boolean hasTermDocs(
+        		final Term term, final IndexSearcher searcher) throws IOException{
+        	TermDocs termDocs = null;
+        	try {
+                termDocs = searcher.getIndexReader().termDocs(term);
+                if (termDocs == null || !termDocs.next()) {
+                	return false;
+                }
+                return true;
+        	} finally {
+        		if (termDocs != null) {
+        			try {
+        				termDocs.close();
+        			} catch (Exception e) {
+        				//Do nothing
+        			}
+        		}
+        	}
+        }
+
         /**
          * Fill TermType-Object with given Values. 
          * 
