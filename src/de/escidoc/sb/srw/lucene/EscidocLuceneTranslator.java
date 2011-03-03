@@ -694,282 +694,283 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * 
      * @sb
      */
-    @Override
-    public TermType[] scan(
-            final CQLTermNode queryRoot, final ScanRequestType scanRequestType)
-            throws Exception {
+	@Override
+	public TermType[] scan(final CQLTermNode queryRoot,
+			final ScanRequestType scanRequestType) throws Exception {
 
-            int responsePosition = 0;
-            if (scanRequestType.getResponsePosition() != null) {
-                responsePosition = scanRequestType.getResponsePosition().intValue();
-            }
-            
-            int maximumTerms = getDefaultNumberOfScanTerms();
-            if (scanRequestType.getMaximumTerms() != null) {
-                maximumTerms = scanRequestType.getMaximumTerms().intValue();
-            }
-            
-            boolean exact =
-                queryRoot.getRelation().toCQL().equalsIgnoreCase("exact");
+		String searchField = queryRoot.getIndex();
+		String searchTerm = queryRoot.getTerm();
 
-            String searchField = queryRoot.getIndex();
-            String searchTerm = queryRoot.getTerm();
-            
-            if (!exact) {
-                return scanByTermList(
-                        responsePosition, 
-                        maximumTerms, 
-                        searchField, 
-                        searchTerm);
-                
-            } else {
-                return scanBySearch(queryRoot, maximumTerms, searchField);
-            }
+		int responsePosition = 1;
+		//discard responsePosition if term is empty
+		if (scanRequestType.getResponsePosition() != null
+				&& searchTerm != null && !searchTerm.isEmpty()) {
+			responsePosition = scanRequestType.getResponsePosition().intValue();
+		}
+		
+		int maximumTerms = getDefaultNumberOfScanTerms();
+		if (scanRequestType.getMaximumTerms() != null) {
+			maximumTerms = scanRequestType.getMaximumTerms().intValue();
+		}
 
-        }
-        
-        /**
-         * Scans index for terms by getting terms with IndexReader. 
-         * 
-         * @param responsePosition position of searchTerm in response
-         * @param maximumTerms maximum Terms to return
-         * @param searchField field containing the terms
-         * @param searchTerm searchTerm
-         * @return TermType[] Array of TermTypes
-         * @throws Exception
-         *             e
-         * 
-         */
-        private TermType[] scanByTermList(
-                final int responsePosition, 
-                final int maximumTerms, 
-                final String searchField, 
-                final String searchTerm) throws Exception {
-            TermType[] response = new TermType[0];
-            Collection<TermType> termList = new ArrayList<TermType>();
-            IndexSearcher searcher = null;
-            int termCounter = 0;
-            TermEnum terms = null;
-            try {
-                searcher = getSearcher(getIndexPath());
-                terms = searcher.getIndexReader()
-                            .terms(new Term(searchField, searchTerm));
-                if (terms.term() == null) {
-                    return (TermType[]) termList.toArray(response);
-                }
-                String firstTerm = terms.term().text();
-                if (responsePosition < 2) {
-                    //just read termList starting with searchTerm
-                    if (responsePosition == 1) {
-                    	if (hasTermDocs(terms.term(), searcher)) {
-                            String term = terms.term().text();
-                            String field = terms.term().field();
-                            int freq = terms.docFreq();
-                            if (field.equals(searchField)) {
-                                termList.add(fillTermType(term, freq));
-                                termCounter++;
-                            }
-                    	}
-                    }
-                    while (terms.next() 
-                            && terms.term().field().equals(searchField) 
-                            && termCounter < maximumTerms) {
-                    	if (hasTermDocs(terms.term(), searcher)) {
-                            String term = terms.term().text();
-                            int freq = terms.docFreq();
-                            termList.add(fillTermType(term, freq));
-                            termCounter++;
-                    	}
-                    }
-                    return (TermType[]) termList.toArray(response);
+		boolean exact = queryRoot.getRelation().toCQL()
+				.equalsIgnoreCase("exact");
 
-                } else {
-                    //get complete termList of search-field.
-                    //cache terms in list before search-term 
-                    //because also Terms occurring before searchTerm have to be in list.
-                    boolean termReached = false;
-                    LRUMap prev = new LRUMap(responsePosition - 1);
-                    terms = searcher.getIndexReader()
-                            .terms(new Term(searchField, ""));
-                    if (terms.term() == null) {
-                        return (TermType[]) termList.toArray(response);
-                    }
-                	if (hasTermDocs(terms.term(), searcher)) {
-                        String term = terms.term().text();
-                        String field = terms.term().field();
-                        int freq = terms.docFreq();
-                        if (term.equals(firstTerm)) {
-                            termReached = true;
-                        }
-                        if (field.equals(searchField)) {
-                            if (termReached) {
-                                termList.add(fillTermType(term, freq));
-                                termCounter++;
-                            } else {
-                                prev.put(term, fillTermType(term, freq));
-                            }
-                        }
-                	}
-                    while (terms.next() 
-                            && terms.term().field().equals(searchField)
-                            && termCounter < maximumTerms) {
-                    	if (hasTermDocs(terms.term(), searcher)) {
-                            String term = terms.term().text();
-                            int freq = terms.docFreq();
-                            if (term.equals(firstTerm)) {
-                                Collection<TermType> col = prev.values();
-                                for (TermType termType : col) {
-                                    if (termCounter >= maximumTerms) {
-                                        break;
-                                    }
-                                    termList.add(termType);
-                                    termCounter++;
-                                }
-                                termReached = true;
-                            }
-                            if (termReached && termCounter < maximumTerms) {
-                                termList.add(fillTermType(term, freq));
-                                termCounter++;
-                            } else {
-                                prev.put(term, fillTermType(term, freq));
-                            }
-                    	}
-                    }
-                    return (TermType[]) termList.toArray(response);
-                }
-            } catch (Exception e) {
-                throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
-                        .toString());
-            } finally {
-                releaseSearcher(searcher);
-                if (terms != null) {
-                	try {
-                		terms.close();
-                	} catch (Exception e) {
-                		//Do Nothing
-                	}
-                }
-            }
-        }
-        
-        /**
-         * Workaround, because TermEnum in Lucene 
-         * also contains terms of deleted documents.
-         * Check if Term occurs in non-deleted Documents. 
-         * 
-         * @param term Term
-         * @return boolean true if Term occurs in non-deleted Documents
-         * 
-         */
-        private boolean hasTermDocs(
-        		final Term term, final IndexSearcher searcher) throws IOException{
-        	TermDocs termDocs = null;
-        	try {
-                termDocs = searcher.getIndexReader().termDocs(term);
-                if (termDocs == null || !termDocs.next()) {
-                	return false;
-                }
-                return true;
-        	} finally {
-        		if (termDocs != null) {
-        			try {
-        				termDocs.close();
-        			} catch (Exception e) {
-        				//Do nothing
-        			}
-        		}
-        	}
-        }
+		if (!exact) {
+			return scanByTermList(responsePosition, maximumTerms, searchField,
+					searchTerm);
 
-        /**
-         * Fill TermType-Object with given Values. 
-         * 
-         * @param term term-value
-         * @param freq number of lucene-documents where term appears.
-         * @return TermType TermType
-         * 
-         */
-        private TermType fillTermType(final String term, final int freq) {
-            TermType termType = new TermType();
-            termType.setValue(term);
-            termType.setNumberOfRecords(new NonNegativeInteger(Integer.toString(freq)));
-            return termType;
-        }
+		} else {
+			return scanBySearch(queryRoot, maximumTerms, searchField);
+		}
 
-        /**
-         * Scans index for terms by first searching with given CQL-Query 
-         * and then reading values of search-field. 
-         * 
-         * @param queryRoot CQL-Query
-         * @param maximumTerms maximum Terms to return
-         * @param searchField field containing the terms
-         * @return TermType[] Array of TermTypes
-         * @throws Exception
-         *             e
-         * 
-         */
-        private TermType[] scanBySearch(
-                final CQLTermNode queryRoot,
-                final int maximumTerms, 
-                final String searchField) throws Exception {
-            TermType[] response = new TermType[0];
-            Collection<TermType> termList = new ArrayList<TermType>();
-            IndexSearcher searcher = null;
-            try {
-                // convert the CQL search to lucene search
-                Query unanalyzedQuery = makeQuery(queryRoot);
+	}
 
-                // rewrite query to analyzed query
-                QueryParser parser =
-                    new EscidocQueryParser(getDefaultIndexField(), analyzer);
-                Query query = parser.parse(unanalyzedQuery.toString());
-                if (log.isInfoEnabled()) {
-                    log.info("lucene search=" + query);
-                }
-                
-                searcher = getSearcher(getIndexPath());
-                TopDocs results = searcher.search(query, maximumTerms);
-                int size = results.scoreDocs.length;
+	/**
+	 * Scans index for terms by getting terms with IndexReader.
+	 * 
+	 * @param responsePosition
+	 *            position of searchTerm in response
+	 * @param maximumTerms
+	 *            maximum Terms to return
+	 * @param searchField
+	 *            field containing the terms
+	 * @param searchTerm
+	 *            searchTerm
+	 * @return TermType[] Array of TermTypes
+	 * @throws Exception
+	 *             e
+	 * 
+	 */
+	private TermType[] scanByTermList(final int responsePosition,
+			final int maximumTerms, final String searchField,
+			final String searchTerm) throws Exception {
+		TermType[] response = new TermType[0];
+		Collection<TermType> termList = new ArrayList<TermType>();
+		IndexSearcher searcher = null;
+		int termCounter = 0;
+		TermEnum terms = null;
+		try {
+			searcher = getSearcher(getIndexPath());
+			terms = searcher.getIndexReader().terms(
+					new Term(searchField, searchTerm));
+			if (terms.term() == null) {
+				return (TermType[]) termList.toArray(response);
+			}
+			String firstTerm = terms.term().text();
+			if (responsePosition < 2) {
+				// just read termList starting with searchTerm
+				if (responsePosition == 1) {
+					if (hasTermDocs(terms.term(), searcher)) {
+						String term = terms.term().text();
+						String field = terms.term().field();
+						int freq = terms.docFreq();
+						if (field.equals(searchField)) {
+							termList.add(fillTermType(term, freq));
+							termCounter++;
+						}
+					}
+				}
+				while (terms.next() && terms.term().field().equals(searchField)
+						&& termCounter < maximumTerms) {
+					if (hasTermDocs(terms.term(), searcher)) {
+						String term = terms.term().text();
+						int freq = terms.docFreq();
+						termList.add(fillTermType(term, freq));
+						termCounter++;
+					}
+				}
+				return (TermType[]) termList.toArray(response);
 
-                if (log.isInfoEnabled()) {
-                    log.info(size + " handles found");
-                }
+			} else {
+				// get complete termList of search-field.
+				// cache terms in list before search-term
+				// because also Terms occurring before searchTerm have to be in
+				// list.
+				boolean termReached = false;
+				LRUMap prev = new LRUMap(responsePosition - 1);
+				terms = searcher.getIndexReader().terms(
+						new Term(searchField, ""));
+				if (terms.term() == null) {
+					return (TermType[]) termList.toArray(response);
+				}
+				if (hasTermDocs(terms.term(), searcher)) {
+					String term = terms.term().text();
+					String field = terms.term().field();
+					int freq = terms.docFreq();
+					if (term.equals(firstTerm)) {
+						termReached = true;
+					}
+					if (field.equals(searchField)) {
+						if (termReached) {
+							termList.add(fillTermType(term, freq));
+							termCounter++;
+						} else {
+							prev.put(term, fillTermType(term, freq));
+						}
+					}
+				}
+				while (terms.next() && terms.term().field().equals(searchField)
+						&& termCounter < maximumTerms) {
+					if (hasTermDocs(terms.term(), searcher)) {
+						String term = terms.term().text();
+						int freq = terms.docFreq();
+						if (term.equals(firstTerm)) {
+							Collection<TermType> col = prev.values();
+							for (TermType termType : col) {
+								if (termCounter >= maximumTerms) {
+									break;
+								}
+								termList.add(termType);
+								termCounter++;
+							}
+							termReached = true;
+						}
+						if (termReached && termCounter < maximumTerms) {
+							termList.add(fillTermType(term, freq));
+							termCounter++;
+						} else {
+							prev.put(term, fillTermType(term, freq));
+						}
+					}
+				}
+				return (TermType[]) termList.toArray(response);
+			}
+		} catch (Exception e) {
+			throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError,
+					e.toString());
+		} finally {
+			releaseSearcher(searcher);
+			if (terms != null) {
+				try {
+					terms.close();
+				} catch (Exception e) {
+					// Do Nothing
+				}
+			}
+		}
+	}
 
-                if (size != 0) {
-                    // iterate through hits counting terms
-                    for (int i = 0; i < size; i++) {
-                        org.apache.lucene.document.Document doc = 
-                            searcher.doc(results.scoreDocs[i].doc, 
-                            		new LazyFieldSelector());
+	/**
+	 * Workaround, because TermEnum in Lucene also contains terms of deleted
+	 * documents. Check if Term occurs in non-deleted Documents.
+	 * 
+	 * @param term
+	 *            Term
+	 * @return boolean true if Term occurs in non-deleted Documents
+	 * 
+	 */
+	private boolean hasTermDocs(final Term term, final IndexSearcher searcher)
+			throws IOException {
+		TermDocs termDocs = null;
+		try {
+			termDocs = searcher.getIndexReader().termDocs(term);
+			if (termDocs == null || !termDocs.next()) {
+				return false;
+			}
+			return true;
+		} finally {
+			if (termDocs != null) {
+				try {
+					termDocs.close();
+				} catch (Exception e) {
+					// Do nothing
+				}
+			}
+		}
+	}
 
-                        // MIH: Changed: get all fields and not only one.
-                        // Concat fieldValues into fieldString
-                        Fieldable[] fields = doc.getFieldables(searchField);
-                        StringBuffer fieldValue = new StringBuffer("");
-                        if (fields != null) {
-                            for (int j = 0; j < fields.length; j++) {
-                                fieldValue.append(fields[j].stringValue()).append(
-                                    " ");
-                            }
-                        }
-                        // /////////////////////////////////////////////////////////
+	/**
+	 * Fill TermType-Object with given Values.
+	 * 
+	 * @param term
+	 *            term-value
+	 * @param freq
+	 *            number of lucene-documents where term appears.
+	 * @return TermType TermType
+	 * 
+	 */
+	private TermType fillTermType(final String term, final int freq) {
+		TermType termType = new TermType();
+		termType.setValue(term);
+		termType.setNumberOfRecords(new NonNegativeInteger(Integer
+				.toString(freq)));
+		return termType;
+	}
 
-                        // each field is counted as a term
-                        termList.add(fillTermType(fieldValue.toString(), 1));
-                    }
-                }
+	/**
+	 * Scans index for terms by first searching with given CQL-Query and then
+	 * reading values of search-field.
+	 * 
+	 * @param queryRoot
+	 *            CQL-Query
+	 * @param maximumTerms
+	 *            maximum Terms to return
+	 * @param searchField
+	 *            field containing the terms
+	 * @return TermType[] Array of TermTypes
+	 * @throws Exception
+	 *             e
+	 * 
+	 */
+	private TermType[] scanBySearch(final CQLTermNode queryRoot,
+			final int maximumTerms, final String searchField) throws Exception {
+		TermType[] response = new TermType[0];
+		Collection<TermType> termList = new ArrayList<TermType>();
+		IndexSearcher searcher = null;
+		try {
+			// convert the CQL search to lucene search
+			Query unanalyzedQuery = makeQuery(queryRoot);
 
-                // done counting terms in all documents, convert map to array
-                response = (TermType[]) termList.toArray(response);
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                releaseSearcher(searcher);
-            }
+			// rewrite query to analyzed query
+			QueryParser parser = new EscidocQueryParser(getDefaultIndexField(),
+					analyzer);
+			Query query = parser.parse(unanalyzedQuery.toString());
+			if (log.isInfoEnabled()) {
+				log.info("lucene search=" + query);
+			}
 
-            return response;
-        }
+			searcher = getSearcher(getIndexPath());
+			TopDocs results = searcher.search(query, maximumTerms);
+			int size = results.scoreDocs.length;
+
+			if (log.isInfoEnabled()) {
+				log.info(size + " handles found");
+			}
+
+			if (size != 0) {
+				// iterate through hits counting terms
+				for (int i = 0; i < size; i++) {
+					org.apache.lucene.document.Document doc = searcher.doc(
+							results.scoreDocs[i].doc, new LazyFieldSelector());
+
+					// MIH: Changed: get all fields and not only one.
+					// Concat fieldValues into fieldString
+					Fieldable[] fields = doc.getFieldables(searchField);
+					StringBuffer fieldValue = new StringBuffer("");
+					if (fields != null) {
+						for (int j = 0; j < fields.length; j++) {
+							fieldValue.append(fields[j].stringValue()).append(
+									" ");
+						}
+					}
+					// /////////////////////////////////////////////////////////
+
+					// each field is counted as a term
+					termList.add(fillTermType(fieldValue.toString(), 1));
+				}
+			}
+
+			// done counting terms in all documents, convert map to array
+			response = (TermType[]) termList.toArray(response);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			releaseSearcher(searcher);
+		}
+
+		return response;
+	}
 
     /**
      * Returns a list of all FieldNames currently in lucene-index
