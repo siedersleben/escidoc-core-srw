@@ -53,6 +53,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
@@ -276,7 +277,7 @@ public class EscidocHighlighter implements SrwHighlighter {
                         }
                     }
                 }
-            } else {
+            } else if (!(query instanceof TermRangeQuery)){
                 SEARCHFIELD_MATCHER.reset(query.toString());
                 while (SEARCHFIELD_MATCHER.find()) {
                     if (SEARCHFIELD_MATCHER.group(1) != null
@@ -492,7 +493,7 @@ public class EscidocHighlighter implements SrwHighlighter {
         String text = fieldValues.toString();
         // /////////////////////////////////////////////////////////////////////
 
-        text = text.replaceAll("\\s+", " ");
+        text = text.replaceAll("\\s+|\"", " ");
         text = StringEscapeUtils.unescapeXml(text);
         // /////////////////////////////////////////////////////////////////////
 
@@ -595,7 +596,9 @@ public class EscidocHighlighter implements SrwHighlighter {
                     			LUCENE_PATTERN.matcher(((TermQuery)clauseArr[i].getQuery())
                     					.getTerm().text()).replaceAll(REPLACEMENT_STRING))));
                     }
-                    clauses.add(clauseArr[i]);
+                    if (!(clauseArr[i].getQuery() instanceof TermRangeQuery)) {
+                        clauses.add(clauseArr[i]);
+                    }
                 }
             }
         }
