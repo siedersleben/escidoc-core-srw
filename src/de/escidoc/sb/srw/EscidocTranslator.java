@@ -349,6 +349,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 		replacedText = " " + replacedText;
         luceneSpecialCharMatcher.reset(replacedText);
         replacedText = luceneSpecialCharMatcher.replaceAll("$1$3\\\\$2$4");
+        luceneSpecialCharMatcher.reset(replacedText);
+        replacedText = luceneSpecialCharMatcher.replaceAll("$1$3\\\\$2$4");
 		//workaround because cql-parser cant handle \"
 		//see EscidocSRWDatabaseImpl.doRequest
         replacedText = StringUtils.replace(replacedText, "#quote#", "\\\"");
