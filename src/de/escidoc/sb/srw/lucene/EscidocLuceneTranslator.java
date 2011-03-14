@@ -81,6 +81,7 @@ import de.escidoc.core.common.util.service.UserContext;
 import de.escidoc.sb.srw.Constants;
 import de.escidoc.sb.srw.EscidocTranslator;
 import de.escidoc.sb.srw.PermissionFilterGenerator;
+import de.escidoc.sb.srw.SearchExtraData;
 import de.escidoc.sb.srw.lucene.document.LazyFieldSelector;
 import de.escidoc.sb.srw.lucene.highlighting.SrwHighlighter;
 import de.escidoc.sb.srw.lucene.queryParser.EscidocQueryParser;
@@ -442,6 +443,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         // Increase maxClauseCount of BooleanQuery for Wildcard-Searches
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
         
+        //Fill extraSearchData in Object
+        SearchExtraData searchExtraData = new SearchExtraData(extraDataType);
+        
         Sort sort = null;
 
         String[] identifiers = null;
@@ -485,44 +489,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             if (log.isInfoEnabled()) {
                 log.info("query: " + unanalyzedQuery.toString());
             }
-            // MIH: FOR TESTING ONLY!!//////////////////////////////////////
-            boolean skipPermissions = false; 
-            boolean skipFilterLatestRelease = false; 
-            if (extraDataType != null && extraDataType.get_any() != null) {
-                for (int i = 0; i < extraDataType.get_any().length; i++) {
-                    MessageElement messageElement = extraDataType.get_any()[i];
-                    if (messageElement.getName() != null 
-                            && messageElement.getName().equals("skipPermissions")) {
-                        skipPermissions = new Boolean(messageElement.getValue());
-                    }
-                    else if (messageElement.getName() != null 
-                            && messageElement.getName().equals("skipFilterLatestRelease")) {
-                        skipFilterLatestRelease = new Boolean(messageElement.getValue());
-                    }
-                }
-            }
-            ////////////////////////////////////////////////////////////////
             Filter permissionFilter = null;
-            if (permissionFiltering && !skipPermissions) {
+            if (permissionFiltering && !searchExtraData.isSkipPermissions()) {
                 if (log.isInfoEnabled()) {
                     log.info("starting getting permission filter query at " 
                             + (System.currentTimeMillis() - time) + " ms");
-                }
-                //get extra data
-                String userId = null;
-                String roleId = null;
-                if (extraDataType != null && extraDataType.get_any() != null) {
-                    for (int i = 0; i < extraDataType.get_any().length; i++) {
-                        MessageElement messageElement = extraDataType.get_any()[i];
-                        if (messageElement.getName() != null 
-                                && messageElement.getName().equals("roleId")) {
-                            roleId = messageElement.getValue();
-                        }
-                        else if (messageElement.getName() != null 
-                                && messageElement.getName().equals("userId")) {
-                            userId = messageElement.getValue();
-                        }
-                    }
                 }
 
                 if (log.isInfoEnabled()) {
@@ -530,10 +501,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                             + (System.currentTimeMillis() - time) + " ms");
                     log.info("calling permissionFilterGenerator with dbName:" 
                             + dbName + ",handle:" + UserContext.getHandle() 
-                            + ",userId:" + userId + ",roleId:" + roleId);
+                            + ",userId:" + searchExtraData.getUserId() 
+                            + ",roleId:" + searchExtraData.getRoleId());
                 }
                 String permissionFilterStr = permissionFilterGenerator
-                        .getPermissionFilter(dbName, UserContext.getHandle(), userId, roleId);
+                        .getPermissionFilter(dbName, UserContext.getHandle(), 
+                            searchExtraData.getUserId(), searchExtraData.getRoleId());
                 if (log.isInfoEnabled()) {
                     log.info("direct post permission-filter at " 
                             + (System.currentTimeMillis() - time) + " ms");
@@ -572,7 +545,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // perform sorted search?
             if (sort == null) {
                 searcher.setDefaultFieldSortScoring(false, false);
-                if (filterLatestRelease && !skipFilterLatestRelease) {
+                if (filterLatestRelease 
+                    && !searchExtraData.isSkipFilterLatestRelease()) {
                     EscidocTopDocsCollector<ScoreDoc> collector = 
                         EscidocTopScoreDocCollector.create(
                                 maximumHits, true, searcher.getIndexReader(), 
@@ -589,7 +563,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             else {
                 searcher.setDefaultFieldSortScoring(forceScoring, false);
-                if (filterLatestRelease && !skipFilterLatestRelease) {
+                if (filterLatestRelease && !searchExtraData.isSkipFilterLatestRelease()) {
                     EscidocTopDocsCollector collector = EscidocTopFieldCollector.create(
                             sort, maximumHits, true, forceScoring, 
                             false, false, searcher.getIndexReader(),
@@ -603,14 +577,16 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     results = searcher.search(query, permissionFilter, maximumHits, sort);
                 }
             }
+            size = results.totalHits;
             if (log.isInfoEnabled()) {
                 log.info("search finished at " 
                             + (System.currentTimeMillis() - time) + " ms");
+                log.info(size + " handles found");
             }
-            size = results.totalHits;
 
             // initialize Highlighter
-            if (highlighter != null) {
+            if (highlighter != null 
+                && !searchExtraData.isOmitHighlighting()) {
                 try {
                     highlighter.initialize(searcher, query);
                 } catch (Exception e) {
@@ -619,7 +595,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
 
             if (log.isInfoEnabled()) {
-                log.info(size + " handles found");
                 log.info("highlighter-initialization finished at " 
                         + (System.currentTimeMillis() - time) + " ms");
             }
@@ -662,7 +637,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 log.info("iterating resultset from record " + startRecord
                     + " to " + endRecord);
             }
-            identifiers = createIdentifiers(searcher, results, startRecord, endRecord);
+            identifiers = createIdentifiers(
+                searcher, results, searchExtraData, startRecord, endRecord);
             if (log.isInfoEnabled()) {
                 log.info("identifier creation finished at " 
                             + (System.currentTimeMillis() - time) + " ms");
@@ -1062,6 +1038,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     private String[] createIdentifiers(
                     final IndexSearcher searcher,
                     final TopDocs hits, 
+                    final SearchExtraData searchExtraData,
                     final int startRecord, 
                     final int endRecord)
                                 throws Exception {
@@ -1104,7 +1081,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             if (log.isInfoEnabled()) {
                 time1 = System.currentTimeMillis();
             }
-            if (highlighter != null) {
+            if (highlighter != null 
+                && !searchExtraData.isOmitHighlighting()) {
                 String highlight = null;
                 try {
                     highlight = highlighter.getFragments(doc, hits.scoreDocs[i].doc);
