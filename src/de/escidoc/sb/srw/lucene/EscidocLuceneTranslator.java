@@ -1119,9 +1119,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             
             if (StringUtils.isBlank(idFieldStr)) {
-                complete.append("<default-search-result>")
+                complete.append(Constants.DEFAULT_SEARCH_RESULT_START_ELEMENT)
                     .append(doc.getFieldable("PID"))
-                    .append("</default-search-result>");
+                    .append(Constants.DEFAULT_SEARCH_RESULT_END_ELEMENT);
             }
 
             //close surrounding xml

@@ -68,6 +68,8 @@ public class Constants {
     //Constants for generating search-result output
     public static final String SEARCH_RESULT_NAMESPACE_PREFIX = "search-result";
     
+    public static final String DEFAULT_SEARCH_RESULT_NAMESPACE_PREFIX = "default-search-result";
+    
     public static final String SEARCH_RESULT_START_ELEMENT = 
         "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":search-result-record "
         + "xmlns:" + SEARCH_RESULT_NAMESPACE_PREFIX 
@@ -75,6 +77,14 @@ public class Constants {
 
     public static final String SEARCH_RESULT_END_ELEMENT = 
         "</" + SEARCH_RESULT_NAMESPACE_PREFIX + ":search-result-record>";
+
+    public static final String DEFAULT_SEARCH_RESULT_START_ELEMENT = 
+        "<" + DEFAULT_SEARCH_RESULT_NAMESPACE_PREFIX + ":default-search-result-record "
+        + "xmlns:" + DEFAULT_SEARCH_RESULT_NAMESPACE_PREFIX 
+        + "=\"http://www.escidoc.de/schemas/defaultsearchresult/0.8\">\n";
+
+    public static final String DEFAULT_SEARCH_RESULT_END_ELEMENT = 
+        "</" + DEFAULT_SEARCH_RESULT_NAMESPACE_PREFIX + ":default-search-result-record>";
 
     public static final String SCORE_START_ELEMENT = 
         "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":score>";
