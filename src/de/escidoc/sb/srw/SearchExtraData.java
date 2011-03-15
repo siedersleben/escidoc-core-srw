@@ -42,26 +42,28 @@ public class SearchExtraData {
     /**
      * extraData in Search indicating if Highlight-Snippet should get generated
      */
-    public static final String EXTENSION_OMIT_HIGHLIGHTING = "omitHighlighting";
+    public static final String EXTENSION_OMIT_HIGHLIGHTING = 
+    										"x-info5-omitHighlighting";
 	private boolean omitHighlighting = false;
 
     /**
      * extraData in Search indicating the userId to search as
      */
-    public static final String EXTENSION_USER_ID = "userId";
+    public static final String EXTENSION_USER_ID = "x-info5-userId";
 	private String userId = null;
 
     /**
      * extraData in Search indicating the roleId to search as
      */
-    public static final String EXTENSION_ROLE_ID = "roleId";
+    public static final String EXTENSION_ROLE_ID = "x-info5-roleId";
 	private String roleId = null;
 
     /**
      * extraData in Search indicating if Permission-Filtering should get skipped
      * Used for tests only. Define extension-element in SRWServer.props.
      */
-    public static final String EXTENSION_SKIP_PERMISSIONS = "skipPermissions";
+    public static final String EXTENSION_SKIP_PERMISSIONS = 
+    										"x-info5-skipPermissions";
 	private boolean skipPermissions = false;
 
     /**
@@ -70,7 +72,7 @@ public class SearchExtraData {
       * Used for tests only. Define extension-element in SRWServer.props.
     */
     public static final String EXTENSION_SKIP_FILTER_LATEST_RELEASE = 
-        											"skipFilterLatestRelease";
+        											"x-info5-skipFilterLatestRelease";
 	private boolean skipFilterLatestRelease = false;
 
     /**
