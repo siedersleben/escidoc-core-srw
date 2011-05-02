@@ -49,3 +49,14 @@
 -resolve errors in java-files
 -execute eSciDocCoreSrw/build
 -copy /dist/srw.war to eSciDocCore/escidoc-core.ear
+
+-Use patched lucene-core + lucene-fast-vector-highlighter jars from escidoc-artifactory!!
+--> Generate patched jars by:
+	-Downloading newest version of jars
+	-compiling this project
+	-including compiled package org.apache.lucene.search into lucene-core-...jar
+	-renaming lucene-core-...jar to lucene-core-...-extended.jar
+	-including compiled package org.apache.lucene.search.vectorhighlight into lucene-highlighter...jar
+	-renaming lucene-highlighter-...jar to lucene-highlighter...-extended.jar
+	-putting both extended jars to our escidoc-artifactory
+	-adaping poms in escidoc-project to changed extended jars.
