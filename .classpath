@@ -28,8 +28,6 @@
 	<classpathentry kind="lib" path="lib/escidoc/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-lang-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-pool-1.5.4.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-2.0.5.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-tiger-2.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/wss4j-1.5.6.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/xmlsec-1.4.2.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/Dbutils-1.0.0.jar"/>
@@ -41,5 +39,6 @@
 	<classpathentry kind="lib" path="lib/lucene/lucene-memory-3.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/lucene-core-3.1.0-extended.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-3.1.0-extended.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-3.0.5.RELEASE.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
