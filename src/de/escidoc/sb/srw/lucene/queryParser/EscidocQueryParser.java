@@ -38,7 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.MultiTermQuery;
@@ -206,12 +206,12 @@ public class EscidocQueryParser extends QueryParser {
         // get Wildcard-Analyzer and tokenize the term
         TokenStream source =
             getWildcardAnalyzer().tokenStream(field, new StringReader(termStr));
-        TermAttribute termAtt = source.addAttribute(TermAttribute.class);
+        CharTermAttribute termAtt = source.addAttribute(CharTermAttribute.class);
 
         int countTokens = 0;
         try {
             while (source.incrementToken()) {
-                String termText = new String(termAtt.termBuffer(),0,termAtt.termLength());
+                String termText = termAtt.toString();
                 if (!"".equals(termText)) {
                     try {
                         tlist.set(countTokens++, termText);
@@ -307,11 +307,11 @@ public class EscidocQueryParser extends QueryParser {
         // get Wildcard-Analyzer and tokenize the term
         TokenStream source =
             getWildcardAnalyzer().tokenStream(field, new StringReader(termStr));
-        TermAttribute termAtt = source.addAttribute(TermAttribute.class);
+        CharTermAttribute termAtt = source.addAttribute(CharTermAttribute.class);
         List tlist = new ArrayList();
         try {
             while (source.incrementToken()) {
-                tlist.add(new String(termAtt.termBuffer(),0,termAtt.termLength()));
+                tlist.add(termAtt.toString());
             }
         } catch (IOException e) {
             throw new ParseException(e.getMessage());

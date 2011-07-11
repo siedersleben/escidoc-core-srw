@@ -82,10 +82,6 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
 
     private static final int DIAGNOSTIC_CODE_SEVENTY_ONE = 71;
 
-    private static final int TEN = 10;
-
-    private static final int ELEVEN = 11;
-
     private static final int MILLISECONDS_PER_SECOND = 1000;
 
     /**
