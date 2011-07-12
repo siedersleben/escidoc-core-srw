@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions 
+ targetNamespace="http://www.loc.gov/zing/srw/service/" 
+ xmlns:apachesoap="http://xml.apache.org/xml-soap" 
+ xmlns:impl="http://www.loc.gov/zing/srw/service/" 
+ xmlns:intf="http://www.loc.gov/zing/srw/service/" 
+ xmlns:tns1="http://www.loc.gov/zing/srw/" 
+ xmlns:tns2="http://srw.zing.www.loc.gov" 
+ xmlns:tns3="http://www.loc.gov/zing/cql/xcql/" 
+ xmlns:tns4="http://www.loc.gov/zing/srw/diagnostic/" 
+ xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+ xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" 
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+ <!--WSDL created by Apache Axis version: 1.4 Built on Dec 21, 2006 (08:43:29 CET)-->
+ <wsdl:types>
+     <schema elementFormDefault="qualified" targetNamespace="http://srw.zing.www.loc.gov" 
+         xmlns="http://www.w3.org/2001/XMLSchema">
+         <import namespace="http://www.loc.gov/zing/cql/xcql/"/>
+         <import namespace="http://www.loc.gov/zing/srw/diagnostic/"/>
+         <import namespace="http://www.loc.gov/zing/srw/"/>
+         <complexType name="RequestType">
+             <sequence>
+                 <element name="version" type="xsd:string"/>
+             </sequence>
+         </complexType>
+         <complexType name="ResponseType">
+             <sequence>
+                 <element name="version" type="xsd:string"/>
+             </sequence>
+         </complexType>
+         <simpleType name="TermTypeWhereInList">
+             <restriction base="xsd:string">
+             <enumeration value="first"/>
+             <enumeration value="last"/>
+             <enumeration value="only"/>
+             <enumeration value="inner"/>
+             </restriction>
+         </simpleType>
+     </schema>
+     <schema elementFormDefault="qualified" 
+         targetNamespace="http://www.loc.gov/zing/srw/" 
+         xmlns="http://www.w3.org/2001/XMLSchema">
+         <import namespace="http://srw.zing.www.loc.gov"/>
+         <import namespace="http://www.loc.gov/zing/cql/xcql/"/>
+         <import namespace="http://www.loc.gov/zing/srw/diagnostic/"/>
+         <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+         <complexType name="extraRequestData">
+             <sequence>
+                 <any/>
+             </sequence>
+         </complexType>
+         <complexType name="searchRetrieveRequestType">
+             <complexContent>
+                 <extension base="tns2:RequestType">
+                     <sequence>
+                         <element name="query" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="startRecord" type="xsd:positiveInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="maximumRecords" type="xsd:nonNegativeInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="recordPacking" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="recordSchema" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="recordXPath" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="resultSetTTL" type="xsd:nonNegativeInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="sortKeys" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="stylesheet" type="xsd:anyURI"/>
+                         <element maxOccurs="1" minOccurs="0" name="extraRequestData" type="tns1:extraRequestData"/>
+                     </sequence>
+                 </extension>
+             </complexContent>
+         </complexType>
+         <element name="searchRetrieveRequest" type="tns1:searchRetrieveRequestType"/>
+         <complexType name="stringOrXmlFragment">
+             <sequence>
+                 <any/>
+             </sequence>
+         </complexType>
+         <complexType name="extraDataType">
+             <sequence>
+                 <any/>
+             </sequence>
+         </complexType>
+         <complexType name="recordType">
+             <sequence>
+                 <element name="recordSchema" type="xsd:string"/>
+                 <element name="recordPacking" type="xsd:string"/>
+                 <element name="recordData" type="tns1:stringOrXmlFragment"/>
+                 <element maxOccurs="1" minOccurs="0" name="recordPosition" type="xsd:positiveInteger"/>
+                 <element maxOccurs="1" minOccurs="0" name="extraRecordData" type="tns1:extraDataType"/>
+             </sequence>
+         </complexType>
+         <complexType name="recordsType">
+             <sequence>
+                 <element maxOccurs="unbounded" name="record" type="tns1:recordType"/>
+             </sequence>
+         </complexType>
+         <complexType name="sortKeyType">
+             <sequence>
+                 <element name="path" type="xsd:string"/>
+                 <element maxOccurs="1" minOccurs="0" name="schema" type="xsd:string"/>
+                 <element maxOccurs="1" minOccurs="0" name="ascending" type="xsd:boolean"/>
+                 <element maxOccurs="1" minOccurs="0" name="caseSensitive" type="xsd:boolean"/>
+                 <element maxOccurs="1" minOccurs="0" name="missingValue" type="xsd:string"/>
+             </sequence>
+         </complexType>
+         <complexType name="xSortKeysType">
+             <sequence>
+                 <element maxOccurs="unbounded" name="sortKey" type="tns1:sortKeyType"/>
+             </sequence>
+         </complexType>
+         <complexType name="echoedSearchRetrieveRequestType">
+             <complexContent>
+                 <extension base="tns2:RequestType">
+                     <sequence>
+                         <element name="query" type="xsd:string"/>
+                         <element name="xQuery" nillable="true" type="tns3:operandType"/>
+                         <element maxOccurs="1" minOccurs="0" name="startRecord" type="xsd:positiveInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="maximumRecords" type="xsd:nonNegativeInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="recordPacking" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="recordSchema" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="recordXPath" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="resultSetTTL" type="xsd:nonNegativeInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="sortKeys" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="xSortKeys" nillable="true" type="tns1:xSortKeysType"/>
+                         <element maxOccurs="1" minOccurs="0" name="stylesheet" type="xsd:anyURI"/>
+                         <element maxOccurs="1" minOccurs="0" name="extraRequestData" type="tns1:extraDataType"/>
+                     </sequence>
+                 </extension>
+             </complexContent>
+         </complexType>
+         <complexType name="diagnosticsType">
+             <sequence>
+                 <element maxOccurs="unbounded" name="diagnostic" type="tns4:diagnosticType"/>
+             </sequence>
+         </complexType>
+         <complexType name="searchRetrieveResponseType">
+             <complexContent>
+                 <extension base="tns2:ResponseType">
+                     <sequence>
+                         <element name="numberOfRecords" type="xsd:nonNegativeInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="resultSetId" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="resultSetIdleTime" type="xsd:positiveInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="records" type="tns1:recordsType"/>
+                         <element maxOccurs="1" minOccurs="0" name="nextRecordPosition" type="xsd:positiveInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="echoedSearchRetrieveRequest" type="tns1:echoedSearchRetrieveRequestType"/>
+                         <element maxOccurs="1" minOccurs="0" name="diagnostics" type="tns1:diagnosticsType"/>
+                         <element maxOccurs="1" minOccurs="0" name="extraResponseData" type="tns1:extraDataType"/>
+                     </sequence>
+                 </extension>
+             </complexContent>
+         </complexType>
+         <element name="searchRetrieveResponse" type="tns1:searchRetrieveResponseType"/>
+         <complexType name="scanRequestType">
+             <complexContent>
+                 <extension base="tns2:RequestType">
+                     <sequence>
+                         <element name="scanClause" type="xsd:string"/>
+                         <element maxOccurs="1" minOccurs="0" name="responsePosition" type="xsd:nonNegativeInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="maximumTerms" type="xsd:positiveInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="stylesheet" type="xsd:anyURI"/>
+                         <element maxOccurs="1" minOccurs="0" name="extraRequestData" type="tns1:extraDataType"/>
+                     </sequence>
+                 </extension>
+             </complexContent>
+         </complexType>
+         <element name="scanRequest" type="tns1:scanRequestType"/>
+         <complexType name="termType">
+             <sequence>
+                 <element name="value" type="xsd:string"/>
+                 <element maxOccurs="1" minOccurs="0" name="numberOfRecords" type="xsd:nonNegativeInteger"/>
+                 <element maxOccurs="1" minOccurs="0" name="displayTerm" type="xsd:string"/>
+                 <element maxOccurs="1" minOccurs="0" name="whereInList" nillable="true" type="tns2:TermTypeWhereInList"/>
+                 <element maxOccurs="1" minOccurs="0" name="extraTermData" type="tns1:extraDataType"/>
+             </sequence>
+         </complexType>
+         <complexType name="termsType">
+             <sequence>
+                 <element maxOccurs="unbounded" name="term" type="tns1:termType"/>
+             </sequence>
+         </complexType>
+         <complexType name="echoedScanRequestType">
+             <complexContent>
+                 <extension base="tns2:RequestType">
+                     <sequence>
+                         <element name="scanClause" type="xsd:string"/>
+                         <element name="xScanClause" nillable="true" type="tns3:searchClauseType"/>
+                         <element maxOccurs="1" minOccurs="0" name="responsePosition" type="xsd:nonNegativeInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="maximumTerms" type="xsd:positiveInteger"/>
+                         <element maxOccurs="1" minOccurs="0" name="stylesheet" type="xsd:anyURI"/>
+                         <element maxOccurs="1" minOccurs="0" name="extraRequestData" type="tns1:extraDataType"/>
+                     </sequence>
+                 </extension>
+             </complexContent>
+         </complexType>
+         <complexType name="scanResponseType">
+             <complexContent>
+                 <extension base="tns2:ResponseType">
+                     <sequence>
+                         <element maxOccurs="1" minOccurs="0" name="terms" type="tns1:termsType"/>
+                         <element maxOccurs="1" minOccurs="0" name="echoedScanRequest" type="tns1:echoedScanRequestType"/>
+                         <element maxOccurs="1" minOccurs="0" name="diagnostics" type="tns1:diagnosticsType"/>
+                         <element maxOccurs="1" minOccurs="0" name="extraResponseData" type="tns1:extraDataType"/>
+                     </sequence>
+                 </extension>
+             </complexContent>
+         </complexType>
+         <element name="scanResponse" type="tns1:scanResponseType"/>
+         <complexType name="ExplainRequestType">
+          <complexContent>
+           <extension base="tns2:RequestType">
+            <sequence>
+             <element maxOccurs="1" minOccurs="0" name="recordPacking" type="xsd:string"/>
+             <element maxOccurs="1" minOccurs="0" name="stylesheet" type="xsd:anyURI"/>
+             <element maxOccurs="1" minOccurs="0" name="extraRequestData" type="tns1:extraRequestData"/>
+            </sequence>
+           </extension>
+          </complexContent>
+         </complexType>
+         <element name="explainRequest" type="tns1:ExplainRequestType"/>
+         <complexType name="ExplainResponseType">
+          <complexContent>
+           <extension base="tns2:ResponseType">
+            <sequence>
+             <element name="record" type="tns1:recordType"/>
+             <element maxOccurs="1" minOccurs="0" name="echoedExplainRequest" type="tns1:ExplainRequestType"/>
+             <element maxOccurs="1" minOccurs="0" name="diagnostics" type="tns1:diagnosticsType"/>
+             <element maxOccurs="1" minOccurs="0" name="extraResponseData" type="tns1:extraDataType"/>
+            </sequence>
+           </extension>
+          </complexContent>
+         </complexType>
+         <element name="explainResponse" type="tns1:ExplainResponseType"/>
+     </schema>
+     <schema elementFormDefault="qualified" 
+             targetNamespace="http://www.loc.gov/zing/cql/xcql/" 
+             xmlns="http://www.w3.org/2001/XMLSchema">
+         <import namespace="http://srw.zing.www.loc.gov"/>
+         <import namespace="http://www.loc.gov/zing/srw/diagnostic/"/>
+         <import namespace="http://www.loc.gov/zing/srw/"/>
+         <complexType name="prefixType">
+             <sequence>
+                 <element name="name" type="xsd:string"/>
+                 <element name="identifier" type="xsd:string"/>
+             </sequence>
+         </complexType>
+         <complexType name="prefixesType">
+             <sequence>
+                 <element maxOccurs="unbounded" name="prefix" type="tns3:prefixType"/>
+             </sequence>
+         </complexType>
+         <complexType name="modifierType">
+             <sequence>
+                 <element name="type" type="xsd:string"/>
+                 <element name="comparison" type="xsd:string"/>
+                 <element name="value" type="xsd:string"/>
+             </sequence>
+         </complexType>
+         <complexType name="modifiersType">
+             <sequence>
+                 <element maxOccurs="unbounded" name="modifier" type="tns3:modifierType"/>
+             </sequence>
+         </complexType>
+         <complexType name="booleanType">
+             <sequence>
+                 <element name="value" type="xsd:string"/>
+                 <element maxOccurs="1" minOccurs="0" name="modifiers" type="tns3:modifiersType"/>
+             </sequence>
+         </complexType>
+         <complexType name="tripleType">
+             <sequence>
+                 <element name="boolean" nillable="true" type="tns3:booleanType"/>
+                 <element name="leftOperand" type="tns3:operandType"/>
+                 <element name="rightOperand" type="tns3:operandType"/>
+             </sequence>
+         </complexType>
+         <complexType name="relationType">
+             <sequence>
+                 <element name="value" type="xsd:string"/>
+                 <element maxOccurs="1" minOccurs="0" name="modifiers" type="tns3:modifiersType"/>
+             </sequence>
+         </complexType>
+         <complexType name="searchClauseType">
+             <sequence>
+                 <element name="index" type="xsd:string"/>
+                 <element name="relation" type="tns3:relationType"/>
+                 <element name="term" type="xsd:string"/>
+             </sequence>
+         </complexType>
+         <complexType name="operandType">
+             <sequence>
+                 <element maxOccurs="1" minOccurs="0" name="prefixes" type="tns3:prefixesType"/>
+                 <element maxOccurs="1" minOccurs="0" name="triple" type="tns3:tripleType"/>
+                 <element maxOccurs="1" minOccurs="0" name="searchClause" type="tns3:searchClauseType"/>
+             </sequence>
+         </complexType>
+     </schema>
+     <schema elementFormDefault="qualified" 
+             targetNamespace="http://www.loc.gov/zing/srw/diagnostic/" 
+             xmlns="http://www.w3.org/2001/XMLSchema">
+         <import namespace="http://srw.zing.www.loc.gov"/>
+         <import namespace="http://www.loc.gov/zing/cql/xcql/"/>
+         <import namespace="http://www.loc.gov/zing/srw/"/>
+         <complexType name="diagnosticType">
+             <sequence>
+                 <element name="details" nillable="true" type="xsd:string"/>
+                 <element name="message" nillable="true" type="xsd:string"/>
+                 <element name="uri" nillable="true" type="xsd:anyURI"/>
+             </sequence>
+         </complexType>
+     </schema>
+ </wsdl:types>
+  <wsdl:message name="SearchRetrieveOperationRequest">
+    <wsdl:part element="tns1:searchRetrieveRequest" name="searchRetrieveRequest"/>
+  </wsdl:message>
+  <wsdl:message name="SearchRetrieveOperationResponse">
+    <wsdl:part element="tns1:searchRetrieveResponse" name="searchRetrieveResponse"/>
+  </wsdl:message>
+  <wsdl:message name="ScanOperationResponse">
+    <wsdl:part element="tns1:scanResponse" name="scanResponse"/>
+  </wsdl:message>
+  <wsdl:message name="ScanOperationRequest">
+    <wsdl:part element="tns1:scanRequest" name="scanRequest"/>
+  </wsdl:message>
+  <wsdl:portType name="SRWPort">
+    <wsdl:operation name="SearchRetrieveOperation" parameterOrder="searchRetrieveRequest">
+      <wsdl:input message="impl:SearchRetrieveOperationRequest" name="SearchRetrieveOperationRequest"/>
+      <wsdl:output message="impl:SearchRetrieveOperationResponse" name="SearchRetrieveOperationResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="ScanOperation" parameterOrder="scanRequest">
+      <wsdl:input message="impl:ScanOperationRequest" name="ScanOperationRequest"/>
+      <wsdl:output message="impl:ScanOperationResponse" name="ScanOperationResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SRWSoapBinding" type="impl:SRWPort">
+    <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="SearchRetrieveOperation">
+      <wsdlsoap:operation soapAction="searchRetrieve"/>
+      <wsdl:input name="SearchRetrieveOperationRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="SearchRetrieveOperationResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ScanOperation">
+      <wsdlsoap:operation soapAction="scan"/>
+      <wsdl:input name="ScanOperationRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="ScanOperationResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:message name="ExplainOperationRequest">
+      <wsdl:part element="tns1:explainRequest" name="explainRequest"/>
+   </wsdl:message>
+   <wsdl:message name="ExplainOperationResponse">
+      <wsdl:part element="tns1:explainResponse" name="explainResponse"/>
+   </wsdl:message>
+   <wsdl:portType name="ExplainPort">
+      <wsdl:operation name="ExplainOperation" parameterOrder="explainRequest">
+         <wsdl:input message="impl:ExplainOperationRequest" name="ExplainOperationRequest"/>
+        <wsdl:output message="impl:ExplainOperationResponse" name="ExplainOperationResponse"/>
+     </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:binding name="ExplainSOAPSoapBinding" type="impl:ExplainPort">
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <wsdl:operation name="ExplainOperation">
+         <wsdlsoap:operation soapAction="explain"/>
+         <wsdl:input name="ExplainOperationRequest">
+           <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output name="ExplainOperationResponse">
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+  <wsdl:service name="SRWSampleService">
+    <wsdl:port binding="impl:SRWSoapBinding" name="SRW">
+      <wsdlsoap:address location="http://###HOST###:###PORT###/srw/services/SRW?wsdl"/>
+    </wsdl:port>
+     <wsdl:port binding="impl:ExplainSOAPSoapBinding" name="ExplainSOAP">
+        <wsdlsoap:address location="http://###HOST###:###PORT###/srw/services/ExplainSOAP?wsdl"/>
+     </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
