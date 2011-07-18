@@ -3,12 +3,16 @@
 <project name="eSciDocCoreSrw" basedir="." default="war">
 
 	<property name="webapp.name" value="srw" />
+	<property name="project.name" value="eSciDocCoreSrw" />
 	<property name="nolibs.webapp.name" value="${webapp.name}-nolibs" />
 	<property name="build.dir" value="build" />
+	<property name="bin.dir" value="bin" />
 	<property name="dist.dir" value="dist" />
 	<property name="src.dir" value="src" />
 	<property name="lib.dir" value="lib" />
 	<property name="conf.dir" value="conf" />
+	<property name="sources.dir" value="sources" />
+	<property name="docu.dir" value="docu" />
     <property name="stylesheets.dir" value="${conf.dir}/stylesheets" />
 	<property name="escidoc.conf.dir" value="${conf.dir}/escidoc" />
     <property name="escidoc.srw.jarfile.name" value="eSciDocCoreSrw.jar" />
@@ -55,7 +59,7 @@
             command="checkout" dest="${src.dir}" package="all"/>
     </target>
         
-    <target name="war" depends="jar">
+    <target name="war" depends="jar, sources">
         <fail unless="webapp.name" message="You need to specify a webapp.name"/>
         <delete file="${dist.dir}/${nolibs.webapp.name}.war"/>
         <jar jarfile="${dist.dir}/${nolibs.webapp.name}.war">
@@ -118,6 +122,27 @@
                 <pathelement location="${src.dir}"/>
             </sourcepath>
         </javadoc>
+    </target>
+
+    <target name="sources" description="Pack sources for download.">
+    	<delete dir="${sources.dir}"/>
+        <mkdir dir="${sources.dir}"/>
+        <mkdir dir="${sources.dir}/${project.name}"/>
+		<copy todir="${sources.dir}/${project.name}">
+			<fileset dir=".">
+		    	<exclude name="${build.dir}/*/**"/>
+		    	<exclude name="${bin.dir}/*/**"/>
+		    	<exclude name="${dist.dir}/*/**"/>
+		    	<exclude name="${sources.dir}/**"/>
+		    	<exclude name="${build.dir}/*/**"/>
+		    	<exclude name="${docu.dir}/**"/>
+		    	<exclude name="${src.dir}/srwsafe/**"/>
+		    	<exclude name="**/.svn"/>
+			</fileset>
+		</copy>
+        <zip zipfile="${dist.dir}/${webapp.name}-sources.zip"
+             basedir="${sources.dir}/${project.name}" includes="**"/>
+    	<delete dir="${sources.dir}"/>
     </target>
 
 </project>
