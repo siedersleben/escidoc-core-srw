@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="eSciDocCoreSrw" basedir="." default="war">
+<project name="eSciDocCoreSrw" basedir="." default="war" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
 	<property name="webapp.name" value="srw" />
 	<property name="project.name" value="eSciDocCoreSrw" />
@@ -16,6 +16,12 @@
     <property name="stylesheets.dir" value="${conf.dir}/stylesheets" />
 	<property name="escidoc.conf.dir" value="${conf.dir}/escidoc" />
     <property name="escidoc.srw.jarfile.name" value="eSciDocCoreSrw.jar" />
+
+        <!-- properties for deployment to Artifactory -->
+        <property name="artifactory.url" value="https://www.escidoc.org/artifactory/libs-releases-local" />
+        <!-- build version, user name and password must be given from the command line via -Dbuild.version=... -Dusername=... -Dpassword=... -->
+        <property name="artifactory.user" value="${username}" />
+        <property name="artifactory.password" value="${password}" />
 
     <target name="clean" description="Clean all build products.">
 		<delete includeEmptyDirs="true">
@@ -70,7 +76,7 @@
         	<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
 
         	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
-            <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
+            <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="jboss-web.xml,web.xml" prefix="WEB-INF/classes"/>
 
         	<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
             <zipfileset dir="${lib.dir}/srw" includes="SRW.jar" prefix="WEB-INF/lib"/>
@@ -89,9 +95,10 @@
         	<!--MIH: add web.xml from conf/escidoc-directory -->
         	<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
         	<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
+        	<zipfileset dir="${escidoc.conf.dir}" includes="jboss-web.xml" prefix="WEB-INF"/>
 
         	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
-            <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
+            <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="jboss-web.xml,web.xml" prefix="WEB-INF/classes"/>
 
         	<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
             <zipfileset dir="${lib.dir}/srw" includes="SRW.jar" prefix="WEB-INF/lib"/>
@@ -108,12 +115,14 @@
         </jar>
     </target>
 
+<!--
     <target name="deploy" depends="war">
         <fail unless="serverPath" message="You need to specify a serverPath in the build.properties file"/>
         <copy todir="${serverPath}/webapps">
             <fileset dir="${dist.dir}" includes="*.war"/>
         </copy>
     </target>
+-->
 
     <target name="javadoc" description="Javadoc for my API.">
         <mkdir dir="apidoc"/>
@@ -146,5 +155,28 @@
              basedir="${sources.dir}/${project.name}" includes="**"/>
     	<delete dir="${sources.dir}"/>
     </target>
+
+        <!-- example usage: ant -Dbuild.version=1.4.4 -Dusername=hans -Dpassword=wurst deploy -->
+
+        <target name="deploy" depends="war" description="Deploy war file to local repository and Artifactory">
+                <artifact:pom id="memorypom" groupId="org.escidoc" artifactId="srw_full" version="${build.version}" name="SRW server for eSciDoc" packaging="war" />
+
+                <!-- The install and deploy tasks cannot use the in-memory-POM directly so we have to write it into a file first. -->
+                <artifact:writepom pomRefId="memorypom" file="${dist.dir}/srw_full-${build.version}.pom" />
+                <artifact:pom id="filepom" file="${dist.dir}/srw_full-${build.version}.pom" />
+
+                <!-- install into local repository -->
+                <artifact:install file="${dist.dir}/${webapp.name}.war">
+                        <pom refid="filepom" />
+                </artifact:install>
+
+                <!-- copy to Artifactory -->
+                <artifact:deploy file="${dist.dir}/${webapp.name}.war">
+                        <remoteRepository url="${artifactory.url}">
+                                <authentication username="${artifactory.user}" password="${artifactory.password}" />
+                        </remoteRepository>
+                        <pom refid="filepom" />
+                </artifact:deploy>
+        </target>
 
 </project>
