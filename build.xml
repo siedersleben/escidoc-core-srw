@@ -138,6 +138,8 @@
 		    	<exclude name="${docu.dir}/**"/>
 		    	<exclude name="${src.dir}/srwsafe/**"/>
 		    	<exclude name="**/.svn"/>
+		    	<exclude name=".classpath"/>
+    			<exclude name=".project"/>
 			</fileset>
 		</copy>
         <zip zipfile="${dist.dir}/${webapp.name}-sources.zip"
