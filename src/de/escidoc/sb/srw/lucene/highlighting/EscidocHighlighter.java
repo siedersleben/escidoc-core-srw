@@ -74,7 +74,7 @@ public class EscidocHighlighter implements SrwHighlighter {
     //********Defaults*********************************************************
     private Highlighter highlighter = null;
 
-    private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+    private Analyzer analyzer = new StandardAnalyzer(Constants.LUCENE_VERSION);
     
     private SrwHighlightXmlizer highlightXmlizer = 
                     new EscidocSimpleHighlightXmlizer();
@@ -145,7 +145,7 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
             catch (Exception e) {
                 log.error(e);
-                analyzer = new StandardAnalyzer(Version.LUCENE_30);
+                analyzer = new StandardAnalyzer(Constants.LUCENE_VERSION);
             }
         }
 
