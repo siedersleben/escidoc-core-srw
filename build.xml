@@ -160,9 +160,9 @@
 
         <target name="deploy" depends="war" description="Deploy war file to local repository and Artifactory">
                 <!-- deploy war -->
-                <artifact:pom id="memorypom" groupId="org.escidoc" artifactId="srw_full" version="${build.version}" name="SRW server for eSciDoc" packaging="war" />
-                <artifact:writepom pomRefId="memorypom" file="${dist.dir}/srw_full-${build.version}.pom" />
-                <artifact:pom id="filepom" file="${dist.dir}/srw_full-${build.version}.pom" />
+                <artifact:pom id="memorypom" groupId="org.escidoc" artifactId="srw" version="${build.version}" name="SRW server for eSciDoc" packaging="war" />
+                <artifact:writepom pomRefId="memorypom" file="${dist.dir}/srw-${build.version}.pom" />
+                <artifact:pom id="filepom" file="${dist.dir}/srw-${build.version}.pom" />
                 <artifact:install file="${dist.dir}/${webapp.name}.war">
                         <pom refid="filepom" />
                 </artifact:install>
