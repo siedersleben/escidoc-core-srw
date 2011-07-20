@@ -31,12 +31,16 @@ package de.escidoc.sb.srw;
 
 import java.util.regex.Pattern;
 
+import org.apache.lucene.util.Version;
+
 /**
  * Constants for Search.
  * 
  * @author MIH
  */
 public class Constants {
+
+    public static final Version LUCENE_VERSION = Version.LUCENE_33;
 
     public static final String CHARACTER_ENCODING = "UTF-8";
 

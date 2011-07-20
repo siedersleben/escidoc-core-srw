@@ -74,7 +74,7 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
 
     private IndexSearcher indexSearcher = null;
     
-    private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+    private Analyzer analyzer = new StandardAnalyzer(Constants.LUCENE_VERSION);
     
     private SrwHighlightXmlizer highlightXmlizer = 
                     new EscidocSimpleHighlightXmlizer();
@@ -145,7 +145,7 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
             }
             catch (Exception e) {
                 log.error(e);
-                analyzer = new StandardAnalyzer(Version.LUCENE_30);
+                analyzer = new StandardAnalyzer(Constants.LUCENE_VERSION);
             }
         }
 
@@ -237,7 +237,7 @@ public class EscidocFastVectorHighlighter implements SrwHighlighter {
         throws Exception {
 
     	this.indexSearcher = indexSearcher;
-        QueryParser parser = new QueryParser(Version.LUCENE_30, "q", analyzer);
+        QueryParser parser = new QueryParser(Constants.LUCENE_VERSION, "q", analyzer);
         parser.setMultiTermRewriteMethod(
         		MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
 
