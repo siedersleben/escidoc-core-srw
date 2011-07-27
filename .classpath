@@ -14,9 +14,6 @@
 	<classpathentry kind="lib" path="lib/srw/saaj.jar"/>
 	<classpathentry kind="lib" path="lib/srw/servlet-api.jar"/>
 	<classpathentry kind="lib" path="lib/srw/SRW.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/jcl-over-slf4j-1.5.11.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/slf4j-api-1.5.11.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/slf4j-log4j12-1.5.11.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-ja.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/httpclient-4.0.1.jar"/>
