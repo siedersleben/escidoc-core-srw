@@ -110,7 +110,7 @@
             <zipfileset dir="${lib.dir}/escidoc" includes="*.jar" prefix="WEB-INF/lib"/>
             <zipfileset dir="${lib.dir}/escidoc/stax" includes="*.jar" prefix="WEB-INF/lib"/>
             <zipfileset dir="${lib.dir}/lucene" includes="*.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/srw" includes="*.jar" excludes="SRW.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${lib.dir}/srw" includes="*.jar" excludes="SRW.jar,servlet-api.jar" prefix="WEB-INF/lib"/>
         </jar>
     </target>
 
