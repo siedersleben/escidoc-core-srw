@@ -5,7 +5,6 @@
 	<classpathentry kind="lib" path="lib/escidoc/stax/jsr173_1.0_api.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/escidoc-analyzers.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/sen.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="lib/srw/cql-java.jar"/>
 	<classpathentry kind="lib" path="lib/srw/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="lib/srw/log4j.jar"/>
