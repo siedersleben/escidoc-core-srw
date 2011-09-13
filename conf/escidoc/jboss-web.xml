@@ -19,9 +19,5 @@
   ~ terms.
   -->
 <jboss-web>
-    <class-loading>
-        <loader-repository>
-            org.escidoc.srw:loader=srw.war
-        </loader-repository>
-    </class-loading>
+  <loader-repository>org.escidoc.srw:loader=srw.war<loader-repository-config>java2ParentDelegation=false</loader-repository-config></loader-repository>
 </jboss-web>
