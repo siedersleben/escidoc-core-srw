@@ -126,7 +126,14 @@
       <tr>
         <td>
           <xsl:value-of select="zr:title"/>
-          <input type="hidden" name="index{position()}" value="{zr:map[1]/zr:name/@set}.{zr:map[1]/zr:name}"/>
+          <xsl:choose>
+          	<xsl:when test="zr:map[1]/zr:name/@set != ''">
+          		<input type="hidden" name="index{position()}" value="{zr:map[1]/zr:name/@set}.{zr:map[1]/zr:name}"/>
+          	</xsl:when>
+          	<xsl:otherwise>
+          		<input type="hidden" name="index{position()}" value="{zr:map[1]/zr:name}"/>
+          	</xsl:otherwise>
+          </xsl:choose>
           </td>
         <td>
           <select name="relat{position()}">
@@ -256,9 +263,18 @@
           <select name="scanIndex">
             <xsl:for-each select="srw:record/srw:recordData/zr:explain/zr:indexInfo/zr:index">
               <xsl:sort select="."/>
-              <option value="{zr:map[1]/zr:name/@set}.{zr:map[1]/zr:name}">
-                <xsl:value-of select="zr:title"/>
-                </option>
+	          <xsl:choose>
+	          	<xsl:when test="zr:map[1]/zr:name/@set != ''">
+              		<option value="{zr:map[1]/zr:name/@set}.{zr:map[1]/zr:name}">
+                		<xsl:value-of select="zr:title"/>
+                	</option>
+	          	</xsl:when>
+	          	<xsl:otherwise>
+              		<option value="{zr:map[1]/zr:name}">
+                		<xsl:value-of select="zr:title"/>
+                	</option>
+	          	</xsl:otherwise>
+	          </xsl:choose>
               </xsl:for-each>
             </select>
           </td>
