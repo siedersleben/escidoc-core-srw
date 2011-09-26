@@ -440,7 +440,11 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 
 			String relation = ctn.getRelation().getBase();
 			// MIH scr doesnt work with LuceneTranslator////////////////////////
+			// MIH adj is same as = -->phrase query////////////////////////
 			if (relation.equalsIgnoreCase("scr")) {
+				relation = "=";
+			}
+			else if (relation.equalsIgnoreCase("adj")) {
 				relation = "=";
 			}
 			// /////////////////////////////////////////////////////////////////
@@ -745,11 +749,15 @@ public abstract class EscidocTranslator extends LuceneTranslator {
             // /////////////////////////////////////////////////////////////////
 
             String relation = ctn.getRelation().getBase();
-            // MIH scr doesnt work with LuceneTranslator////////////////////////
-            if (relation.equalsIgnoreCase("scr")) {
-                relation = "=";
-            }
-            // /////////////////////////////////////////////////////////////////
+			// MIH scr doesnt work with LuceneTranslator////////////////////////
+			// MIH adj is same as = -->phrase query////////////////////////
+			if (relation.equalsIgnoreCase("scr")) {
+				relation = "=";
+			}
+			else if (relation.equalsIgnoreCase("adj")) {
+				relation = "=";
+			}
+			// /////////////////////////////////////////////////////////////////
             String index = ctn.getIndex();
             if (returnMap.get(index) == null) {
                 returnMap.put(index, new ArrayList<String>());
