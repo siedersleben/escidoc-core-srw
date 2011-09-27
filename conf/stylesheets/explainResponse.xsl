@@ -5,18 +5,16 @@
     xmlns:srw="http://www.loc.gov/zing/srw/"
     xmlns:zr="http://explain.z3950.org/dtd/2.0/">
 
-<xsl:import href="stdiface.xsl"/>
-
 <xsl:output method="html" doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN" doctype-system="http://www.w3.org/TR/html4/loose.dtd"/>
 
 <xsl:variable name="title"><xsl:value-of select="/srw:explainResponse/srw:record/srw:recordData/zr:explain/zr:databaseInfo/zr:title"/></xsl:variable>
 <xsl:variable name="dbname"><xsl:value-of select="/srw:explainResponse/srw:record/srw:recordData/zr:explain/zr:databaseInfo/zr:title"/></xsl:variable>
 
 <xsl:template match="/">
-<xsl:call-template name="stdiface">
-<xsl:with-param name="title" select="$title"/>
-<xsl:with-param name="dbname" select="$dbname"/>
-</xsl:call-template>
+    <div id="escidoc-logo">
+      <img src="/srw/escidoc-logo.jpg" name="eSciDoc Page Header" alt="eSciDoc Page Header" border="0"/>
+    </div>
+  	<xsl:apply-templates/>
 </xsl:template>
 
 <xsl:template match="srw:explainResponse">
@@ -70,23 +68,23 @@
 </xsl:text>
 </script>
 
-<p>
+<p><b>
 <xsl:value-of select="srw:record/srw:recordData/zr:explain/zr:databaseInfo/zr:description"/>
-</p>
+</b></p>
 
 <xsl:apply-templates select="srw:diagnostics"/>
 
-<table cellspacing="0" class="layout">
+<table cellspacing="0">
 <tr> 
 <td><h1>Search</h1></td>
 <td><h1>Browse</h1></td>
 </tr>
 <tr> 
-<td width="60%" style="padding-right: 10px;"> 
+<td width="60%" style="padding-right: 10px;padding-bottom: 10px;padding-top: 5px"> 
   <xsl:call-template name="SearchForm"/>
 </td>
 
-<td width="40%">
+<td width="40%" valign="top" style="padding-bottom: 10px;padding-top: 5px">
   <xsl:call-template name="BrowseForm"/>
 </td>
 </tr>
@@ -111,8 +109,9 @@
 <form name="CQLForm" onSubmit="return mungeForm();">
 <input type="submit" value="Search" onClick="return mungeForm();"/>
 <input type="hidden" name="maxIndex" value="{count(srw:record/srw:recordData/zr:explain/zr:indexInfo/zr:index)}"/>
-<table cellspacing="0" class="formtable">
-<tr>
+<br/><br/>
+<table cellspacing="0">
+<tr bgcolor="#99CCFF">
 <th>Index</th>
 <th>Relation</th>
 <th>Term</th>
@@ -184,7 +183,8 @@
   <input type="hidden" name="query" value=""/>
   <input type="hidden" name="version" value="1.1"/>
   <input type="hidden" name="operation" value="searchRetrieve"/>
-  <table cellspacing="0" class="formtable">
+  <br/>
+  <table cellspacing="0">
     <tr>
       <td>Record Schema:</td>
       <td>
@@ -245,6 +245,7 @@
     <td><input type="checkbox" name="x-info-5-restrictorSummary"/></td>
     </tr>   
     </table>
+	<br/>
   <input type="submit" value="Search" onClick="return mungeForm();"/>
   </form>
 </xsl:template>
@@ -252,8 +253,9 @@
 <xsl:template name="BrowseFormPart1">
   <form name="ScanIndexes" onSubmit="return mungeScanForm();">
     <input type="submit" value="Browse" onClick="return mungeScanForm();"/>
-    <table cellspacing="0" class="formtable">
-      <tr>
+	<br/><br/>
+    <table cellspacing="0">
+      <tr bgcolor="#99CCFF">
         <th>Index</th>
         <th>Relation</th>
         <th>Term</th>
@@ -304,7 +306,8 @@
     <input type="hidden" name="operation" value="scan"/>
     <input type="hidden" name="scanClause" value=""/>
     <input type="hidden" name="version" value="1.1"/>
-    <table cellspacing="0" class="formtable">
+	<br/>
+    <table cellspacing="0">
       <tr>
         <td>Response Position:</td>
         <td>
@@ -318,6 +321,7 @@
           </td>
         </tr>
       </table>
+	<br/>
     <input type="submit" value="Browse" onClick="return mungeScanForm();"/>
     </form>
   </xsl:template>
