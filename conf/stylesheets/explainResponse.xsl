@@ -11,10 +11,23 @@
 <xsl:variable name="dbname"><xsl:value-of select="/srw:explainResponse/srw:record/srw:recordData/zr:explain/zr:databaseInfo/zr:title"/></xsl:variable>
 
 <xsl:template match="/">
+	<html>
+	<head>
+		<title><xsl:value-of select="$title"/></title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<style type="text/css">
+			&lt;!--
+			table.formtable th, table.formtable td { border-top: 1px solid #999; border-left: 1px solid #999; border-right: 1px solid #999; border-bottom: 1px solid #999; color: #333; text-align: left; vertical-align: top}
+			--&gt;
+		</style>
+	</head>
+	<body>
     <div id="escidoc-logo">
       <img src="/srw/escidoc-logo.jpg" name="eSciDoc Page Header" alt="eSciDoc Page Header" border="0"/>
     </div>
   	<xsl:apply-templates/>
+	</body>
+	</html>
 </xsl:template>
 
 <xsl:template match="srw:explainResponse">
@@ -42,13 +55,16 @@
           if (term.indexOf(' ')) {
             term = '"' + term + '"';
           }
-          cql += inform["index" + idx].value + " " + inform["relat" + idx].value + " " + term
+          cql += '"' + inform["index" + idx].value + '" ' + inform["relat" + idx].value + " " + term
           prevIdx = idx
         }
       }
       if (!cql) {
         alert("At least one term is required to search.");
         return false;
+      }
+      if (outform.sortKeys.options.selectedIndex > 0) {
+      cql += ' sortBy "' + outform.sortKeys.options[outform.sortKeys.options.selectedIndex].value + '"/sort.ascending' 
       }
       outform.query.value = cql
       outform.submit();
@@ -68,16 +84,16 @@
 </xsl:text>
 </script>
 
-<p><b>
+<p><h2>
 <xsl:value-of select="srw:record/srw:recordData/zr:explain/zr:databaseInfo/zr:description"/>
-</b></p>
+</h2></p>
 
 <xsl:apply-templates select="srw:diagnostics"/>
 
 <table cellspacing="0">
 <tr> 
-<td><h1>Search</h1></td>
-<td><h1>Browse</h1></td>
+<td><h2>Search</h2></td>
+<td><h2>Browse</h2></td>
 </tr>
 <tr> 
 <td width="60%" style="padding-right: 10px;padding-bottom: 10px;padding-top: 5px"> 
@@ -110,7 +126,7 @@
 <input type="submit" value="Search" onClick="return mungeForm();"/>
 <input type="hidden" name="maxIndex" value="{count(srw:record/srw:recordData/zr:explain/zr:indexInfo/zr:index)}"/>
 <br/><br/>
-<table cellspacing="0">
+<table cellspacing="0" class="formtable">
 <tr bgcolor="#99CCFF">
 <th>Index</th>
 <th>Relation</th>
@@ -184,7 +200,7 @@
   <input type="hidden" name="version" value="1.1"/>
   <input type="hidden" name="operation" value="searchRetrieve"/>
   <br/>
-  <table cellspacing="0">
+  <table cellspacing="0" class="formtable">
     <tr>
       <td>Record Schema:</td>
       <td>
@@ -238,7 +254,19 @@
     </tr>   
     <tr>
     <td>Sort Keys:</td>
-    <td><input type="text" name="sortKeys" value = ""/></td>
+	<td>
+		<select name="sortKeys">
+			<option value="">none</option>
+			<xsl:for-each select="srw:record/srw:recordData/zr:explain/zr:indexInfo/zr:sortKeyword">
+				<option>
+					<xsl:attribute name="value">
+						<xsl:value-of select="."/>
+					</xsl:attribute>
+					<xsl:value-of select="."/>
+				</option>
+			</xsl:for-each>
+		</select>
+	</td>
     </tr>   
     <tr>
     <td>Restrictor Summaries:</td>
@@ -254,7 +282,7 @@
   <form name="ScanIndexes" onSubmit="return mungeScanForm();">
     <input type="submit" value="Browse" onClick="return mungeScanForm();"/>
 	<br/><br/>
-    <table cellspacing="0">
+    <table cellspacing="0" class="formtable">
       <tr bgcolor="#99CCFF">
         <th>Index</th>
         <th>Relation</th>
@@ -307,7 +335,7 @@
     <input type="hidden" name="scanClause" value=""/>
     <input type="hidden" name="version" value="1.1"/>
 	<br/>
-    <table cellspacing="0">
+    <table cellspacing="0" class="formtable">
       <tr>
         <td>Response Position:</td>
         <td>
