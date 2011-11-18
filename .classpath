@@ -14,9 +14,6 @@
 	<classpathentry kind="lib" path="lib/srw/saaj.jar"/>
 	<classpathentry kind="lib" path="lib/srw/servlet-api.jar"/>
 	<classpathentry kind="lib" path="lib/srw/SRW.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/jcl-over-slf4j-1.5.11.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/slf4j-api-1.5.11.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/slf4j-log4j12-1.5.11.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-ja.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/httpclient-4.1.2.jar"/>
@@ -36,9 +33,12 @@
 	<classpathentry kind="lib" path="lib/srw/wsdl4j-1.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/srw/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-3.0.5.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/lucene-core-3.3.0-extended.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-3.3.0-extended.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/lucene-memory-3.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-3.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/jcl-over-slf4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-3.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/slf4j-log4j12-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-core-3.4.0-extended.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-3.4.0-extended.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-memory-3.4.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
