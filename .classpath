@@ -37,9 +37,9 @@
 	<classpathentry kind="lib" path="lib/srw/commons-discovery-0.4.jar"/>
 	<classpathentry kind="lib" path="lib/srw/wsdl4j-1.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/srw/xalan-2.7.1.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-3.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/lucene-memory-3.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/lucene-core-3.1.0-extended.jar"/>
-	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-3.1.0-extended.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-3.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-core-3.4.0-extended.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-3.4.0-extended.jar"/>
+	<classpathentry kind="lib" path="lib/lucene/lucene-memory-3.4.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
