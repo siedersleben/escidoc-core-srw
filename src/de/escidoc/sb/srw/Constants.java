@@ -40,7 +40,7 @@ import org.apache.lucene.util.Version;
  */
 public class Constants {
 
-    public static final Version LUCENE_VERSION = Version.LUCENE_33;
+    public static final Version LUCENE_VERSION = Version.LUCENE_34;
 
     public static final String CHARACTER_ENCODING = "UTF-8";
 

@@ -117,6 +117,8 @@ public class EscidocHighlighter implements SrwHighlighter {
 
     private Matcher SEARCHFIELD_MATCHER = SEARCHFIELD_PATTERN.matcher("");
 
+    private final String INTERNAL_FIELDS_REGEX = "type";
+
 	private static final String LUCENE_ESCAPE_CHARS = "[\\\\+\\-\\!\\(\\)\\:\\^\\]\\{\\}\\~\\*\\?]";
 
 	private static final Pattern LUCENE_PATTERN = Pattern
@@ -242,7 +244,6 @@ public class EscidocHighlighter implements SrwHighlighter {
         if (indexSearcher != null
                 && query != null && query.toString() != null) {
             // get search-fields from query////////////////////////////////////
-            SEARCHFIELD_MATCHER.reset(query.toString());
             boolean fulltextFound = false;
             boolean nonFulltextFound = false;
 
@@ -268,7 +269,8 @@ public class EscidocHighlighter implements SrwHighlighter {
                                 fulltextQuery = new BooleanQuery();
                             }
                             ((BooleanQuery) fulltextQuery).add(clause);
-                        } else {
+                        } else if (!SEARCHFIELD_MATCHER.group(1)
+                                .matches(INTERNAL_FIELDS_REGEX)) {
                             nonFulltextFound = true;
                             if (metadataQuery == null) {
                                 metadataQuery = new BooleanQuery();
@@ -288,7 +290,8 @@ public class EscidocHighlighter implements SrwHighlighter {
                         if (fulltextQuery == null) {
                             fulltextQuery = query;
                         }
-                    } else {
+                    } else if (!SEARCHFIELD_MATCHER.group(1)
+                            .matches(INTERNAL_FIELDS_REGEX)) {
                         nonFulltextFound = true;
                         if (metadataQuery == null) {
                             metadataQuery = query;
