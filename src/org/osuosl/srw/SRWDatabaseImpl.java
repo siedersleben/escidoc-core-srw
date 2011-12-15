@@ -22,6 +22,7 @@ import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveResponseType;
 import gov.loc.www.zing.srw.TermType;
 import gov.loc.www.zing.srw.TermsType;
+import gov.loc.www.zing.srw.utils.RestSearchRetrieveResponseType;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -246,6 +247,10 @@ public class SRWDatabaseImpl extends ORG.oclc.os.SRW.SRWDatabase{
 
     public boolean supportsSort() {
         return true;
+    }
+
+    public RestSearchRetrieveResponseType doRequest(org.escidoc.core.domain.sru.SearchRetrieveRequestType request) throws ServletException {
+    	return null;
     }
 
     public SearchRetrieveResponseType doRequest(SearchRetrieveRequestType request) throws ServletException {
