@@ -16,7 +16,6 @@
 
 package srwsafe.gov.loc.www.zing.srw.srw_bindings;
 
-import ORG.oclc.os.SRW.Utilities;
 import gov.loc.www.zing.cql.xcql.BooleanType;
 import gov.loc.www.zing.cql.xcql.OperandType;
 import gov.loc.www.zing.cql.xcql.RelationType;
@@ -29,15 +28,16 @@ import gov.loc.www.zing.srw.ScanResponseType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveResponseType;
 import gov.loc.www.zing.srw.interfaces.SRWPort;
-import java.io.IOException;
-import java.net.URL;
-import java.rmi.RemoteException;
+import gov.loc.www.zing.srw.utils.RestSearchRetrieveResponseType;
+import gov.loc.www.zing.srw.utils.Stream;
 
-import ORG.oclc.os.SRW.SRWDatabase;
-import ORG.oclc.os.SRW.SRWDiagnostic;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.Hashtable;
+
 import org.apache.axis.MessageContext;
 import org.apache.axis.types.NonNegativeInteger;
 import org.apache.commons.logging.Log;
@@ -51,6 +51,12 @@ import org.z3950.zing.cql.CQLParseException;
 import org.z3950.zing.cql.CQLParser;
 import org.z3950.zing.cql.CQLSortNode;
 import org.z3950.zing.cql.CQLTermNode;
+
+import ORG.oclc.os.SRW.SRWDatabase;
+import ORG.oclc.os.SRW.SRWDiagnostic;
+import ORG.oclc.os.SRW.Utilities;
+import de.escidoc.core.common.exceptions.system.SystemException;
+import de.escidoc.core.common.util.service.UserContext;
 
 public class SRWSoapBindingImpl implements SRWPort {
     Log log=LogFactory.getLog(SRWSoapBindingImpl.class);
@@ -79,6 +85,169 @@ public class SRWSoapBindingImpl implements SRWPort {
             }
         }
     }
+
+	public Stream searchRetrieveOperation(
+			org.escidoc.core.domain.sru.SearchRetrieveRequestType request, MessageContext msgContext, String handle) throws RemoteException {
+		log.debug("Enter: searchRetrieveOperation");
+		if (log.isInfoEnabled()) {
+			log.info("request: maximumRecords:" + request.getMaximumRecords()
+					+ " query:" + request.getQuery() + " recordPacking:"
+					+ request.getRecordPacking() + " recordSchema:"
+					+ request.getRecordSchema() + " recordXpath:"
+					+ request.getRecordXPath() + " sortKeys:"
+					+ request.getSortKeys() + " startRecord:"
+					+ request.getStartRecord() + " stylesheet:"
+					+ request.getStylesheet() + " version:"
+					+ request.getVersion());
+		}
+		long startTime = System.currentTimeMillis();
+        try {
+            UserContext.setUserContext(handle);
+            try {
+                UserContext.getSecurityContext();
+            }
+            catch (SystemException e1) {
+                throw new InvocationTargetException(e1);
+            }
+        }
+        catch (Exception ex) {}
+        RestSearchRetrieveResponseType response = null;
+		int resultSetIdleTime = ((Integer) msgContext
+				.getProperty("resultSetIdleTime")).intValue();
+		NonNegativeInteger nni = request.getResultSetTTL();
+		if (log.isDebugEnabled())
+			log.debug("resultSetTTL()=" + nni);
+		if (nni != null) {
+			int ttl = nni.intValue();
+			log.debug("ttl=" + ttl);
+			if (ttl < resultSetIdleTime)
+				resultSetIdleTime = ttl;
+		}
+		String dbname = (String) msgContext.getProperty("dbname");
+		SRWDatabase db = (SRWDatabase) msgContext.getProperty("db");
+		if (log.isDebugEnabled())
+			log.debug("db=" + db);
+
+		String sortKeys = request.getSortKeys();
+		if (sortKeys != null)
+			request.setSortKeys(sortKeys);
+
+		String query = request.getQuery();
+		if (query.indexOf('%') >= 0) {
+			try {
+				request.setQuery(java.net.URLDecoder.decode(query, "utf-8"));
+			} catch (java.io.UnsupportedEncodingException e) {
+			}
+		}
+		
+		try {
+			if (query == null) {
+				response = new RestSearchRetrieveResponseType();
+				response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+				db.diagnostic(SRWDiagnostic.MandatoryParameterNotSupplied, "query",
+						response.getSearchRetrieveResponse());
+			} else if (request.getStartRecord() != null
+					&& request.getStartRecord().intValue() == Integer.MAX_VALUE) {
+				response = new RestSearchRetrieveResponseType();
+				response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+				db.diagnostic(SRWDiagnostic.UnsupportedParameterValue,
+						"startRecord", response.getSearchRetrieveResponse());
+			} else if (request.getMaximumRecords() != null
+					&& request.getMaximumRecords().intValue() == Integer.MAX_VALUE) {
+				response = new RestSearchRetrieveResponseType();
+				response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+				db.diagnostic(SRWDiagnostic.UnsupportedParameterValue,
+						"maximumRecords", response.getSearchRetrieveResponse());
+			} else if (request.getResultSetTTL() != null
+					&& request.getResultSetTTL().intValue() == Integer.MAX_VALUE) {
+				response = new RestSearchRetrieveResponseType();
+				response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+				db.diagnostic(SRWDiagnostic.UnsupportedParameterValue,
+						"resultSetTTL", response.getSearchRetrieveResponse());
+			} else {
+				try {
+					response = db.doRequest(request);
+					if (response == null) {
+						response = new RestSearchRetrieveResponseType();
+						response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+						response.getSearchRetrieveResponse().setVersion("1.1");
+						setEchoedSearchRetrieveRequestType(request, response.getSearchRetrieveResponse());
+						db.diagnostic(SRWDiagnostic.GeneralSystemError, null,
+								response.getSearchRetrieveResponse());
+						return response.toStream(db);
+					}
+					if (msgContext.getProperty("sru") != null
+							&& request.getStylesheet() != null) // you can't ask for
+																// a stylesheet in
+																// srw!
+						db.diagnostic(SRWDiagnostic.StylesheetsNotSupported, null,
+								response.getSearchRetrieveResponse());
+
+					setEchoedSearchRetrieveRequestType(request, response.getSearchRetrieveResponse());
+					if (request.getRecordXPath() != null)
+						db.diagnostic(72, null, response.getSearchRetrieveResponse());
+					if (request.getSortKeys() != null
+							&& !request.getSortKeys().equals("")
+							&& !db.supportsSort())
+						db.diagnostic(SRWDiagnostic.SortNotSupported, null,
+								response.getSearchRetrieveResponse());
+
+					// set extraResponseData
+					StringBuffer extraResponseData = new StringBuffer();
+
+					// we're going to stick the database name in extraResponseData
+					// every time
+					if (db.databaseTitle != null)
+						extraResponseData.append("<databaseTitle>")
+								.append(db.databaseTitle)
+								.append("</databaseTitle>");
+					else
+						extraResponseData.append("<databaseTitle>").append(dbname)
+								.append("</databaseTitle>");
+
+					// did they ask for the targetURL to be returned?
+					Hashtable extraRequestDataElements = SRWDatabase
+							.parseElements(request.getExtraRequestData());
+					String s = (String) extraRequestDataElements
+							.get("returnTargetURL");
+					log.info("returnTargetURL=" + s);
+					if (s != null && !s.equals("false")) {
+						String targetStr = (String) msgContext
+								.getProperty("targetURL");
+						log.info("targetStr=" + targetStr);
+						if (targetStr != null && targetStr.length() > 0) {
+							URL target = new URL(targetStr);
+							extraResponseData.append("<targetURL>")
+									.append("<host>").append(target.getHost())
+									.append("</host>").append("<port>")
+									.append(target.getPort()).append("</port>")
+									.append("<path>").append(target.getPath())
+									.append("</path>").append("<query>")
+									.append(Utilities.xmlEncode(target.getQuery()))
+									.append("</query>").append("</targetURL>");
+						}
+					}
+
+					// set extraResponseData
+					SRWDatabase.setExtraResponseData(response.getSearchRetrieveResponse(),
+							extraResponseData.toString());
+				} catch (Exception e) {
+					log.error(e, e);
+					throw new RemoteException(e.getMessage(), e);
+				} finally {
+					SRWDatabase.putDb(dbname, db);
+				}
+				response.getSearchRetrieveResponse().setVersion("1.1");
+				log.info("\"" + query + "\"==>" + response.getSearchRetrieveResponse().getNumberOfRecords() + " ("
+						+ (System.currentTimeMillis() - startTime) + "ms)");
+				log.debug("Exit: searchRetrieveOperation");
+				return response.toStream(db);
+			}
+		} catch (Exception e) {
+			throw new RemoteException(e.getMessage(), e);
+		}
+		return null;
+	}
 
     public SearchRetrieveResponseType searchRetrieveOperation(
       SearchRetrieveRequestType request) throws RemoteException {
@@ -429,6 +598,125 @@ public class SRWSoapBindingImpl implements SRWPort {
         response.setEchoedSearchRetrieveRequest(ert);
     }
 
+    public void setEchoedSearchRetrieveRequestType(org.escidoc.core.domain.sru.SearchRetrieveRequestType request, org.escidoc.core.domain.sru.SearchRetrieveResponseType response) {
+    	org.escidoc.core.domain.sru.EchoedSearchRetrieveRequestType ert=response.getEchoedSearchRetrieveRequest();
+        if(ert==null) {
+            ert=new org.escidoc.core.domain.sru.EchoedSearchRetrieveRequestType();
+        }
+        ert.setMaximumRecords(request.getMaximumRecords());
+        String query=request.getQuery();
+        if(query!=null && query.length()>0) {
+            ert.setQuery(query);
+            try {
+                CQLNode root=new CQLParser().parse(query);
+                ert.setXQuery(toSruOperandType(root));
+            }
+            catch (CQLParseException e) {
+                log.error(e,e);
+                org.escidoc.core.domain.xcql.RelationType rt=new org.escidoc.core.domain.xcql.RelationType();
+                rt.setValue("");
+                org.escidoc.core.domain.xcql.SearchClauseType sct=new org.escidoc.core.domain.xcql.SearchClauseType();
+                sct.setIndex("");
+                sct.setRelation(rt);
+                sct.setTerm("");
+                org.escidoc.core.domain.xcql.OperandType ot=new org.escidoc.core.domain.xcql.OperandType();
+                ot.setSearchClause(sct);
+                ert.setXQuery(ot);
+            }
+            catch (IOException e) {
+                log.error(e,e);
+                org.escidoc.core.domain.xcql.RelationType rt=new org.escidoc.core.domain.xcql.RelationType();
+                rt.setValue("");
+                org.escidoc.core.domain.xcql.SearchClauseType sct=new org.escidoc.core.domain.xcql.SearchClauseType();
+                sct.setIndex("");
+                sct.setRelation(rt);
+                sct.setTerm("");
+                org.escidoc.core.domain.xcql.OperandType ot=new org.escidoc.core.domain.xcql.OperandType();
+                ot.setSearchClause(sct);
+                ert.setXQuery(ot);
+            }
+        }
+        else { // sadly, just because the request didn't include it doesn't mean
+               // that the response gets to omit it.  So, provide an empty query
+            ert.setQuery("");
+            org.escidoc.core.domain.xcql.RelationType rt=new org.escidoc.core.domain.xcql.RelationType();
+            rt.setValue("");
+            org.escidoc.core.domain.xcql.SearchClauseType sct=new org.escidoc.core.domain.xcql.SearchClauseType();
+            sct.setIndex("");
+            sct.setRelation(rt);
+            sct.setTerm("");
+            org.escidoc.core.domain.xcql.OperandType ot=new org.escidoc.core.domain.xcql.OperandType();
+            ot.setSearchClause(sct);
+            ert.setXQuery(ot);
+        }
+        ert.setResultSetTTL(  request.getResultSetTTL());
+        ert.setRecordPacking( request.getRecordPacking());
+        ert.setSortKeys(      request.getSortKeys());
+        ert.setStartRecord(   request.getStartRecord());
+        if(request.getExtraRequestData()!=null)
+            ert.setExtraRequestData(request.getExtraRequestData());
+        if(request.getVersion()!=null)
+            ert.setVersion(request.getVersion());
+        else
+            ert.setVersion("1.1");
+        if(request.getRecordSchema()!=null)
+            ert.setRecordSchema(request.getRecordSchema());
+        else
+            ert.setRecordSchema("default");
+        response.setEchoedSearchRetrieveRequest(ert);
+    }
+
+    private org.escidoc.core.domain.xcql.OperandType toSruOperandType(CQLNode node) {
+    	org.escidoc.core.domain.xcql.OperandType ot=new org.escidoc.core.domain.xcql.OperandType();
+        if(node instanceof CQLBooleanNode) {
+            CQLBooleanNode cbn=(CQLBooleanNode)node;
+            org.escidoc.core.domain.xcql.TripleType tt=new org.escidoc.core.domain.xcql.TripleType();
+            if(cbn instanceof CQLAndNode) {
+            	org.escidoc.core.domain.xcql.BooleanType type = new org.escidoc.core.domain.xcql.BooleanType();
+            	type.setValue("and");
+                tt.setBoolean(type);
+            }
+            else if(cbn instanceof CQLOrNode) {
+            	org.escidoc.core.domain.xcql.BooleanType type = new org.escidoc.core.domain.xcql.BooleanType();
+            	type.setValue("or");
+                tt.setBoolean(type);
+            }
+            else if(cbn instanceof CQLNotNode) {
+            	org.escidoc.core.domain.xcql.BooleanType type = new org.escidoc.core.domain.xcql.BooleanType();
+            	type.setValue("not");
+                tt.setBoolean(type);
+            }
+            else {
+            	org.escidoc.core.domain.xcql.BooleanType type = new org.escidoc.core.domain.xcql.BooleanType();
+            	type.setValue("prox");
+            	tt.setBoolean(type);
+            }
+
+            tt.setLeftOperand(toSruOperandType(cbn.left));
+            tt.setRightOperand(toSruOperandType(cbn.right));
+            ot.setTriple(tt);
+        }
+        else if(node instanceof CQLTermNode) {
+            CQLTermNode ctn=(CQLTermNode)node;
+            org.escidoc.core.domain.xcql.SearchClauseType sct=new org.escidoc.core.domain.xcql.SearchClauseType();
+            sct.setIndex(getQualifier(ctn));
+            org.escidoc.core.domain.xcql.RelationType rt=new org.escidoc.core.domain.xcql.RelationType();
+            rt.setValue(ctn.getRelation().getBase());
+            sct.setRelation(rt);
+            sct.setTerm(ctn.getTerm());
+            ot.setSearchClause(sct);
+        }
+        //MIH: Add handling of CQLSortNode//////////////////
+        else if(node instanceof CQLSortNode) {
+        	return toSruOperandType(((CQLSortNode) node).subtree);
+        }
+        ////////////////////////////////////////////////////
+        else {
+            log.error("Found a node on the parse tree of type: "+node);
+        }
+        return ot;
+    }
+
     private OperandType toOperandType(CQLNode node) {
         OperandType ot=new OperandType();
         if(node instanceof CQLBooleanNode) {
@@ -458,6 +746,7 @@ public class SRWSoapBindingImpl implements SRWPort {
         }
         //MIH: Add handling of CQLSortNode//////////////////
         else if(node instanceof CQLSortNode) {
+        	return toOperandType(((CQLSortNode) node).subtree);
         }
         ////////////////////////////////////////////////////
         else {

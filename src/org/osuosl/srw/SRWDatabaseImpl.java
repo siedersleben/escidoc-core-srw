@@ -16,31 +16,30 @@
 
 package org.osuosl.srw;
 
-import gov.loc.www.zing.srw.*;
+import gov.loc.www.zing.srw.ScanRequestType;
+import gov.loc.www.zing.srw.ScanResponseType;
+import gov.loc.www.zing.srw.SearchRetrieveRequestType;
+import gov.loc.www.zing.srw.SearchRetrieveResponseType;
+import gov.loc.www.zing.srw.TermType;
+import gov.loc.www.zing.srw.TermsType;
+import gov.loc.www.zing.srw.utils.RestSearchRetrieveResponseType;
+
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.axis.types.PositiveInteger;
 import org.apache.axis.types.NonNegativeInteger;
-import org.apache.axis.MessageContext;
-import org.apache.axis.message.MessageElement;
-import org.apache.axis.message.Text;
+import org.apache.axis.types.PositiveInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.z3950.zing.cql.CQLNode;
-import org.z3950.zing.cql.CQLParseException;
 import org.z3950.zing.cql.CQLTermNode;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 
-import java.util.*;
-import java.io.StringReader;
-
-import ORG.oclc.os.SRW.*;
+import ORG.oclc.os.SRW.QueryResult;
+import ORG.oclc.os.SRW.TermList;
 
 /**
  * @author peter
@@ -248,6 +247,10 @@ public class SRWDatabaseImpl extends ORG.oclc.os.SRW.SRWDatabase{
 
     public boolean supportsSort() {
         return true;
+    }
+
+    public RestSearchRetrieveResponseType doRequest(org.escidoc.core.domain.sru.SearchRetrieveRequestType request) throws ServletException {
+    	return null;
     }
 
     public SearchRetrieveResponseType doRequest(SearchRetrieveRequestType request) throws ServletException {
