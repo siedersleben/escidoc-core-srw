@@ -15,6 +15,7 @@
  */
 package org.osuosl.srw;
 
+import gov.loc.www.zing.srw.utils.Stream;
 import ORG.oclc.os.SRW.Record;
 
 /**
@@ -36,11 +37,11 @@ public class IdentifiableRecord extends Record {
         identifier = inp;
     }
 
-    public IdentifiableRecord(String record, String schemaID) {
+    public IdentifiableRecord(Stream record, String schemaID) {
         super(record, schemaID);
     }
 
-    public IdentifiableRecord(String identifier, String record, String schemaID) {
+    public IdentifiableRecord(String identifier, Stream record, String schemaID) {
         super(record, schemaID);
         this.identifier = identifier;
     }

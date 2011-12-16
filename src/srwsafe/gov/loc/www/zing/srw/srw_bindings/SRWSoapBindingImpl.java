@@ -174,7 +174,7 @@ public class SRWSoapBindingImpl implements SRWPort {
 						setEchoedSearchRetrieveRequestType(request, response.getSearchRetrieveResponse());
 						db.diagnostic(SRWDiagnostic.GeneralSystemError, null,
 								response.getSearchRetrieveResponse());
-						return response.toStream(db);
+						return response.toStream(db, true);
 					}
 					if (msgContext.getProperty("sru") != null
 							&& request.getStylesheet() != null) // you can't ask for
@@ -241,7 +241,7 @@ public class SRWSoapBindingImpl implements SRWPort {
 				log.info("\"" + query + "\"==>" + response.getSearchRetrieveResponse().getNumberOfRecords() + " ("
 						+ (System.currentTimeMillis() - startTime) + "ms)");
 				log.debug("Exit: searchRetrieveOperation");
-				return response.toStream(db);
+				return response.toStream(db, true);
 			}
 		} catch (Exception e) {
 			throw new RemoteException(e.getMessage(), e);

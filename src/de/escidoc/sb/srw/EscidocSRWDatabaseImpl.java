@@ -35,10 +35,10 @@ import gov.loc.www.zing.srw.RecordsType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveResponseType;
 import gov.loc.www.zing.srw.StringOrXmlFragment;
+import gov.loc.www.zing.srw.utils.IOUtils;
 import gov.loc.www.zing.srw.utils.RestSearchRetrieveResponseType;
 import gov.loc.www.zing.srw.utils.Stream;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -47,8 +47,6 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 
 import javax.servlet.ServletException;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -58,7 +56,6 @@ import org.apache.axis.message.Text;
 import org.apache.axis.types.NonNegativeInteger;
 import org.apache.axis.types.PositiveInteger;
 import org.apache.axis.types.URI;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osuosl.srw.ResolvingQueryResult;
@@ -349,20 +346,11 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                 }
                 
 
-                Marshaller marshaller = null;
-                if (!recordPacking.equals("xml")) {
-                    try {
-                        JAXBContext jc = JAXBContext.newInstance("de.escidoc.core.domain.sru");
-                        marshaller = jc.createMarshaller();
-                        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-                    } catch (Exception e) {
-                        throw new IOException(e);
-                    }
-                }
                 for (i = 0; list.hasNext(); i++) {
+                	Record rec = null;
                     try {
 
-                        Record rec = list.nextRecord();
+                        rec = list.nextRecord();
 
                         /**
                          * create record container
@@ -371,21 +359,15 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                         record.setRecordPacking(recordPacking);
                         record.setRecordSchema(rec.getRecordSchemaID());
 
-                        
-                        Stream stream = new Stream();
-                        
                         if (recordPacking.equals("xml")) {
-                            stream.write(rec.getRecord().getBytes(Constants.CHARACTER_ENCODING));
+                            response.getRecordStreams().add(rec.getRecord());
                         }
                         else { // string
-                            stream.write(StringEscapeUtils.escapeXml(rec.getRecord()).getBytes(Constants.CHARACTER_ENCODING));
+                        	Stream stream = new Stream();
+                        	IOUtils.escapeXmlAndCloseInput(rec.getRecord().getInputStream(), stream);
+                        	stream.lock();
+                            response.getRecordStreams().add(stream);
                         }
-                        response.getRecordStreams().add(stream);
-                        
-//                        de.escidoc.core.domain.sru.StringOrXmlFragment frag = new de.escidoc.core.domain.sru.StringOrXmlFragment();
-//                        frag.getContent().add(rec.getRecord());
-//                        record.setRecordData(frag);
-//                        log.debug("setRecordData");
 
                         record.setRecordPosition(new PositiveInteger(Integer
                             .toString(startPoint + i)));
@@ -674,15 +656,16 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
 
                         if (recordPacking.equals("xml")) {
                             domDoc =
-                                db.parse(new InputSource(new StringReader(rec
-                                    .getRecord())));
+                                db.parse(new InputSource(new StringReader(IOUtils.newStringFromStream(rec
+                                        .getRecord().getInputStream()))));
                             Element el = domDoc.getDocumentElement();
                             log.debug("got the DocumentElement");
                             elems[0] = new MessageElement(el);
                             log.debug("put the domDoc into elems[0]");
                         }
                         else { // string
-                            Text t = new Text(rec.getRecord());
+                            Text t = new Text(IOUtils.newStringFromStream(rec
+                                    .getRecord().getInputStream()));
                             elems[0] = new MessageElement(t);
                         }
 

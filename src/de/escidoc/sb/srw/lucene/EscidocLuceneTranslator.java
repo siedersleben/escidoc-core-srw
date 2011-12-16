@@ -33,6 +33,7 @@ import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
+import gov.loc.www.zing.srw.utils.Stream;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -447,7 +448,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         
         Sort sort = null;
 
-        String[] identifiers = null;
+        Stream[] identifiers = null;
         IndexSearcher searcher = null;
         
         try {
@@ -644,6 +645,15 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
         }
         catch (Exception e) {
+			for (int i = 0; i < identifiers.length; i++) {
+				if (identifiers[i] != null) {
+					try {
+						identifiers[i].close();
+					} catch (IOException e1) {
+						log.info("couldnt close stream");
+					}
+				}
+			}
             if (log.isInfoEnabled()) {
                 log.info(e.toString());
             }
@@ -1034,14 +1044,14 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * 
      * @sb
      */
-    private String[] createIdentifiers(
+    private Stream[] createIdentifiers(
                     final IndexSearcher searcher,
                     final TopDocs hits, 
                     final SearchExtraData searchExtraData,
                     final int startRecord, 
                     final int endRecord)
                                 throws Exception {
-        String[] searchResultXmls = new String[hits.totalHits];
+    	Stream[] searchResultXmls = new Stream[hits.totalHits];
 
         long time = 0;
         long docTime = 0;
@@ -1059,21 +1069,22 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             if (log.isInfoEnabled()) {
                 docTime += (System.currentTimeMillis() - docTime1);
             }
+            
+            searchResultXmls[i] = new Stream();
 
             //initialize surrounding xml
-            StringBuffer complete = new StringBuffer(
-                    Constants.SEARCH_RESULT_START_ELEMENT);
+            searchResultXmls[i].write(Constants.SEARCH_RESULT_START_ELEMENT.getBytes(Constants.CHARACTER_ENCODING));
             
             //append score-element
-            complete.append(Constants.SCORE_START_ELEMENT);
+            searchResultXmls[i].write(Constants.SCORE_START_ELEMENT.getBytes(Constants.CHARACTER_ENCODING));
             if (log.isInfoEnabled()) {
                 docTime1 = System.currentTimeMillis();
             }
-            complete.append(hits.scoreDocs[i].score);
+            searchResultXmls[i].write(Float.toString(hits.scoreDocs[i].score).getBytes(Constants.CHARACTER_ENCODING));
             if (log.isInfoEnabled()) {
                 docTime2 += (System.currentTimeMillis() - docTime1);
             }
-            complete.append(Constants.SCORE_END_ELEMENT);
+            searchResultXmls[i].write(Constants.SCORE_END_ELEMENT.getBytes(Constants.CHARACTER_ENCODING));
             
             //append highlighting
             long time1 = 0;
@@ -1089,7 +1100,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     log.error(e);
                 }
                 if (highlight != null && !highlight.equals("")) {
-                    complete.append(highlight);
+                	searchResultXmls[i].write(highlight.getBytes(Constants.CHARACTER_ENCODING));
                 }
             }
             if (log.isInfoEnabled()) {
@@ -1104,30 +1115,22 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             if (log.isInfoEnabled()) {
                 docTime3 += (System.currentTimeMillis() - docTime1);
             }
-            String idFieldStr = null;
+            boolean fieldFilled = false;
             if (idField != null) {
-                idFieldStr = idField.stringValue();
-                if (StringUtils.isNotBlank(idFieldStr)) {
-                    if (idFieldStr.trim().startsWith("&")) {
-                        idFieldStr = StringEscapeUtils.unescapeXml(idFieldStr);
-                    }
-
-                    //append search-result-xml from lucene
-                    complete.append(idFieldStr).append("\n");
-                }
+            	searchResultXmls[i].write(idField.stringValue().getBytes(Constants.CHARACTER_ENCODING));
+            	searchResultXmls[i].write("\n".getBytes(Constants.CHARACTER_ENCODING));
+        		fieldFilled = true;
             }
             
-            if (StringUtils.isBlank(idFieldStr)) {
-                complete.append(Constants.DEFAULT_SEARCH_RESULT_START_ELEMENT)
-                    .append(doc.getFieldable("PID"))
-                    .append(Constants.DEFAULT_SEARCH_RESULT_END_ELEMENT);
+            if (!fieldFilled) {
+            	searchResultXmls[i].write(Constants.DEFAULT_SEARCH_RESULT_START_ELEMENT.getBytes(Constants.CHARACTER_ENCODING));
+            	searchResultXmls[i].write(doc.getFieldable("PID").stringValue().getBytes(Constants.CHARACTER_ENCODING));
+            	searchResultXmls[i].write(Constants.DEFAULT_SEARCH_RESULT_END_ELEMENT.getBytes(Constants.CHARACTER_ENCODING));
             }
 
             //close surrounding xml
-            complete.append(Constants.SEARCH_RESULT_END_ELEMENT);
-            
-            //append xml to search-results
-            searchResultXmls[i] = complete.toString();
+            searchResultXmls[i].write(Constants.SEARCH_RESULT_END_ELEMENT.getBytes(Constants.CHARACTER_ENCODING));
+            searchResultXmls[i].lock();
         }
         if (log.isInfoEnabled()) {
             log.info("highlighting-time was " + time + " ms");

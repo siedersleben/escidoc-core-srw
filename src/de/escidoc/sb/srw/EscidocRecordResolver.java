@@ -30,10 +30,10 @@
 package de.escidoc.sb.srw;
 
 import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.utils.Stream;
 
 import java.io.FileNotFoundException;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -125,9 +125,10 @@ public class EscidocRecordResolver implements RecordResolver {
      * @throws SRWDiagnostic
      *             e
      */
-    public String transform(
+    public Stream transform(
         final ORG.oclc.os.SRW.Record record, final String schemaId)
         throws SRWDiagnostic {
+    	Stream stream = new Stream();
         if (log.isDebugEnabled()) {
             log.debug("EscidocRecordResolver.transform: schemaId:" + schemaId);
         }
@@ -135,16 +136,33 @@ public class EscidocRecordResolver implements RecordResolver {
         	return record.getRecord();
         }
     	Transformer transformer = getTransformer(schemaId);
-        StringReader sr = new StringReader(record.getRecord());
-        StreamResult destStream = new StreamResult(new StringWriter());
+        StreamResult destStream = new StreamResult(stream);
         try {
-            transformer.transform(new StreamSource(sr), destStream);
+            transformer.transform(new StreamSource(record.getRecord().getInputStream()), destStream);
+            stream.lock();
         } catch (TransformerException e) {
+        	if (stream != null) {
+        		try {
+					stream.close();
+				} catch (IOException e1) {
+					log.info("couldnt close Stream");
+				}
+        	}
             throw new SRWDiagnostic(
             		SRWDiagnostic.GeneralSystemError, e.toString());
         }
-        StringWriter sw = (StringWriter)destStream.getWriter();
-        return sw.toString();
+        catch (IOException e) {
+        	if (stream != null) {
+        		try {
+					stream.close();
+				} catch (IOException e1) {
+					log.info("couldnt close Stream");
+				}
+        	}
+            throw new SRWDiagnostic(
+            		SRWDiagnostic.GeneralSystemError, e.toString());
+        }
+        return stream;
     }
 
     /**
@@ -219,11 +237,7 @@ public class EscidocRecordResolver implements RecordResolver {
      */
     public ORG.oclc.os.SRW.Record resolve(
         final Object id, final ExtraDataType extraDataType) {
-
-        if (log.isDebugEnabled()) {
-            log.debug("return record in xml is: " + (String) id);
-        }
-        return new Record((String) id, "default");
+        return new Record((Stream) id, "default");
     }
     
     private Transformer getTransformer(String schemaId) throws SRWDiagnostic {
