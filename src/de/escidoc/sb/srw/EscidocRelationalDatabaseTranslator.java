@@ -33,7 +33,10 @@ import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
+import gov.loc.www.zing.srw.utils.Stream;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,12 +62,40 @@ public class EscidocRelationalDatabaseTranslator extends EscidocTranslator {
             final SearchRetrieveRequestType request, final String dbName) throws SRWDiagnostic {
         
         String sortKeys = request.getSortKeys();
+        Stream[] identifiers = new Stream[1];
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("<testidentifier>");
+        builder.append("<element>hello world</element>");
+        builder.append("</testidentifier>");
 
-        String[] identifiers = new String[1];
-
-        identifiers[0] = "<testidentifier>"
-            + "<element>hello world</element>"
-            + "</testidentifier>";
+        try {
+        	identifiers[0] = new Stream();
+			identifiers[0].write(builder.toString().getBytes(Constants.CHARACTER_ENCODING));
+			identifiers[0].lock();
+		} catch (UnsupportedEncodingException e) {
+			for (int i = 0; i < identifiers.length; i++) {
+				if (identifiers[i] != null) {
+					try {
+						identifiers[i].close();
+					} catch (IOException e1) {
+						log.info("couldnt close stream");
+					}
+				}
+			}
+			throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e.toString());
+		} catch (IOException e) {
+			for (int i = 0; i < identifiers.length; i++) {
+				if (identifiers[i] != null) {
+					try {
+						identifiers[i].close();
+					} catch (IOException e1) {
+						log.info("couldnt close stream");
+					}
+				}
+			}
+			throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e.toString());
+		}
         
         return new ResolvingQueryResult(identifiers);
     }

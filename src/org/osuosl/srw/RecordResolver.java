@@ -17,6 +17,7 @@
 package org.osuosl.srw;
 
 import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.utils.Stream;
 
 import java.util.Properties;
 
@@ -51,7 +52,7 @@ public interface RecordResolver {
      * @throws SRWDiagnostic - thrown if schema isn't available for the record
      * or if there is a general exception.
      */
-    public String transform(Record record, String schema) throws SRWDiagnostic;
+    public Stream transform(Record record, String schema) throws SRWDiagnostic;
 
     /**
      * Determines if a schema is supported.  This method

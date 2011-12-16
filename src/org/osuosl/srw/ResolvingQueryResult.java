@@ -16,13 +16,14 @@
 
 package org.osuosl.srw;
 
-import ORG.oclc.os.SRW.QueryResult;
-import ORG.oclc.os.SRW.RecordIterator;
+import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.utils.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.osuosl.srw.RecordResolver;
-import gov.loc.www.zing.srw.ExtraDataType;
+
+import ORG.oclc.os.SRW.QueryResult;
+import ORG.oclc.os.SRW.RecordIterator;
 
 /**
  * @author peter
@@ -35,9 +36,9 @@ public class ResolvingQueryResult extends QueryResult {
     /**
      *  Identifiers
      */
-    private String[] identifiers;
-    public String[] getIdentifiers(){return identifiers;}
-    public void setIdentifiers(String[] inp){
+    private Stream[] identifiers;
+    public Stream[] getIdentifiers(){return identifiers;}
+    public void setIdentifiers(Stream[] inp){
         identifiers = inp;
     }
 
@@ -61,7 +62,7 @@ public class ResolvingQueryResult extends QueryResult {
 
     public ResolvingQueryResult() {}
 
-    public ResolvingQueryResult(String[] identifiers) {
+    public ResolvingQueryResult(Stream[] identifiers) {
         this.identifiers = identifiers;
     }
 
@@ -76,7 +77,7 @@ public class ResolvingQueryResult extends QueryResult {
     public RecordIterator newRecordIterator(long index, int numRecs, String schemaId, ExtraDataType extraDataType) throws InstantiationException {
 
         // create new array with subset of identifiers
-        String[] subset = new String[numRecs];
+    	Stream[] subset = new Stream[numRecs];
         System.arraycopy(identifiers, (int)index, subset, 0, numRecs);
 
         return new ResolvingRecordIterator(

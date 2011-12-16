@@ -16,17 +16,20 @@
 
 package org.osuosl.srw;
 
-import ORG.oclc.os.SRW.RecordIterator;
-import ORG.oclc.os.SRW.Record;
-import ORG.oclc.os.SRW.SRWDiagnostic;
-import ORG.oclc.os.SRW.Utilities;
+import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.utils.Stream;
 
-import java.util.NoSuchElementException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import gov.loc.www.zing.srw.ExtraDataType;
+
+import ORG.oclc.os.SRW.Record;
+import ORG.oclc.os.SRW.RecordIterator;
+import ORG.oclc.os.SRW.SRWDiagnostic;
+import ORG.oclc.os.SRW.Utilities;
 
 /**
  * @author peter
@@ -39,12 +42,12 @@ public class ResolvingRecordIterator implements RecordIterator {
 
     int index=0;
 
-    String[] identifiers;
+    Stream[] identifiers;
     RecordResolver resolver;
     ExtraDataType edt;
     String schemaID;
 
-    public ResolvingRecordIterator(String[] records, String schemaId, ExtraDataType edt, RecordResolver resolver) {
+    public ResolvingRecordIterator(Stream[] records, String schemaId, ExtraDataType edt, RecordResolver resolver) {
         this.identifiers = records;
         this.resolver = resolver;
         this.schemaID = schemaId;
@@ -67,7 +70,7 @@ public class ResolvingRecordIterator implements RecordIterator {
         if(hasNext()) {
 
             // get the identifier for next record
-            String id = identifiers[index];
+        	Stream id = identifiers[index];
 
             resolver.init(null);
             Record record = resolver.resolve(id, edt);
@@ -79,7 +82,14 @@ public class ResolvingRecordIterator implements RecordIterator {
                     /**
                      * Attempt to transform record to requested format
                      */
-                    String transformedXML = resolver.transform(record, schemaID);
+                    Stream transformedXML = resolver.transform(record, schemaID);
+                    if (record.getRecord() != null) {
+                        try {
+							record.getRecord().close();
+						} catch (IOException e) {
+							log.info("couldnt close Stream");
+						}
+                    }
                     record = new Record(transformedXML, schemaID);
 
                 } catch (SRWDiagnostic srwDiagnostic) {
@@ -102,11 +112,6 @@ public class ResolvingRecordIterator implements RecordIterator {
 
                 }
 
-                try {
-                    log.info("Transformed XML:\n"+ Utilities.byteArrayToString(
-                            record.getRecord().getBytes("UTF8")));
-                }
-                catch(UnsupportedEncodingException e) {} // can't happen
             }
 
             // increment index
