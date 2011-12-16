@@ -33,6 +33,7 @@ import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
+import gov.loc.www.zing.srw.utils.Stream;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -50,7 +51,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
@@ -209,7 +209,7 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 			parameters.append("&sortFields=").append(gsearchSortString);
 		}
 
-		String[] identifiers = null;
+		Stream[] identifiers = null;
 		try {
 		    String records = connectionUtility.getRequestURLAsString(
                     new URL(Constants.GSEARCH_URL 
@@ -222,14 +222,25 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 					records.getBytes(Constants.CHARACTER_ENCODING)));
 
 			Vector<String> parts = handler.getParts();
-			identifiers = new String[parts.size()];
+			identifiers = new Stream[parts.size()];
 			int i = 0;
 			for(String identifier : parts) {
-				identifiers[i] = identifier;
+				identifiers[i] = new Stream();
+				identifiers[i].write(identifier.getBytes(Constants.CHARACTER_ENCODING));
+				identifiers[i].lock();
 				i++;
 			}
 
 		} catch (Exception e) {
+			for (int i = 0; i < identifiers.length; i++) {
+				if (identifiers[i] != null) {
+					try {
+						identifiers[i].close();
+					} catch (IOException e1) {
+						log.info("couldnt close stream");
+					}
+				}
+			}
 			throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
 					.toString());
 		}

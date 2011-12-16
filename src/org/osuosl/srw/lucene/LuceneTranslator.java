@@ -19,6 +19,7 @@ package org.osuosl.srw.lucene;
 import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.TermType;
+import gov.loc.www.zing.srw.utils.Stream;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,9 +56,9 @@ import org.z3950.zing.cql.CQLNotNode;
 import org.z3950.zing.cql.CQLOrNode;
 import org.z3950.zing.cql.CQLTermNode;
 
-import de.escidoc.sb.srw.lucene.document.LazyFieldSelector;
-
 import ORG.oclc.os.SRW.QueryResult;
+import de.escidoc.sb.srw.Constants;
+import de.escidoc.sb.srw.lucene.document.LazyFieldSelector;
 
 /**
  * @author peter
@@ -120,7 +121,7 @@ public class LuceneTranslator implements CQLTranslator {
 
     public QueryResult search(CQLNode queryRoot, ExtraDataType extraDataType) throws SRWDiagnostic {
 
-        String[] identifiers = null;
+        Stream[] identifiers = null;
         IndexSearcher searcher = null;
         try {
             //convert the CQL search to lucene search
@@ -134,10 +135,11 @@ public class LuceneTranslator implements CQLTranslator {
             int size = results.totalHits;
 
             log.info(size+" handles found");
-            identifiers = new String[size];
+            identifiers = new Stream[size];
 
             // now instantiate the results and put them into the response object
             for(int i = 0; i < size; i++ ) {
+            	identifiers[i] = new Stream();
                 org.apache.lucene.document.Document doc = 
                             searcher.doc(results.scoreDocs[i].doc, 
                             		new LazyFieldSelector());
@@ -146,7 +148,8 @@ public class LuceneTranslator implements CQLTranslator {
                 if (log.isDebugEnabled()) log.debug("idField: " + idField);
                 if (idField != null) {
                     if (log.isDebugEnabled()) log.debug("idField: " + idField.stringValue());
-                    identifiers[i] = idField.stringValue();
+                    identifiers[i].write(idField.stringValue().getBytes(Constants.CHARACTER_ENCODING));
+                    identifiers[i].lock();
                 }
             }
         } catch (IOException e) {
