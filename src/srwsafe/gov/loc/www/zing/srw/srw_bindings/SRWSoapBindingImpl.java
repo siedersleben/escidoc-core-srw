@@ -87,7 +87,7 @@ public class SRWSoapBindingImpl implements SRWPort {
     }
 
 	public Stream searchRetrieveOperation(
-			org.escidoc.core.domain.sru.SearchRetrieveRequestType request, MessageContext msgContext, String handle) throws RemoteException {
+			de.escidoc.core.domain.sru.SearchRetrieveRequestType request, MessageContext msgContext, String handle) throws RemoteException {
 		log.debug("Enter: searchRetrieveOperation");
 		if (log.isInfoEnabled()) {
 			log.info("request: maximumRecords:" + request.getMaximumRecords()
@@ -143,25 +143,25 @@ public class SRWSoapBindingImpl implements SRWPort {
 		try {
 			if (query == null) {
 				response = new RestSearchRetrieveResponseType();
-				response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+				response.setSearchRetrieveResponse(new de.escidoc.core.domain.sru.SearchRetrieveResponseType());
 				db.diagnostic(SRWDiagnostic.MandatoryParameterNotSupplied, "query",
 						response.getSearchRetrieveResponse());
 			} else if (request.getStartRecord() != null
 					&& request.getStartRecord().intValue() == Integer.MAX_VALUE) {
 				response = new RestSearchRetrieveResponseType();
-				response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+				response.setSearchRetrieveResponse(new de.escidoc.core.domain.sru.SearchRetrieveResponseType());
 				db.diagnostic(SRWDiagnostic.UnsupportedParameterValue,
 						"startRecord", response.getSearchRetrieveResponse());
 			} else if (request.getMaximumRecords() != null
 					&& request.getMaximumRecords().intValue() == Integer.MAX_VALUE) {
 				response = new RestSearchRetrieveResponseType();
-				response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+				response.setSearchRetrieveResponse(new de.escidoc.core.domain.sru.SearchRetrieveResponseType());
 				db.diagnostic(SRWDiagnostic.UnsupportedParameterValue,
 						"maximumRecords", response.getSearchRetrieveResponse());
 			} else if (request.getResultSetTTL() != null
 					&& request.getResultSetTTL().intValue() == Integer.MAX_VALUE) {
 				response = new RestSearchRetrieveResponseType();
-				response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+				response.setSearchRetrieveResponse(new de.escidoc.core.domain.sru.SearchRetrieveResponseType());
 				db.diagnostic(SRWDiagnostic.UnsupportedParameterValue,
 						"resultSetTTL", response.getSearchRetrieveResponse());
 			} else {
@@ -169,7 +169,7 @@ public class SRWSoapBindingImpl implements SRWPort {
 					response = db.doRequest(request);
 					if (response == null) {
 						response = new RestSearchRetrieveResponseType();
-						response.setSearchRetrieveResponse(new org.escidoc.core.domain.sru.SearchRetrieveResponseType());
+						response.setSearchRetrieveResponse(new de.escidoc.core.domain.sru.SearchRetrieveResponseType());
 						response.getSearchRetrieveResponse().setVersion("1.1");
 						setEchoedSearchRetrieveRequestType(request, response.getSearchRetrieveResponse());
 						db.diagnostic(SRWDiagnostic.GeneralSystemError, null,
@@ -598,10 +598,10 @@ public class SRWSoapBindingImpl implements SRWPort {
         response.setEchoedSearchRetrieveRequest(ert);
     }
 
-    public void setEchoedSearchRetrieveRequestType(org.escidoc.core.domain.sru.SearchRetrieveRequestType request, org.escidoc.core.domain.sru.SearchRetrieveResponseType response) {
-    	org.escidoc.core.domain.sru.EchoedSearchRetrieveRequestType ert=response.getEchoedSearchRetrieveRequest();
+    public void setEchoedSearchRetrieveRequestType(de.escidoc.core.domain.sru.SearchRetrieveRequestType request, de.escidoc.core.domain.sru.SearchRetrieveResponseType response) {
+    	de.escidoc.core.domain.sru.EchoedSearchRetrieveRequestType ert=response.getEchoedSearchRetrieveRequest();
         if(ert==null) {
-            ert=new org.escidoc.core.domain.sru.EchoedSearchRetrieveRequestType();
+            ert=new de.escidoc.core.domain.sru.EchoedSearchRetrieveRequestType();
         }
         ert.setMaximumRecords(request.getMaximumRecords());
         String query=request.getQuery();
@@ -613,25 +613,25 @@ public class SRWSoapBindingImpl implements SRWPort {
             }
             catch (CQLParseException e) {
                 log.error(e,e);
-                org.escidoc.core.domain.xcql.RelationType rt=new org.escidoc.core.domain.xcql.RelationType();
+                de.escidoc.core.domain.xcql.RelationType rt=new de.escidoc.core.domain.xcql.RelationType();
                 rt.setValue("");
-                org.escidoc.core.domain.xcql.SearchClauseType sct=new org.escidoc.core.domain.xcql.SearchClauseType();
+                de.escidoc.core.domain.xcql.SearchClauseType sct=new de.escidoc.core.domain.xcql.SearchClauseType();
                 sct.setIndex("");
                 sct.setRelation(rt);
                 sct.setTerm("");
-                org.escidoc.core.domain.xcql.OperandType ot=new org.escidoc.core.domain.xcql.OperandType();
+                de.escidoc.core.domain.xcql.OperandType ot=new de.escidoc.core.domain.xcql.OperandType();
                 ot.setSearchClause(sct);
                 ert.setXQuery(ot);
             }
             catch (IOException e) {
                 log.error(e,e);
-                org.escidoc.core.domain.xcql.RelationType rt=new org.escidoc.core.domain.xcql.RelationType();
+                de.escidoc.core.domain.xcql.RelationType rt=new de.escidoc.core.domain.xcql.RelationType();
                 rt.setValue("");
-                org.escidoc.core.domain.xcql.SearchClauseType sct=new org.escidoc.core.domain.xcql.SearchClauseType();
+                de.escidoc.core.domain.xcql.SearchClauseType sct=new de.escidoc.core.domain.xcql.SearchClauseType();
                 sct.setIndex("");
                 sct.setRelation(rt);
                 sct.setTerm("");
-                org.escidoc.core.domain.xcql.OperandType ot=new org.escidoc.core.domain.xcql.OperandType();
+                de.escidoc.core.domain.xcql.OperandType ot=new de.escidoc.core.domain.xcql.OperandType();
                 ot.setSearchClause(sct);
                 ert.setXQuery(ot);
             }
@@ -639,13 +639,13 @@ public class SRWSoapBindingImpl implements SRWPort {
         else { // sadly, just because the request didn't include it doesn't mean
                // that the response gets to omit it.  So, provide an empty query
             ert.setQuery("");
-            org.escidoc.core.domain.xcql.RelationType rt=new org.escidoc.core.domain.xcql.RelationType();
+            de.escidoc.core.domain.xcql.RelationType rt=new de.escidoc.core.domain.xcql.RelationType();
             rt.setValue("");
-            org.escidoc.core.domain.xcql.SearchClauseType sct=new org.escidoc.core.domain.xcql.SearchClauseType();
+            de.escidoc.core.domain.xcql.SearchClauseType sct=new de.escidoc.core.domain.xcql.SearchClauseType();
             sct.setIndex("");
             sct.setRelation(rt);
             sct.setTerm("");
-            org.escidoc.core.domain.xcql.OperandType ot=new org.escidoc.core.domain.xcql.OperandType();
+            de.escidoc.core.domain.xcql.OperandType ot=new de.escidoc.core.domain.xcql.OperandType();
             ot.setSearchClause(sct);
             ert.setXQuery(ot);
         }
@@ -666,28 +666,28 @@ public class SRWSoapBindingImpl implements SRWPort {
         response.setEchoedSearchRetrieveRequest(ert);
     }
 
-    private org.escidoc.core.domain.xcql.OperandType toSruOperandType(CQLNode node) {
-    	org.escidoc.core.domain.xcql.OperandType ot=new org.escidoc.core.domain.xcql.OperandType();
+    private de.escidoc.core.domain.xcql.OperandType toSruOperandType(CQLNode node) {
+    	de.escidoc.core.domain.xcql.OperandType ot=new de.escidoc.core.domain.xcql.OperandType();
         if(node instanceof CQLBooleanNode) {
             CQLBooleanNode cbn=(CQLBooleanNode)node;
-            org.escidoc.core.domain.xcql.TripleType tt=new org.escidoc.core.domain.xcql.TripleType();
+            de.escidoc.core.domain.xcql.TripleType tt=new de.escidoc.core.domain.xcql.TripleType();
             if(cbn instanceof CQLAndNode) {
-            	org.escidoc.core.domain.xcql.BooleanType type = new org.escidoc.core.domain.xcql.BooleanType();
+            	de.escidoc.core.domain.xcql.BooleanType type = new de.escidoc.core.domain.xcql.BooleanType();
             	type.setValue("and");
                 tt.setBoolean(type);
             }
             else if(cbn instanceof CQLOrNode) {
-            	org.escidoc.core.domain.xcql.BooleanType type = new org.escidoc.core.domain.xcql.BooleanType();
+            	de.escidoc.core.domain.xcql.BooleanType type = new de.escidoc.core.domain.xcql.BooleanType();
             	type.setValue("or");
                 tt.setBoolean(type);
             }
             else if(cbn instanceof CQLNotNode) {
-            	org.escidoc.core.domain.xcql.BooleanType type = new org.escidoc.core.domain.xcql.BooleanType();
+            	de.escidoc.core.domain.xcql.BooleanType type = new de.escidoc.core.domain.xcql.BooleanType();
             	type.setValue("not");
                 tt.setBoolean(type);
             }
             else {
-            	org.escidoc.core.domain.xcql.BooleanType type = new org.escidoc.core.domain.xcql.BooleanType();
+            	de.escidoc.core.domain.xcql.BooleanType type = new de.escidoc.core.domain.xcql.BooleanType();
             	type.setValue("prox");
             	tt.setBoolean(type);
             }
@@ -698,9 +698,9 @@ public class SRWSoapBindingImpl implements SRWPort {
         }
         else if(node instanceof CQLTermNode) {
             CQLTermNode ctn=(CQLTermNode)node;
-            org.escidoc.core.domain.xcql.SearchClauseType sct=new org.escidoc.core.domain.xcql.SearchClauseType();
+            de.escidoc.core.domain.xcql.SearchClauseType sct=new de.escidoc.core.domain.xcql.SearchClauseType();
             sct.setIndex(getQualifier(ctn));
-            org.escidoc.core.domain.xcql.RelationType rt=new org.escidoc.core.domain.xcql.RelationType();
+            de.escidoc.core.domain.xcql.RelationType rt=new de.escidoc.core.domain.xcql.RelationType();
             rt.setValue(ctn.getRelation().getBase());
             sct.setRelation(rt);
             sct.setTerm(ctn.getTerm());

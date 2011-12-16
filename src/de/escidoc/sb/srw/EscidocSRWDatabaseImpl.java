@@ -108,7 +108,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
      */
     @Override
     public RestSearchRetrieveResponseType doRequest(
-        final org.escidoc.core.domain.sru.SearchRetrieveRequestType request) throws ServletException {
+        final de.escidoc.core.domain.sru.SearchRetrieveRequestType request) throws ServletException {
 
     	RestSearchRetrieveResponseType response = null; // search response
         int resultSetTTL; // time result set should expire
@@ -122,7 +122,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
         try {
             MessageContext msgContext = MessageContext.getCurrentContext();
             response = new RestSearchRetrieveResponseType();
-            org.escidoc.core.domain.sru.SearchRetrieveResponseType searchRetrieveResponse = new org.escidoc.core.domain.sru.SearchRetrieveResponseType();
+            de.escidoc.core.domain.sru.SearchRetrieveResponseType searchRetrieveResponse = new de.escidoc.core.domain.sru.SearchRetrieveResponseType();
             response.setSearchRetrieveResponse(searchRetrieveResponse);
             response.getSearchRetrieveResponse().setNumberOfRecords(new NonNegativeInteger("0"));
             startRec = request.getStartRecord();
@@ -322,7 +322,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                 response.getSearchRetrieveResponse().setNextRecordPosition(new PositiveInteger("1"));
             }
             if (postings > 0 && numRecs > 0) { // render some records into SGML
-            	org.escidoc.core.domain.sru.RecordsType records = new org.escidoc.core.domain.sru.RecordsType();
+            	de.escidoc.core.domain.sru.RecordsType records = new de.escidoc.core.domain.sru.RecordsType();
                 log.info("trying to get " + numRecs
                     + " records starting with record " + startPoint
                     + " from a set of " + postings + " records");
@@ -334,7 +334,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                 }
 
                 int i = -1;
-                org.escidoc.core.domain.sru.RecordType record;
+                de.escidoc.core.domain.sru.RecordType record;
 
                 /**
                  * One at a time, retrieve and display the requested documents.
@@ -356,7 +356,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                 Marshaller marshaller = null;
                 if (!recordPacking.equals("xml")) {
                     try {
-                        JAXBContext jc = JAXBContext.newInstance("org.escidoc.core.domain.sru");
+                        JAXBContext jc = JAXBContext.newInstance("de.escidoc.core.domain.sru");
                         marshaller = jc.createMarshaller();
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
                     } catch (Exception e) {
@@ -371,7 +371,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                         /**
                          * create record container
                          */
-                        record = new org.escidoc.core.domain.sru.RecordType();
+                        record = new de.escidoc.core.domain.sru.RecordType();
                         record.setRecordPacking(recordPacking);
                         record.setRecordSchema(rec.getRecordSchemaID());
 
@@ -386,7 +386,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                         }
                         response.getRecordStreams().add(stream);
                         
-//                        org.escidoc.core.domain.sru.StringOrXmlFragment frag = new org.escidoc.core.domain.sru.StringOrXmlFragment();
+//                        de.escidoc.core.domain.sru.StringOrXmlFragment frag = new de.escidoc.core.domain.sru.StringOrXmlFragment();
 //                        frag.getContent().add(rec.getRecord());
 //                        record.setRecordData(frag);
 //                        log.debug("setRecordData");
