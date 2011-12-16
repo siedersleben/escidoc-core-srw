@@ -249,7 +249,7 @@ public class SRWDatabaseImpl extends ORG.oclc.os.SRW.SRWDatabase{
         return true;
     }
 
-    public RestSearchRetrieveResponseType doRequest(org.escidoc.core.domain.sru.SearchRetrieveRequestType request) throws ServletException {
+    public RestSearchRetrieveResponseType doRequest(de.escidoc.core.domain.sru.SearchRetrieveRequestType request) throws ServletException {
     	return null;
     }
 
