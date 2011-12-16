@@ -257,7 +257,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                 	MessageElement[] msgs = new MessageElement[request.getExtraRequestData().getAny().size()];
                 	int i = 0;
                 	for (Object o : request.getExtraRequestData().getAny()) {
-                		msgs[i] = new MessageElement(new Text((String)o));
+                		msgs[i] = new MessageElement((Element)o);
                 	}
                 	extraData.set_any(msgs);
             	}
