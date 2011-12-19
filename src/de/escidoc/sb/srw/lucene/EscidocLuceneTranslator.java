@@ -44,6 +44,7 @@ import java.util.Properties;
 import org.apache.axis.types.NonNegativeInteger;
 import org.apache.axis.types.PositiveInteger;
 import org.apache.commons.collections.map.LRUMap;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -1056,6 +1057,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         long docTime = 0;
         long docTime2 = 0;
         long docTime3 = 0;
+        long docTime4 = 0;
         for (int i = startRecord - 1; i < endRecord; i++) {
             //get next hit
             long docTime1 = 0;
@@ -1111,20 +1113,39 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 docTime1 = System.currentTimeMillis();
             }
             Fieldable idField = doc.getFieldable(getIdentifierTerm());
+            String idFieldStr = null;
+            if (idField != null) {
+                idFieldStr = idField.stringValue().trim();
+            }
             if (log.isInfoEnabled()) {
                 docTime3 += (System.currentTimeMillis() - docTime1);
             }
-            boolean fieldFilled = false;
-            if (idField != null) {
-            	searchResultXmls[i].write(idField.stringValue().getBytes(Constants.CHARACTER_ENCODING));
-            	searchResultXmls[i].write("\n".getBytes(Constants.CHARACTER_ENCODING));
-        		fieldFilled = true;
+
+            if (log.isInfoEnabled()) {
+                docTime1 = System.currentTimeMillis();
             }
-            
-            if (!fieldFilled) {
+			if (StringUtils.isNotBlank(idFieldStr)) {
+				if (idFieldStr.startsWith("&")) {
+					idFieldStr = StringEscapeUtils.unescapeXml(idFieldStr);
+				}
+
+				if (idFieldStr.startsWith("<?xml")) {
+					idFieldStr = idFieldStr.replaceFirst("<\\?xml.*?>", "");
+				}
+
+				// append search-result-xml from lucene
+				searchResultXmls[i].write(idFieldStr
+						.getBytes(Constants.CHARACTER_ENCODING));
+				searchResultXmls[i].write("\n"
+						.getBytes(Constants.CHARACTER_ENCODING));
+			} else {
             	searchResultXmls[i].write(Constants.DEFAULT_SEARCH_RESULT_START_ELEMENT.getBytes(Constants.CHARACTER_ENCODING));
             	searchResultXmls[i].write(doc.getFieldable("PID").stringValue().getBytes(Constants.CHARACTER_ENCODING));
             	searchResultXmls[i].write(Constants.DEFAULT_SEARCH_RESULT_END_ELEMENT.getBytes(Constants.CHARACTER_ENCODING));
+			}
+            
+            if (log.isInfoEnabled()) {
+                docTime4 += (System.currentTimeMillis() - docTime1);
             }
 
             //close surrounding xml
@@ -1137,6 +1158,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             log.info("hits.scoreDocs[i].doc-time was " + docTime + " ms");
             log.info("hits.scoreDocs[i].score-time was " + docTime2 + " ms");
             log.info("doc.getField(getIdentifierTerm())-time was " + docTime3 + " ms");
+            log.info("Stream-writing-time was " + docTime4 + " ms");
         }
         return searchResultXmls;
     }
