@@ -644,15 +644,17 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
         }
         catch (Exception e) {
-			for (int i = 0; i < identifiers.length; i++) {
-				if (identifiers[i] != null) {
-					try {
-						identifiers[i].close();
-					} catch (IOException e1) {
-						log.info("couldnt close stream");
-					}
-				}
-			}
+        	if (identifiers != null) {
+    			for (int i = 0; i < identifiers.length; i++) {
+    				if (identifiers[i] != null) {
+    					try {
+    						identifiers[i].close();
+    					} catch (IOException e1) {
+    						log.info("couldnt close stream");
+    					}
+    				}
+    			}
+        	}
             if (log.isInfoEnabled()) {
                 log.info(e.toString());
             }
