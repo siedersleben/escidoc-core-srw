@@ -246,7 +246,11 @@ public class SRWSoapBindingImpl implements SRWPort {
 		} catch (Exception e) {
 			throw new RemoteException(e.getMessage(), e);
 		}
-		return null;
+		response.getSearchRetrieveResponse().setVersion("1.1");
+		log.info("\"" + query + "\"==>" + response.getSearchRetrieveResponse().getNumberOfRecords() + " ("
+				+ (System.currentTimeMillis() - startTime) + "ms)");
+		log.debug("Exit: searchRetrieveOperation");
+		return response.toStream(db, true);
 	}
 
     public SearchRetrieveResponseType searchRetrieveOperation(

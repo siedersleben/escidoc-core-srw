@@ -117,7 +117,7 @@ public class EscidocHighlighter implements SrwHighlighter {
 
     private Matcher SEARCHFIELD_MATCHER = SEARCHFIELD_PATTERN.matcher("");
 
-    private final String INTERNAL_FIELDS_REGEX = "type|PID";
+    private final String INTERNAL_FIELDS_REGEX = "type";
 
 	private static final String LUCENE_ESCAPE_CHARS = "[\\\\+\\-\\!\\(\\)\\:\\^\\]\\{\\}\\~\\*\\?]";
 
