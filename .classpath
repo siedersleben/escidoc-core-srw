@@ -26,7 +26,7 @@
 	<classpathentry kind="lib" path="lib/escidoc/stax/wstx-asl-3.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-collections-3.2.1.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/commons-lang-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/commons-lang-2.5.jar" sourcepath="/home/mih/.m2/repository/commons-lang/commons-lang/2.5/commons-lang-2.5-sources.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-pool-1.5.4.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-2.0.5.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/spring-security-core-tiger-2.0.4.jar"/>
