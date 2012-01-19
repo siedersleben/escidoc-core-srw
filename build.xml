@@ -96,10 +96,10 @@
 
         	<!--MIH: add web.xml from conf/escidoc-directory -->
         	<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
-        	<zipfileset dir="${escidoc.conf.dir}" includes="*.xml" excludes="log4j.xml" prefix="WEB-INF"/>
+        	<zipfileset dir="${escidoc.conf.dir}" includes="*.xml" excludes="jboss*,log4j.xml" prefix="WEB-INF"/>
 
         	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
-            <zipfileset dir="${escidoc.conf.dir}" includes="*.xml" excludes="jboss*,web.xml" prefix="WEB-INF/classes"/>
+            <zipfileset dir="${escidoc.conf.dir}" includes="*.xml" excludes="web.xml" prefix="WEB-INF/classes"/>
 
         	<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
         	<zipfileset dir="${images.dir}" includes="*"/>
