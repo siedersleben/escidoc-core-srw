@@ -39,7 +39,6 @@ import gov.loc.www.zing.srw.utils.IOUtils;
 import gov.loc.www.zing.srw.utils.RestSearchRetrieveResponseType;
 import gov.loc.www.zing.srw.utils.Stream;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.Enumeration;
