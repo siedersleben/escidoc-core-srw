@@ -295,6 +295,17 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 						replacedProperty = property.replaceAll("\\$\\{"
 								+ envVariables[i] + "}", envVariable);
 					}
+					else if (System.getenv(envVariables[i]) != null
+							&& !System.getenv(envVariables[i]).equals("")) {
+						String envVariable = System
+								.getenv(envVariables[i]);
+						envVariable = envVariable.replaceAll("\\\\", "/");
+						replacedProperty = property.replaceAll("\\$\\{"
+								+ envVariables[i] + "}", envVariable);
+					}
+					else {
+						replacedProperty = "?NOTFOUND{" + envVariables[i] + "}";
+					}
 				}
 			}
 		}
