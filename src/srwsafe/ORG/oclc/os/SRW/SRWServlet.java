@@ -1313,13 +1313,14 @@ import org.w3c.dom.Element;
 ////                qb[i]=(byte)query.charAt(i);
 ////            query=new String(qb, "utf-8");
 //            // MIH: avoid NullPointerException//////////////
-//            if (query != null) {
-//				  query = query.replaceAll("\\s+", " ");
-//                byte[] qb = new byte[query.length()];
-//                for (i = 0; i < query.length(); i++)
-//                    qb[i] = (byte) query.charAt(i);
-//                query = new String(qb, "utf-8");
-//            }
+////            if (query != null) {
+////				  query = query.replaceAll("\\s+", " ");
+////                byte[] qb = new byte[query.length()];
+////                for (i = 0; i < query.length(); i++)
+////                    qb[i] = (byte) query.charAt(i);
+////                query = new String(qb, "utf-8");
+////            }
+//			  query = query.replaceAll("\\s+", " ");
 //            ///////////////////////////////////////////////
 //
 //
