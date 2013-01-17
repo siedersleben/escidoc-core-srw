@@ -18,6 +18,8 @@
     <property name="escidoc.srw.jarfile.name" value="eSciDocCoreSrw.jar" />
 
     <target name="clean" description="Clean all build products.">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
 		<delete includeEmptyDirs="true">
 			<fileset dir="${build.dir}">
 				<include name="**/*"/>
