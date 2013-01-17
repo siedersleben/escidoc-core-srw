@@ -25,6 +25,8 @@
         <property name="artifactory.password" value="${password}" />
 
     <target name="clean" description="Clean all build products.">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
 		<delete includeEmptyDirs="true">
 			<fileset dir="${build.dir}">
 				<include name="**/*"/>
