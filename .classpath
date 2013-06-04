@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/escidoc/stax/jsr173_1.0_api.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/escidoc-analyzers.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/sen.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="lib/srw/cql-java.jar"/>
 	<classpathentry kind="lib" path="lib/srw/jaxrpc.jar"/>
@@ -15,7 +13,6 @@
 	<classpathentry kind="lib" path="lib/srw/servlet-api.jar"/>
 	<classpathentry kind="lib" path="lib/srw/SRW.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/commons-httpclient-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/lucene-ja.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/httpclient-4.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/httpcore-4.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/common.jar"/>
@@ -40,5 +37,7 @@
 	<classpathentry kind="lib" path="lib/lucene/lucene-core-3.4.0-extended.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/lucene-highlighter-3.4.0-extended.jar"/>
 	<classpathentry kind="lib" path="lib/lucene/lucene-memory-3.4.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_38"/>
+	<classpathentry kind="lib" path="lib/escidoc/lucene-gosen-1.2.1-naist-chasen.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
