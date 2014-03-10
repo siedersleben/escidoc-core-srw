@@ -467,6 +467,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             // with the defaultFieldName from configuration
             Query unanalyzedQuery = makeQuery(queryRoot);
             if (log.isInfoEnabled()) {
+                log.info("unanalyzedQuery  " 
+                        + unanalyzedQuery.toString());
                 log.info("query converted at " 
                         + (System.currentTimeMillis() - time) + " ms");
             }
@@ -487,7 +489,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                         getDefaultIndexField(), analyzer, forceScoring);
             Query query = parser.parse(unanalyzedQuery.toString());;
             if (log.isInfoEnabled()) {
-                log.info("query: " + unanalyzedQuery.toString());
+                log.info("query after parsing: " + query.toString());
             }
             Filter permissionFilter = null;
             if (permissionFiltering && !searchExtraData.isSkipPermissions()) {
