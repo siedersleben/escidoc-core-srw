@@ -370,7 +370,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
             catch (Exception e) {
                 log.error(e);
-                analyzer = new StandardAnalyzer(Version.LUCENE_30);
+                analyzer = new StandardAnalyzer(Version.LUCENE_34);
             }
         }
 
@@ -487,7 +487,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             QueryParser parser =
                 new EscidocQueryParser(
                         getDefaultIndexField(), analyzer, forceScoring);
-            Query query = parser.parse(unanalyzedQuery.toString());;
+            Query query = parser.parse(unanalyzedQuery.toString());
             if (log.isInfoEnabled()) {
                 log.info("query after parsing: " + query.toString());
             }

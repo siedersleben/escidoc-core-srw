@@ -71,7 +71,7 @@ public class EscidocQueryParser extends QueryParser {
      *            used to find terms in the query text.
      */
     public EscidocQueryParser(final String field, final Analyzer analyzer) {
-        super(Version.LUCENE_30, field, analyzer);
+        super(Version.LUCENE_34, field, analyzer);
         setWildcardAnalyzer(analyzer);
     }
 
@@ -89,7 +89,7 @@ public class EscidocQueryParser extends QueryParser {
             final String field, 
             final Analyzer analyzer, 
             final boolean forceScoring) {
-        super(Version.LUCENE_30, field, analyzer);
+        super(Version.LUCENE_34, field, analyzer);
         setWildcardAnalyzer(analyzer);
         if (forceScoring) {
             super.setMultiTermRewriteMethod(
@@ -109,7 +109,7 @@ public class EscidocQueryParser extends QueryParser {
      */
     public EscidocQueryParser(final String field, final Analyzer analyzer,
         final Analyzer wildcardAnalyzer) {
-        super(Version.LUCENE_30, field, analyzer);
+        super(Version.LUCENE_34, field, analyzer);
         setWildcardAnalyzer(wildcardAnalyzer);
     }
 
