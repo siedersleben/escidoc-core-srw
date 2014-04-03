@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="eSciDocCoreSrw" basedir="." default="war">
+<project name="eSciDocCoreSrw" basedir="." default="war" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
 	<property name="webapp.name" value="srw" />
 	<property name="project.name" value="eSciDocCoreSrw" />
@@ -110,12 +110,12 @@
         </jar>
     </target>
 
-    <target name="deploy" depends="war">
-        <fail unless="serverPath" message="You need to specify a serverPath in the build.properties file"/>
-        <copy todir="${serverPath}/webapps">
-            <fileset dir="${dist.dir}" includes="*.war"/>
-        </copy>
-    </target>
+	<target name="install" depends="war" description="Deploy war file to local repository">
+			<artifact:pom id="filepom" file="${dist.dir}/srw_full.pom" />
+			<artifact:install file="${dist.dir}/${war.name}">
+				<pom refid="filepom" />
+			</artifact:install>			
+	</target>
 
     <target name="javadoc" description="Javadoc for my API.">
         <mkdir dir="apidoc"/>
