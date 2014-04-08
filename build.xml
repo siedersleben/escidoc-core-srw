@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="eSciDocCoreSrw" basedir="." default="war">
+<project name="eSciDocCoreSrw" basedir="." default="war" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
 	<property name="webapp.name" value="srw" />
 	<property name="project.name" value="eSciDocCoreSrw" />
@@ -13,13 +13,18 @@
 	<property name="conf.dir" value="conf" />
 	<property name="sources.dir" value="sources" />
 	<property name="docu.dir" value="docu" />
-    <property name="stylesheets.dir" value="${conf.dir}/stylesheets" />
+	<property name="stylesheets.dir" value="${conf.dir}/stylesheets" />
 	<property name="escidoc.conf.dir" value="${conf.dir}/escidoc" />
-    <property name="escidoc.srw.jarfile.name" value="eSciDocCoreSrw.jar" />
+	<property name="escidoc.srw.jarfile.name" value="eSciDocCoreSrw.jar" />
+	<property name="build.version" value="1.3.42-SNAPSHOT" />
 
-    <target name="clean" description="Clean all build products.">
-        <mkdir dir="${build.dir}"/>
-        <mkdir dir="${dist.dir}"/>
+	<!-- properties for deployment to Artifactory -->
+	<property name="artifactory.url" value="http://rd.mpdl.mpg.de/nexus/content/repositories/snapshots" />
+	<property name="artifactory.id" value="snapshots" />
+
+	<target name="clean" description="Clean all build products.">
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${dist.dir}"/>
 		<delete includeEmptyDirs="true">
 			<fileset dir="${build.dir}">
 				<include name="**/*"/>
@@ -30,123 +35,136 @@
 				<include name="**/*"/>
 			</fileset>
 		</delete>
-    </target>
+	</target>
 
-    <target name="compile" depends="clean">
-    	
-    	<!--MIH: also include packages de.escidoc.* in compilation -->
-        <!--javac srcdir="src" destdir="build" deprecation="true" debug="on"
+	<target name="compile" depends="clean">
+
+		<!--MIH: also include packages de.escidoc.* in compilation -->
+		<!--javac srcdir="src" destdir="build" deprecation="true" debug="on"
            includes="gov/**/*.java ORG/oclc/os/SRW/*.java"-->
 		<javac srcdir="${src.dir}" destdir="${build.dir}" deprecation="true" debug="on"
            includes="org/osuosl/**/*.java de/escidoc/**/*.java org/apache/lucene/search/*.java">
-              <classpath>
-                  <fileset dir="${lib.dir}">
-                      <include name="**/*.jar"/>
-                  </fileset>
-              </classpath>
-        </javac>
-    </target>
+			<classpath>
+				<fileset dir="${lib.dir}">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</javac>
+	</target>
 
-    <target name="jar" depends="compile">
-        <copy todir="${build.dir}/META-INF/services">
-            <fileset dir="${conf.dir}" includes="*.wsdd.Provider"/>
-        </copy>
-    	<!--MIH: also include packages de.escidoc.* in compilation -->
-        <jar jarfile="${dist.dir}/${escidoc.srw.jarfile.name}" basedir="${build.dir}" includes="org/osuosl/**/*.class de/escidoc/**/*.class META-INF/services/*"/>
-    	
-    </target>
+	<target name="jar" depends="compile">
+		<copy todir="${build.dir}/META-INF/services">
+			<fileset dir="${conf.dir}" includes="*.wsdd.Provider"/>
+		</copy>
+		<!--MIH: also include packages de.escidoc.* in compilation -->
+		<jar jarfile="${dist.dir}/${escidoc.srw.jarfile.name}" basedir="${build.dir}" includes="org/osuosl/**/*.class de/escidoc/**/*.class META-INF/services/*"/>
 
-    <target name="checkout">
-        <cvs cvsRoot=":pserver:anonymous@pubserv.oclc.org:/home/CVS/srw/cvsroot"
+	</target>
+
+	<target name="checkout">
+		<cvs cvsRoot=":pserver:anonymous@pubserv.oclc.org:/home/CVS/srw/cvsroot"
             command="checkout" dest="${src.dir}" package="all"/>
-    </target>
-        
-    <target name="war" depends="jar, sources">
-        <fail unless="webapp.name" message="You need to specify a webapp.name"/>
-        <delete file="${dist.dir}/${nolibs.webapp.name}.war"/>
-        <jar jarfile="${dist.dir}/${nolibs.webapp.name}.war">
-            <zipfileset dir="${dist.dir}" includes="${escidoc.srw.jarfile.name}" prefix="WEB-INF/lib"/>
+	</target>
 
-        	<!--MIH: add web.xml from conf/escidoc-directory -->
-        	<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
-        	<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
+	<target name="war" depends="jar, sources">
+		<fail unless="webapp.name" message="You need to specify a webapp.name"/>
+		<delete file="${dist.dir}/${nolibs.webapp.name}.war"/>
+		<jar jarfile="${dist.dir}/${nolibs.webapp.name}.war">
+			<zipfileset dir="${dist.dir}" includes="${escidoc.srw.jarfile.name}" prefix="WEB-INF/lib"/>
 
-        	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
-            <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
+			<!--MIH: add web.xml from conf/escidoc-directory -->
+			<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
+			<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
 
-        	<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
-            <zipfileset dir="${lib.dir}/srw" includes="SRW.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/srw" includes="axis-1.4.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/srw" includes="log4j.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/escidoc" includes="slf4j-log4j12-1.5.11.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/escidoc" includes="slf4j-api-1.5.11.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/escidoc" includes="jcl-over-slf4j-1.5.11.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/escidoc" includes="wss4j-1.5.6.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/escidoc" includes="common.jar" prefix="WEB-INF/lib"/>
-        </jar>
-        <delete file="${dist.dir}/${webapp.name}.war"/>
-        <jar jarfile="${dist.dir}/${webapp.name}.war">
-            <zipfileset dir="${dist.dir}" includes="${escidoc.srw.jarfile.name}" prefix="WEB-INF/lib"/>
+			<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
+			<zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
 
-        	<!--MIH: add web.xml from conf/escidoc-directory -->
-        	<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
-        	<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
+			<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
+			<zipfileset dir="${lib.dir}/srw" includes="SRW.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/srw" includes="axis-1.4.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/srw" includes="log4j.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/escidoc" includes="slf4j-log4j12-1.5.11.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/escidoc" includes="slf4j-api-1.5.11.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/escidoc" includes="jcl-over-slf4j-1.5.11.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/escidoc" includes="wss4j-1.5.6.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/escidoc" includes="common.jar" prefix="WEB-INF/lib"/>
+		</jar>
+		<delete file="${dist.dir}/${webapp.name}.war"/>
+		<jar jarfile="${dist.dir}/${webapp.name}.war">
+			<zipfileset dir="${dist.dir}" includes="${escidoc.srw.jarfile.name}" prefix="WEB-INF/lib"/>
 
-        	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
-            <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
+			<!--MIH: add web.xml from conf/escidoc-directory -->
+			<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
+			<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
 
-        	<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
-            <zipfileset dir="${lib.dir}/srw" includes="SRW.jar" prefix="WEB-INF/lib"/>
-        </jar>
-        <antcall target="addJarsFromLib"/>
-    </target>
+			<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
+			<zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
 
-    <target name="addJarsFromLib">
-        <jar jarfile="${dist.dir}/${webapp.name}.war" update="true" duplicate="preserve">
-            <zipfileset dir="${lib.dir}/escidoc" includes="*.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/escidoc/stax" includes="*.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/lucene" includes="*.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="${lib.dir}/srw" includes="*.jar" excludes="SRW.jar" prefix="WEB-INF/lib"/>
-        </jar>
-    </target>
+			<zipfileset dir="${stylesheets.dir}" includes="*.xsl"/>
+			<zipfileset dir="${lib.dir}/srw" includes="SRW.jar" prefix="WEB-INF/lib"/>
+		</jar>
+		<antcall target="addJarsFromLib"/>
+	</target>
 
-    <target name="deploy" depends="war">
-        <fail unless="serverPath" message="You need to specify a serverPath in the build.properties file"/>
-        <copy todir="${serverPath}/webapps">
-            <fileset dir="${dist.dir}" includes="*.war"/>
-        </copy>
-    </target>
+	<target name="addJarsFromLib">
+		<jar jarfile="${dist.dir}/${webapp.name}.war" update="true" duplicate="preserve">
+			<zipfileset dir="${lib.dir}/escidoc" includes="*.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/escidoc/stax" includes="*.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/lucene" includes="*.jar" prefix="WEB-INF/lib"/>
+			<zipfileset dir="${lib.dir}/srw" includes="*.jar" excludes="SRW.jar" prefix="WEB-INF/lib"/>
+		</jar>
+	</target>
 
-    <target name="javadoc" description="Javadoc for my API.">
-        <mkdir dir="apidoc"/>
-        <javadoc packagenames="org.osuosl.* de.escidoc.core.*" destdir="apidoc">
-            <sourcepath>
-                <pathelement location="${src.dir}"/>
-            </sourcepath>
-        </javadoc>
-    </target>
+	<target name="install" depends="war, sources">
+		<!-- deploy war and sources -->
+		<artifact:pom id="memorypom" groupId="org.escidoc" artifactId="srw" version="${build.version}" name="SRW server for eSciDoc" packaging="war" />
+		<artifact:writepom pomRefId="memorypom" file="${dist.dir}/${webapp.name}-${build.version}.pom" />
+		<artifact:pom id="filepom" file="${dist.dir}/${webapp.name}-${build.version}.pom" />
+		<artifact:install file="${dist.dir}/${webapp.name}.war">
+			<pom refid="filepom" />
+			<attach file="${dist.dir}/${webapp.name}-sources.zip" type="zip" classifier="sources"/>
+		</artifact:install>
+	</target>
 
-    <target name="sources" description="Pack sources for download.">
-    	<delete dir="${sources.dir}"/>
-        <mkdir dir="${sources.dir}"/>
-        <mkdir dir="${sources.dir}/${project.name}"/>
+	<target name="deploy" depends="install, sources">
+		<!-- deploy war and sources -->
+		<artifact:deploy file="${dist.dir}/${webapp.name}.war">
+			<remoteRepository url="${artifactory.url}" id="${artifactory.id}" />
+			<pom refid="filepom" />
+		</artifact:deploy>
+
+	</target>
+
+	<target name="javadoc" description="Javadoc for my API.">
+		<mkdir dir="apidoc"/>
+		<javadoc packagenames="org.osuosl.* de.escidoc.core.*" destdir="apidoc">
+			<sourcepath>
+				<pathelement location="${src.dir}"/>
+			</sourcepath>
+		</javadoc>
+	</target>
+
+	<target name="sources" description="Pack sources for download.">
+		<delete dir="${sources.dir}"/>
+		<mkdir dir="${sources.dir}"/>
+		<mkdir dir="${sources.dir}/${project.name}"/>
 		<copy todir="${sources.dir}/${project.name}">
 			<fileset dir=".">
-		    	<exclude name="${build.dir}/*/**"/>
-		    	<exclude name="${bin.dir}/*/**"/>
-		    	<exclude name="${dist.dir}/*/**"/>
-		    	<exclude name="${sources.dir}/**"/>
-		    	<exclude name="${build.dir}/*/**"/>
-		    	<exclude name="${docu.dir}/**"/>
-		    	<exclude name="${src.dir}/srwsafe/**"/>
-		    	<exclude name="**/.svn"/>
-		    	<exclude name=".classpath"/>
-    			<exclude name=".project"/>
+				<exclude name="${build.dir}/*/**"/>
+				<exclude name="${bin.dir}/*/**"/>
+				<exclude name="${dist.dir}/*/**"/>
+				<exclude name="${sources.dir}/**"/>
+				<exclude name="${build.dir}/*/**"/>
+				<exclude name="${docu.dir}/**"/>
+				<exclude name="${src.dir}/srwsafe/**"/>
+				<exclude name="**/.svn"/>
+				<exclude name=".classpath"/>
+				<exclude name=".project"/>
 			</fileset>
 		</copy>
-        <zip zipfile="${dist.dir}/${webapp.name}-sources.zip"
+		<zip zipfile="${dist.dir}/${webapp.name}-sources.zip"
              basedir="${sources.dir}/${project.name}" includes="**"/>
-    	<delete dir="${sources.dir}"/>
-    </target>
+		<delete dir="${sources.dir}"/>
+	</target>
 
 </project>
