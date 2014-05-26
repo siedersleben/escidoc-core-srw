@@ -59,7 +59,6 @@ import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleFragmenter;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-import org.apache.lucene.util.Version;
 
 import de.escidoc.sb.srw.Constants;
 
@@ -74,7 +73,7 @@ public class EscidocHighlighter implements SrwHighlighter {
     //********Defaults*********************************************************
     private Highlighter highlighter = null;
 
-    private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_34);
+    private Analyzer analyzer = new StandardAnalyzer(Constants.LUCENE_VERSION);
     
     private SrwHighlightXmlizer highlightXmlizer = 
                     new EscidocSimpleHighlightXmlizer();
@@ -147,7 +146,7 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
             catch (Exception e) {
                 log.error(e);
-                analyzer = new StandardAnalyzer(Version.LUCENE_34);
+                analyzer = new StandardAnalyzer(Constants.LUCENE_VERSION);
             }
         }
 

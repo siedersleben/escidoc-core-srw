@@ -31,6 +31,8 @@ package de.escidoc.sb.srw;
 
 import java.util.regex.Pattern;
 
+import org.apache.lucene.util.Version;
+
 /**
  * Constants for Search.
  * 
@@ -39,6 +41,8 @@ import java.util.regex.Pattern;
 public class Constants {
 
     public static final String CHARACTER_ENCODING = "UTF-8";
+    
+    public static final Version LUCENE_VERSION = Version.LUCENE_34;
 
     public static final int FUZZY_BOOLEAN_MAX_CLAUSE_COUNT = 10000;
     

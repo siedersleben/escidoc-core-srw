@@ -44,7 +44,8 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermRangeQuery;
-import org.apache.lucene.util.Version;
+
+import de.escidoc.sb.srw.Constants;
 
 /**
  * Custom queryParser for eSciDoc. Also analyzes wildcard-queries which is not
@@ -71,7 +72,7 @@ public class EscidocQueryParser extends QueryParser {
      *            used to find terms in the query text.
      */
     public EscidocQueryParser(final String field, final Analyzer analyzer) {
-        super(Version.LUCENE_34, field, analyzer);
+        super(Constants.LUCENE_VERSION, field, analyzer);
         setWildcardAnalyzer(analyzer);
     }
 
@@ -89,7 +90,7 @@ public class EscidocQueryParser extends QueryParser {
             final String field, 
             final Analyzer analyzer, 
             final boolean forceScoring) {
-        super(Version.LUCENE_34, field, analyzer);
+        super(Constants.LUCENE_VERSION, field, analyzer);
         setWildcardAnalyzer(analyzer);
         if (forceScoring) {
             super.setMultiTermRewriteMethod(
@@ -109,7 +110,7 @@ public class EscidocQueryParser extends QueryParser {
      */
     public EscidocQueryParser(final String field, final Analyzer analyzer,
         final Analyzer wildcardAnalyzer) {
-        super(Version.LUCENE_34, field, analyzer);
+        super(Constants.LUCENE_VERSION, field, analyzer);
         setWildcardAnalyzer(wildcardAnalyzer);
     }
 
