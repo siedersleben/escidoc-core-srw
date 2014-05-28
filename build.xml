@@ -128,7 +128,7 @@
 
 	<target name="deploy" depends="install, sources">
 		<!-- deploy war and sources -->
-		<artifact:deploy file="${dist.dir}/${webapp.name}.war">
+		<artifact:deploy file="${dist.dir}/${webapp.name}.war" uniqueVersion="false">
 			<remoteRepository url="${artifactory.url}" id="${artifactory.id}" />
 			<pom refid="filepom" />
 		</artifact:deploy>
