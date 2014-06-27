@@ -44,6 +44,7 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.util.Version;
 
 import de.escidoc.sb.srw.Constants;
 
@@ -72,7 +73,7 @@ public class EscidocQueryParser extends QueryParser {
      *            used to find terms in the query text.
      */
     public EscidocQueryParser(final String field, final Analyzer analyzer) {
-        super(Constants.LUCENE_VERSION, field, analyzer);
+        super(Version.LUCENE_30, field, analyzer);
         setWildcardAnalyzer(analyzer);
     }
 
