@@ -132,7 +132,6 @@
 			<remoteRepository url="${artifactory.url}" id="${artifactory.id}" />
 			<pom refid="filepom" />
 		</artifact:deploy>
-
 	</target>
 
 	<target name="javadoc" description="Javadoc for my API.">
