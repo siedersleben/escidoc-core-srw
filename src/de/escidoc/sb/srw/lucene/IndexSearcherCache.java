@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.FSDirectory;
 
@@ -91,15 +92,24 @@ public final class IndexSearcherCache {
 			throws IOException, CorruptIndexException {
 		if (indexSearchers.get(indexPath) == null
 				|| !indexSearchers.get(indexPath).getIndexReader().isCurrent()) {
+			
+			// isCurrent == false
 			if (indexSearchers.get(indexPath) != null) {
 				try {
-					indexSearchers.get(indexPath).close();
-				} catch (Exception e) {
+					IndexReader newReader = indexSearchers.get(indexPath).getIndexReader().reopen(true);
+
+					if (newReader != indexSearchers.get(indexPath).getIndexReader()) {
+							
+						indexSearchers.put(indexPath, new IndexSearcher(newReader));
+								
+						log.info("new indexReader created by reopen for <" + indexPath + ">");		
+					}
+				} catch (IOException e) {
+					log.warn("Error when reopening indexReader of <" + indexPath + ">", e);						
 				}
+			} else { // new searcher object
+				indexSearchers.put(indexPath, new IndexSearcher(FSDirectory.open(new File(indexPath)), true));		
 			}
-			indexSearchers.put(indexPath,
-					new IndexSearcher(FSDirectory.open(new File(indexPath)),
-							true));
 		}
 		IndexSearcher current = indexSearchers.get(indexPath);
 		current.getIndexReader().incRef();
