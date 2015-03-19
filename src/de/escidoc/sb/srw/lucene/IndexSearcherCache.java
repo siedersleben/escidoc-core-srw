@@ -111,9 +111,8 @@ public final class IndexSearcherCache {
 				indexSearchers.put(indexPath, new IndexSearcher(FSDirectory.open(new File(indexPath)), true));		
 			}
 		}
-		IndexSearcher current = indexSearchers.get(indexPath);
-		current.getIndexReader().incRef();
-		return current;
+		
+		return indexSearchers.get(indexPath);
 	}
 
 }
